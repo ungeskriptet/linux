@@ -1,0 +1,33 @@
+Marvell 88pm88x combo PMIC chip
+
+This series of chip integrates regulator, rtc, onkey, switch charger,
+fuelgauge, gpadc and a range of I/O pins.
+
+88pm886 and 88pm880 are two very similar chips, most of the registers mapping
+and functions are the same, the main difference is the latter has a separate
+i2c slave address to cover BUCK related setting
+
+Required properties:
+- compatible: one of the strings for a specific chip:
+  "marvell,88pm886"
+  "marvell,88pm880"
+- reg: the i2c address
+- interrupt-controller: it works as an interrupt controller managing its irqs
+- interrupt-cells: this value is 1
+
+Optional properties:
+- marvell,88pm88x-irq-write-clear: the interrupt ack method
+
+
+Example:
+
+	pmic: 88pm886@30 {
+		compatible = "marvell,88pm886";
+		reg = <0x30>;
+		interrupts = <0 4 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-parent = <&gic>;
+		interrupt-controller;
+		#interrupt-cells = <1>;
+
+		marvell,88pm88x-irq-write-clear;
+	};
