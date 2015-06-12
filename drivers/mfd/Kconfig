@@ -759,6 +759,18 @@ config MFD_KEMPLD
 	  This driver can also be built as a module. If so, the module
 	  will be called kempld-core.
 
+config MFD_88PM88X
+	tristate "Marvell 88PM886/880 PMIC"
+	depends on I2C=y
+	select REGMAP_I2C
+	select MFD_CORE
+	help
+	  This supports for Marvell 88PM88X Series Power Management IC:
+	  88pm886 and 88pm880;
+	  This includes the I2C driver, the interrupt resource distribution
+	  and the core APIs, for individual sub-device as voltage regulators,
+	  RTC, charger, fuelgauge, etc, select under the corresponding menus.
+
 config MFD_88PM800
 	tristate "Marvell 88PM800"
 	depends on I2C
