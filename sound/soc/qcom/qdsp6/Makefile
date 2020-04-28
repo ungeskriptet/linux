@@ -18,3 +18,4 @@ obj-$(CONFIG_SND_SOC_QDSP6_APM_LPASS_DAI) += q6apm-lpass-dais.o
 obj-$(CONFIG_SND_SOC_QDSP6_PRM) += q6prm.o
 obj-$(CONFIG_SND_SOC_QDSP6_PRM_LPASS_CLOCKS) += q6prm-clocks.o
 obj-$(CONFIG_SND_SOC_QDSP6_Q6VOICE) += q6voice-common.o
+obj-$(CONFIG_SND_SOC_QDSP6_Q6VOICE) += q6mvm.o q6voice-common.o
