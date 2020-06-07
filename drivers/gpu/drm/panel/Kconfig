@@ -460,6 +460,13 @@ config DRM_PANEL_SAMSUNG_S6D27A1
 
 	  This panel can be found in Samsung Galaxy Ace 2
 	  GT-I8160 mobile phone.
+ 
+config DRM_PANEL_SAMSUNG_S6E3FA3
+	tristate "Samsung S6E3FA3 DSI command mode panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	select VIDEOMODE_HELPERS
 
 config DRM_PANEL_SAMSUNG_S6E3HA2
 	tristate "Samsung S6E3HA2 DSI video mode panel"
