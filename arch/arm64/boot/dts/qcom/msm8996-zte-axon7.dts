@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ */
+
+/dts-v1/;
+
+#include "msm8996-zte-axon7.dtsi"
+
+/ {
+	model = "ZTE Axon 7";
+	compatible = "zte,axon7", "qcom,msm8996";
+	qcom,board-id = <100 0>;
+	qcom,msm-id = <246 0x30001>;
+	qcom,pmic-id = <0x20009 0x10013 0x0 0x0>;
+};
