@@ -25,12 +25,14 @@ enum {
 	MI2S_SECONDARY,
 	MI2S_TERTIARY,
 	MI2S_QUATERNARY,
+	MI2S_QUINARY,
 	MI2S_COUNT
 };
 
 struct msm8916_qdsp6_data {
 	void __iomem *mic_iomux;
 	void __iomem *spkr_iomux;
+	void __iomem *quin_iomux;
 	struct snd_soc_jack jack;
 	bool jack_setup;
 	unsigned int mi2s_clk_count[MI2S_COUNT];
@@ -41,6 +43,7 @@ static const int msm8953_bitclk_map[MI2S_COUNT] = {
 	[MI2S_SECONDARY] = Q6AFE_LPASS_CLK_ID_SEC_MI2S_IBIT,
 	[MI2S_TERTIARY] = Q6AFE_LPASS_CLK_ID_TER_MI2S_IBIT,
 	[MI2S_QUATERNARY] = Q6AFE_LPASS_CLK_ID_QUAD_MI2S_IBIT,
+	[MI2S_QUINARY] = Q6AFE_LPASS_CLK_ID_QUI_MI2S_IBIT,
 };
 
 #define MIC_CTRL_TER_WS_SLAVE_SEL	BIT(21)
@@ -55,12 +58,18 @@ static int msm8916_qdsp6_get_mi2s_id(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_card *card = rtd->card;
 	int id = asoc_rtd_to_cpu(rtd, 0)->id;
 
-	if (id < PRIMARY_MI2S_RX || id > QUATERNARY_MI2S_TX) {
-		dev_err(card->dev, "Unsupported CPU DAI: %d\n", id);
-		return -EINVAL;
+	switch (id) {
+		case PRIMARY_MI2S_RX ... QUATERNARY_MI2S_TX:
+			return (id - PRIMARY_MI2S_RX) / 2;
+		case QUINARY_MI2S_RX:
+		case QUINARY_MI2S_TX:
+			return MI2S_QUINARY;
+		default:
+			dev_err(card->dev, "Unsupported CPU DAI: %d\n", id);
+			break;
 	}
 
-	return (id - PRIMARY_MI2S_RX) / 2;
+	return -EINVAL;
 }
 
 static int msm8916_qdsp6_dai_init(struct snd_soc_pcm_runtime *rtd)
@@ -86,6 +95,12 @@ static int msm8916_qdsp6_dai_init(struct snd_soc_pcm_runtime *rtd)
 		writel(readl(pdata->mic_iomux) | MIC_CTRL_QUA_WS_SLAVE_SEL_10 |
 			MIC_CTRL_TLMM_SCLK_EN,
 			pdata->mic_iomux);
+		break;
+	case MI2S_QUINARY:
+		/* Configure Quinary MI2S */
+		if (!pdata->quin_iomux)
+			return -ENOENT;
+		writel(readl(pdata->quin_iomux) | 0x01, pdata->quin_iomux);
 		break;
 	case MI2S_TERTIARY:
 		writel(readl(pdata->mic_iomux) | MIC_CTRL_TER_WS_SLAVE_SEL |
@@ -308,6 +323,11 @@ static int msm8916_qdsp6_platform_probe(struct platform_device *pdev)
 	data->spkr_iomux = devm_ioremap_resource(dev, res);
 	if (IS_ERR(data->spkr_iomux))
 		return PTR_ERR(data->spkr_iomux);
+
+	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "quin-iomux");
+	data->quin_iomux = devm_ioremap_resource(dev, res);
+	if (IS_ERR(data->quin_iomux))
+		return PTR_ERR(data->quin_iomux);
 
 	snd_soc_card_set_drvdata(card, data);
 	msm8916_qdsp6_add_ops(card, be_ops);
