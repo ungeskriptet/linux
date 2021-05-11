@@ -99,6 +99,13 @@
 	 */
 	qcom,no-smr-check;
 	qcom,skip-init;
+
+	/*
+	 * HACK: Remove power-domains to stop SMMU from being suspended
+	 * and losing simplefb as a result. MMAGIC_MDSS_GDSC is flagged
+	 * always-on so it does not need any consumers to stay on.
+	 */
+	 /delete-property/ power-domains;
 };
 
 &mdss {
