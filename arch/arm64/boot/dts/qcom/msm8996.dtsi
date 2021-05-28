@@ -2592,7 +2592,10 @@
 
 		kryocc: clock-controller@6400000 {
 			compatible = "qcom,msm8996-apcc";
-			reg = <0x06400000 0x90000>;
+			reg = <0x06400000 0x90000>, <0x09a11000 0x10000>;
+
+			assigned-clocks = <&kryocc 2>;
+			assigned-clock-rates = <1382400000>;
 
 			clock-names = "xo";
 			clocks = <&rpmcc RPM_SMD_BB_CLK1>;
