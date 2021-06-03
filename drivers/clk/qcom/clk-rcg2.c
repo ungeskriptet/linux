@@ -264,7 +264,21 @@ static int clk_rcg2_determine_floor_rate(struct clk_hw *hw,
 	return _freq_tbl_determine_rate(hw, rcg->freq_tbl, req, FLOOR);
 }
 
-static int __clk_rcg2_configure(struct clk_rcg2 *rcg, const struct freq_tbl *f)
+static inline int clk_rcg2_update_bits_check(struct regmap *regmap,
+					     u32 reg, u32 mask, u32 val,
+					     bool *changed)
+{
+	bool change = false;
+	int ret = regmap_update_bits_check(regmap, reg, mask, val, &change);
+
+	if (changed)
+		*changed |= change;
+
+	return ret;
+}
+
+static int __clk_rcg2_configure(struct clk_rcg2 *rcg,
+				const struct freq_tbl *f, bool *changed)
 {
 	u32 cfg, mask;
 	struct clk_hw *hw = &rcg->clkr.hw;
@@ -275,18 +289,18 @@ static int __clk_rcg2_configure(struct clk_rcg2 *rcg, const struct freq_tbl *f)
 
 	if (rcg->mnd_width && f->n) {
 		mask = BIT(rcg->mnd_width) - 1;
-		ret = regmap_update_bits(rcg->clkr.regmap,
-				RCG_M_OFFSET(rcg), mask, f->m);
+		ret = clk_rcg2_update_bits_check(rcg->clkr.regmap,
+				RCG_M_OFFSET(rcg), mask, f->m, changed);
 		if (ret)
 			return ret;
 
-		ret = regmap_update_bits(rcg->clkr.regmap,
-				RCG_N_OFFSET(rcg), mask, ~(f->n - f->m));
+		ret = clk_rcg2_update_bits_check(rcg->clkr.regmap,
+				RCG_N_OFFSET(rcg), mask, ~(f->n - f->m), changed);
 		if (ret)
 			return ret;
 
-		ret = regmap_update_bits(rcg->clkr.regmap,
-				RCG_D_OFFSET(rcg), mask, ~f->n);
+		ret = clk_rcg2_update_bits_check(rcg->clkr.regmap,
+				RCG_D_OFFSET(rcg), mask, ~f->n, changed);
 		if (ret)
 			return ret;
 	}
@@ -297,19 +311,20 @@ static int __clk_rcg2_configure(struct clk_rcg2 *rcg, const struct freq_tbl *f)
 	cfg |= rcg->parent_map[index].cfg << CFG_SRC_SEL_SHIFT;
 	if (rcg->mnd_width && f->n && (f->m != f->n))
 		cfg |= CFG_MODE_DUAL_EDGE;
-	return regmap_update_bits(rcg->clkr.regmap, RCG_CFG_OFFSET(rcg),
-					mask, cfg);
+	return clk_rcg2_update_bits_check(rcg->clkr.regmap, RCG_CFG_OFFSET(rcg),
+					mask, cfg, changed);
 }
 
 static int clk_rcg2_configure(struct clk_rcg2 *rcg, const struct freq_tbl *f)
 {
 	int ret;
+	bool changed = false;
 
-	ret = __clk_rcg2_configure(rcg, f);
+	ret = __clk_rcg2_configure(rcg, f, &changed);
 	if (ret)
 		return ret;
 
-	return update_config(rcg);
+	return changed ? update_config(rcg) : 0;
 }
 
 static int __clk_rcg2_set_rate(struct clk_hw *hw, unsigned long rate,
@@ -975,7 +990,7 @@ static int clk_rcg2_shared_set_rate(struct clk_hw *hw, unsigned long rate,
 	 * and don't hit the update bit of CMD register.
 	 */
 	if (!__clk_is_enabled(hw->clk))
-		return __clk_rcg2_configure(rcg, f);
+		return __clk_rcg2_configure(rcg, f, NULL);
 
 	return clk_rcg2_shared_force_enable_clear(hw, f);
 }
