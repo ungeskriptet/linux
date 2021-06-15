@@ -98,4 +98,5 @@ obj-$(CONFIG_SPMI_PMIC_CLKDIV) += clk-spmi-pmic-div.o
 obj-$(CONFIG_KPSS_XCC) += kpss-xcc.o
 obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
 obj-$(CONFIG_QCOM_ALPHA_PLL) += alpha-pll.o
+obj-$(CONFIG_QCOM_CPU_MUX_DIV) += cpu-mux-div.o
 obj-$(CONFIG_KRAITCC) += krait-cc.o

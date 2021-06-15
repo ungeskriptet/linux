@@ -675,6 +675,13 @@ config QCOM_ALPHA_PLL
 	  Say Y if you want to support CPU frequency scaling on devices
 	  such as MSM8953, SDM632, etc.
 
+config QCOM_CPU_MUX_DIV
+	tristate "CPU Mux-Divider Clock Driver"
+	help
+	  Support for the single multiplexer/dividers clocks found in
+	  Qualcomm devices.  Say Y if you want to support CPU frequency
+	  scaling on devices such as MSM8953, SDM632, etc.
+
 config KPSS_XCC
 	tristate "KPSS Clock Controller"
 	help
