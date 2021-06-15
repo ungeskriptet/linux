@@ -668,6 +668,13 @@ config QCOM_HFPLL
 	  Say Y if you want to support CPU frequency scaling on devices
 	  such as MSM8974, APQ8084, etc.
 
+config QCOM_ALPHA_PLL
+	tristate "Single Alpha PLL Clock Controller"
+	help
+	  Support for the high-frequency PLLs present on Qualcomm devices.
+	  Say Y if you want to support CPU frequency scaling on devices
+	  such as MSM8953, SDM632, etc.
+
 config KPSS_XCC
 	tristate "KPSS Clock Controller"
 	help
