@@ -101,6 +101,23 @@
 	status = "okay";
 };
 
+&i2c_2 {
+	status = "okay";
+
+	speaker_codec: audio-codec@3a {
+		compatible = "maxim,max98927";
+		reg = <0x3a>;
+
+		reset-gpios = <&tlmm 89 GPIO_ACTIVE_LOW>;
+
+		vmon-slot-no = <1>;
+		imon-slot-no = <1>;
+		interleave_mode = <0>;
+
+		#sound-dai-cells = <0>;
+	};
+};
+
 &i2c_3 {
 	status = "okay";
 
@@ -130,9 +147,6 @@
 
 		reset-gpios = <&tlmm 64 GPIO_ACTIVE_LOW>;
 
-		pinctrl-names = "default";
-		pinctrl-0 = <&ts_int_active>;
-
 		vcc-supply = <&pm8953_l10>;
 
 		touchscreen-size-x = <1080>;
@@ -154,6 +168,13 @@
 	qcom,ovp-milivolt = <29500>;
 };
 
+&q6afedai {
+	dai@22 {
+		reg = <QUINARY_MI2S_RX>;
+		qcom,sd-lines = <1>;
+	};
+};
+
 &sdhc_1 {
 	status = "okay";
 };
@@ -170,6 +191,21 @@
 
 &smd_rpm_regulators {
 	//TODO Supplies
+
+	s1 {
+		regulator-min-microvolt = <863000>;
+		regulator-max-microvolt = <1152000>;
+	};
+
+	s3 {
+		regulator-min-microvolt = <1224000>;
+		regulator-max-microvolt = <1224000>;
+	};
+
+	s4 {
+		regulator-min-microvolt = <1896000>;
+		regulator-max-microvolt = <2048000>;
+	};
 
 	l1 {
 		regulator-min-microvolt = <1000000>;
@@ -257,8 +293,40 @@
 	};
 };
 
+&sound_card {
+	status = "okay";
+
+	model = "xiaomi-mi-a2-lite";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act &cdc_pdm_comp_lines_act &pri_tlmm_default>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus &cdc_pdm_comp_lines_sus &pri_tlmm_default>;
+
+	quinary-mi2s-dai-link {
+		link-name = "Quinary MI2S";
+		cpu {
+			sound-dai = <&q6afedai QUINARY_MI2S_RX>;
+		};
+
+		platform {
+			sound-dai = <&q6routing>;
+		};
+
+		codec {
+			sound-dai = <&speaker_codec>;
+		};
+	};
+};
+
 &tlmm {
 	gpio-reserved-ranges = <0 4>, <16 4>, <135 4>;
+
+	pri_tlmm_default: pri-tlmm-pins {
+		pins = "gpio88", "gpio91", "gpio93";
+		function = "pri_mi2s";
+		drive-strength = <8>;
+		bias-disable;
+	};
 
 	pmx_mdss_default: pmx-mdss-default-pins {
 		pins = "gpio61", "gpio59";
@@ -273,13 +341,6 @@
 		function = "gpio";
 		drive-strenght = <2>;
 		bias-pull-down;
-	};
-
-	ts_int_active: ts-int-active-pins {
-		pins = "gpio65";
-		function = "gpio";
-		drive-strength = <8>;
-		bias-pull-up;
 	};
 };
 
