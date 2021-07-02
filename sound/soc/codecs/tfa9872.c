@@ -146,16 +146,19 @@ static const struct regmap_config tfa987x_regmap_config = {
 
 static bool tfa987x_setup_dcdc(struct device *dev, struct regmap *rmap, u16 rev)
 {
-	u32 mcc, dcvof, dcvos, dctrip, dctrip2;
+	u32 mcc, dcvof, dcvos, dctrip, dctrip2 = 0;
 	int i;
 	u32 *dest[] = { &mcc, &dcvof, &dcvos, &dctrip, &dctrip2 };
 	const char *props[] = { "max-coil-current",
-	      "first-boost-voltage", "second-boost-voltage", 
+	      "first-boost-voltage", "second-boost-voltage",
 	      "first-boost-trip-lvl", "second-boost-trip-lvl" };
 
-	for (i = 0; i < ARRAY_SIZE(props); i++)
-		if (of_property_read_u32(dev->of_node, props[i], dest[i]))
+	for (i = 0; i < ARRAY_SIZE(props); i++) {
+		int ret;
+		ret = of_property_read_u32(dev->of_node, props[i], dest[i]);
+		if (ret < 0 && ret != -EINVAL)
 			return false;
+	}
 
 	if (!FIELD_FIT(TFA987X_DCDC_CTRL0_MCC_MSK, mcc) ||
 	    !FIELD_FIT(TFA987X_DCDC_CTRL4_DCTRIP_MSK, dctrip) ||
@@ -168,39 +171,48 @@ static bool tfa987x_setup_dcdc(struct device *dev, struct regmap *rmap, u16 rev)
 		    !FIELD_FIT(TFA9872_DCDC_CTRL0_DCVOS_MSK, dcvos))
 			return false;
 
-		regmap_update_bits(rmap, TFA987X_DCDC_CTRL4,
-				TFA9872_DCDC_CTRL4_DCVOF_MSK,
-				FIELD_PREP(TFA9872_DCDC_CTRL4_DCVOF_MSK, dcvof));
-		regmap_update_bits(rmap, TFA987X_DCDC_CTRL0,
-				TFA9872_DCDC_CTRL0_DCVOS_MSK,
-				FIELD_PREP(TFA9872_DCDC_CTRL0_DCVOS_MSK, dcvos));
+		if (dcvof)
+			regmap_update_bits(rmap, TFA987X_DCDC_CTRL4,
+					TFA9872_DCDC_CTRL4_DCVOF_MSK,
+					FIELD_PREP(TFA9872_DCDC_CTRL4_DCVOF_MSK, dcvof));
+		if (dcvos)
+			regmap_update_bits(rmap, TFA987X_DCDC_CTRL0,
+					TFA9872_DCDC_CTRL0_DCVOS_MSK,
+					FIELD_PREP(TFA9872_DCDC_CTRL0_DCVOS_MSK, dcvos));
 		break;
 	case 0x74:
 		if (!FIELD_FIT(TFA9874_DCDC_CTRL6_DCVOF_MSK, dcvof) ||
 		    !FIELD_FIT(TFA9874_DCDC_CTRL6_DCVOS_MSK, dcvos))
 			return false;
 
-		regmap_update_bits(rmap, TFA987X_DCDC_CTRL6,
-				TFA9874_DCDC_CTRL6_DCVOF_MSK |
-				TFA9874_DCDC_CTRL6_DCVOS_MSK,
-				FIELD_PREP(TFA9874_DCDC_CTRL6_DCVOF_MSK, dcvof) |
-				FIELD_PREP(TFA9874_DCDC_CTRL6_DCVOS_MSK, dcvos));
+		if (dcvof)
+			regmap_update_bits(rmap, TFA987X_DCDC_CTRL6,
+					TFA9874_DCDC_CTRL6_DCVOF_MSK,
+					FIELD_PREP(TFA9874_DCDC_CTRL6_DCVOF_MSK, dcvof));
+
+		if (dcvos)
+			regmap_update_bits(rmap, TFA987X_DCDC_CTRL0,
+					TFA9874_DCDC_CTRL6_DCVOS_MSK,
+					FIELD_PREP(TFA9874_DCDC_CTRL6_DCVOS_MSK, dcvos));
 		break;
 	default:
 		return false;
 	}
 
-	regmap_update_bits(rmap, TFA987X_DCDC_CTRL4,
-				 TFA987X_DCDC_CTRL4_DCTRIP_MSK,
-				 FIELD_PREP(TFA987X_DCDC_CTRL4_DCTRIP_MSK, dctrip));
-	regmap_update_bits(rmap, TFA987X_DCDC_CTRL5,
-				 TFA987X_DCDC_CTRL5_DCTRIP2_MSK,
-				 FIELD_PREP(TFA987X_DCDC_CTRL5_DCTRIP2_MSK, dctrip2));
-	regmap_update_bits(rmap, TFA987X_DCDC_CTRL0,
-				 TFA987X_DCDC_CTRL0_MCC_MSK |
-				 TFA987X_DCDC_CTRL0_DCIE_MSK,
-				 FIELD_PREP(TFA987X_DCDC_CTRL0_MCC_MSK, mcc) |
-				 TFA987X_DCDC_CTRL0_DCIE_MSK);
+	if (dctrip)
+		regmap_update_bits(rmap, TFA987X_DCDC_CTRL4,
+					 TFA987X_DCDC_CTRL4_DCTRIP_MSK,
+					 FIELD_PREP(TFA987X_DCDC_CTRL4_DCTRIP_MSK, dctrip));
+	if (dctrip2)
+		regmap_update_bits(rmap, TFA987X_DCDC_CTRL5,
+					 TFA987X_DCDC_CTRL5_DCTRIP2_MSK,
+					 FIELD_PREP(TFA987X_DCDC_CTRL5_DCTRIP2_MSK, dctrip2));
+	if (mcc)
+		regmap_update_bits(rmap, TFA987X_DCDC_CTRL0,
+					 TFA987X_DCDC_CTRL0_MCC_MSK |
+					 TFA987X_DCDC_CTRL0_DCIE_MSK,
+					 FIELD_PREP(TFA987X_DCDC_CTRL0_MCC_MSK, mcc) |
+					 TFA987X_DCDC_CTRL0_DCIE_MSK);
 	return true;
 }
 
