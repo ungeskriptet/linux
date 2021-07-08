@@ -14,9 +14,32 @@
 	qcom,pmic-id = <0x20009 0x10013 0x0 0x0>;
 };
 
+&adsp_pil {
+	firmware-name = "qcom/msm8996/oneplus3t/adsp.mbn";
+};
+
+&gpu {
+	zap-shader {
+		firmware-name = "qcom/msm8996/oneplus3t/a530_zap.mbn";
+	};
+};
+
 &gpu_opp_table {
 	opp-652800000 {
 		opp-hz = /bits/ 64 <652800000>;
 		opp-supported-hw = <0x01>;
 	};
+};
+
+&mss_pil {
+	firmware-name = "qcom/msm8996/oneplus3t/mba.mbn",
+			"qcom/msm8996/oneplus3t/modem.mbn";
+};
+
+&slpi_pil {
+	firmware-name = "qcom/msm8996/oneplus3t/slpi.mbn";
+};
+
+&venus {
+	firmware-name = "qcom/msm8996/oneplus3t/venus.mbn";
 };
