@@ -330,6 +330,10 @@
 	};
 };
 
+&pmi8994_smbchg {
+	status = "okay";
+};
+
 &slpi_pil {
 	status = "okay";
 
@@ -348,6 +352,8 @@
 		/* usb3-phy is not used on this device */
 		phys = <&hsusb_phy1>;
 		phy-names = "usb2-phy";
+
+		vbus-supply = <&chg_otg>;
 
 		maximum-speed = "high-speed";
 		snps,is-utmi-l1-suspend;
