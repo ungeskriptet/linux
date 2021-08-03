@@ -26,6 +26,10 @@
 	regulator-pull-down;
 };
 
+&panel {
+	compatible = "sony,synaptics-jdi-keyaki";
+};
+
 &gpu {
 	zap-shader {
 		firmware-name = "qcom/msm8996/keyaki/a530_zap.mbn";
