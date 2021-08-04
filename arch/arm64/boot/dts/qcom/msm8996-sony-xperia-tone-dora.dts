@@ -26,3 +26,13 @@
 &usb3_id {
 	id-gpio = <&tlmm 24 GPIO_ACTIVE_LOW>;
 };
+
+&gpu {
+	zap-shader {
+		firmware-name = "qcom/msm8996/dora/a530_zap.mbn";
+	};
+};
+
+&venus {
+	firmware-name = "qcom/msm8996/dora/venus.mbn";
+};
