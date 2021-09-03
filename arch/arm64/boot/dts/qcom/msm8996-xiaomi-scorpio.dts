@@ -30,7 +30,7 @@
 			stride = <(1080 * 3)>;
 			format = "r8g8b8";
 
-			/* DSI0 and MDP SMMU clocks */
+			/* DSI0 clocks */
 			clocks = <&mmcc MDSS_MDP_CLK>,
 				 <&mmcc MMSS_MMAGIC_AHB_CLK>,
 				 <&mmcc MDSS_AHB_CLK>,
@@ -38,9 +38,7 @@
 				 <&mmcc MMSS_MISC_AHB_CLK>,
 				 <&mmcc MDSS_BYTE0_CLK>,
 				 <&mmcc MDSS_PCLK0_CLK>,
-				 <&mmcc MDSS_ESC0_CLK>,
-				 <&mmcc SMMU_MDP_AHB_CLK>,
-				 <&mmcc SMMU_MDP_AXI_CLK>;
+				 <&mmcc MDSS_ESC0_CLK>;
 
 			/* MDSS power domain */
 			power-domains = <&mmcc MDSS_GDSC>;
@@ -97,16 +95,16 @@
 
 &mdp_smmu {
 	/*
-	 * Probing this SMMU causes a crash due to writing to some secure
-	 * registers. Disable it for now.
+	 * These are required to avoid crashing
 	 */
-	status = "disabled";
+	qcom,no-smr-check;
+	qcom,skip-init;
 };
 
 &mdss {
 	/*
-	 * MDSS depends on the MDP SMMU, and probing it alters the bootloader
-	 * configured framebuffer used by simplefb. Disable it for now.
+	 * Probing MDSS alters the bootloader configured framebuffer used by
+	 * simplefb. Disable it for now.
 	 */
 	status = "disabled";
 };
