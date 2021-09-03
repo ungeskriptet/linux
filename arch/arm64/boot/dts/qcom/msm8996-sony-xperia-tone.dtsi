@@ -27,7 +27,7 @@
 		 * Due to an unknown-for-a-few-years regression,
 		 * SDHCI only works on MSM8996 in PIO (lame) mode.
 		 */
-		bootargs = "sdhci.debug_quirks=0x40 sdhci.debug_quirks2=0x4 maxcpus=2";
+		bootargs = "sdhci.debug_quirks=0x40 sdhci.debug_quirks2=0x4";
 	};
 
 	reserved-memory {
