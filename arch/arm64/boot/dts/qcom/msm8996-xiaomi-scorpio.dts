@@ -30,6 +30,8 @@
 			stride = <(1080 * 3)>;
 			format = "r8g8b8";
 
+			display = <&panel>;
+
 			/* DSI0 clocks */
 			clocks = <&mmcc MDSS_MDP_CLK>,
 				 <&mmcc MMSS_MMAGIC_AHB_CLK>,
@@ -50,6 +52,36 @@
 			reg = <0x0 0x83401000 0x0 (1080 * 1920 * 3)>;
 			no-map;
 		};
+	};
+
+	vlin1_7v3: vlin1-7v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "vlin1_7v3";
+		regulator-min-microvolt = <7300000>;
+		regulator-max-microvolt = <7300000>;
+		vin-supply = <&vph_pwr>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	elvdd: elvdd {
+		compatible = "regulator-fixed";
+		regulator-name = "elvdd";
+		regulator-min-microvolt = <4600000>;
+		regulator-max-microvolt = <4600000>;
+		vin-supply = <&vph_pwr>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	elvss: elvss {
+		compatible = "regulator-fixed";
+		regulator-name = "elvss";
+		regulator-min-microvolt = <(-2500000)>;
+		regulator-max-microvolt = <(-2500000)>;
+		vin-supply = <&vph_pwr>;
+		regulator-always-on;
+		regulator-boot-on;
 	};
 };
 
@@ -87,6 +119,30 @@
 	};
 };
 
+&dsi0 {
+	panel: panel@0 {
+		compatible = "lgphilips,sw43101";
+		reg = <0>;
+
+		reset-gpios = <&tlmm 8 GPIO_ACTIVE_LOW>;
+
+		vdd-supply = <&vreg_l14a_1p8>;
+		avdd-supply = <&vlin1_7v3>;
+		elvdd-supply = <&elvdd>;
+		elvss-supply = <&elvss>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi0_out>;
+			};
+		};
+	};
+};
+
+&dsi0_out {
+	remote-endpoint = <&panel_in>;
+};
+
 &gpu {
 	zap-shader {
 		firmware-name = "qcom/msm8996/scorpio/a530_zap.mbn";
@@ -105,15 +161,7 @@
 	 * and losing simplefb as a result. MMAGIC_MDSS_GDSC is flagged
 	 * always-on so it does not need any consumers to stay on.
 	 */
-	 /delete-property/ power-domains;
-};
-
-&mdss {
-	/*
-	 * Probing MDSS alters the bootloader configured framebuffer used by
-	 * simplefb. Disable it for now.
-	 */
-	status = "disabled";
+	/delete-property/ power-domains;
 };
 
 &mss_pil {
