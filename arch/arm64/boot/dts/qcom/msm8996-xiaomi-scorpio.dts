@@ -55,6 +55,13 @@
 		};
 	};
 
+	irled {
+		compatible = "pwm-ir-tx";
+		pwms = <&pm8994_lpg 1 1000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&irled_default>;
+	};
+
 	reserved-memory {
 		cont_splash_mem: memory@83401000 {
 			reg = <0x0 0x83401000 0x0 (1080 * 1920 * 3)>;
@@ -189,6 +196,31 @@
 	qcom,wave-shape = <HAP_WAVE_SINE>;
 	qcom,wave-play-rate-us = <5000>;
 	qcom,vmax-mv = <2830>;
+};
+
+&pm8994_lpg {
+	status = "okay";
+
+	#pwm-cells = <2>;
+
+	qcom,power-source = <1>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&keypad_default>;
+
+	led@3 {
+		reg = <3>;
+		color = <LED_COLOR_ID_WHITE>;
+		function = LED_FUNCTION_KBD_BACKLIGHT;
+		function-enumerator = <1>;
+	};
+
+	led@6 {
+		reg = <6>;
+		color = <LED_COLOR_ID_WHITE>;
+		function = LED_FUNCTION_KBD_BACKLIGHT;
+		function-enumerator = <0>;
+	};
 };
 
 &q6asmdai {
@@ -333,6 +365,29 @@
 		"PMIC_SLB",		/* GPIO_20 */
 		"UIM_BATT_ALARM",	/* GPIO_21 */
 		"NC";			/* GPIO_22 */
+
+	irled_default: irled-default {
+		pinconf {
+			pins = "gpio5";
+			function = PMIC_GPIO_FUNC_FUNC1;
+			output-low;
+			qcom,drive-strength = <PMIC_GPIO_STRENGTH_HIGH>;
+			power-source = <PM8994_GPIO_S4>;
+			bias-disable;
+		};
+	};
+
+	keypad_default: keypad-default {
+		pinconf {
+			pins = "gpio7", "gpio10";
+			function = PMIC_GPIO_FUNC_FUNC1;
+			output-low;
+			qcom,drive-strength = <PMIC_GPIO_STRENGTH_LOW>;
+			power-source = <PM8994_GPIO_S4>;
+			bias-disable;
+		};
+	};
+
 };
 
 &pm8994_mpps {
