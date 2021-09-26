@@ -235,7 +235,8 @@
 &dsi0 {
 	status = "okay";
 
-	vdd-supply = <&vreg_l2a_1p25>;
+	vdda-supply = <&vreg_l2a_1p25>;
+	vcca-supply = <&vreg_l28a_0p925>;
 	vddio-supply = <&vreg_l14a_1p8>;
 
 	pinctrl-names = "default", "sleep";
