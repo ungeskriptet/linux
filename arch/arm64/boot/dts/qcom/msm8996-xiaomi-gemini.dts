@@ -126,6 +126,11 @@
 	};
 };
 
+&mss_pil {
+	firmware-name = "qcom/msm8996/gemini/mba.mbn",
+			"qcom/msm8996/gemini/modem.mbn";
+};
+
 &pmi8994_wled {
 	status = "okay";
 };
@@ -142,6 +147,10 @@
 	dai@2 {
 		reg = <2>;
 	};
+};
+
+&slpi_pil {
+	firmware-name = "qcom/msm8996/gemini/slpi.mbn";
 };
 
 &sound {
