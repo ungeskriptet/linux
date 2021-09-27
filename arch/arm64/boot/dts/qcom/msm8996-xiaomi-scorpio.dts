@@ -17,6 +17,14 @@
 	qcom,msm-id = <305 0x10000>;
 	qcom,board-id = <34 0>;
 
+	battery: battery {
+		compatible = "simple-battery";
+
+		charge-full-design-microamp-hours = <4070000>;
+		voltage-min-design-microvolt = <3400000>;
+		voltage-max-design-microvolt = <4400000>;
+	};
+
 	chosen {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -167,6 +175,10 @@
 &mss_pil {
 	firmware-name = "qcom/msm8996/scorpio/mba.mbn",
 			"qcom/msm8996/scorpio/modem.mbn";
+};
+
+&pmi8994_fg {
+	monitored-battery = <&battery>;
 };
 
 &q6asmdai {

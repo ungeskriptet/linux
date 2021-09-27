@@ -297,6 +297,10 @@
 	linux,code = <KEY_VOLUMEDOWN>;
 };
 
+&pmi8994_fg {
+	status = "okay";
+};
+
 &slpi_pil {
 	status = "okay";
 
