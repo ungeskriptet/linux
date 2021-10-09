@@ -70,11 +70,11 @@ enum _pmux_input {
 
 enum {
 	CBF_PLL_INDEX = 1,
-	CBF_DIV_2_INDEX,
+	CBF_DIV_INDEX,
 	CBF_SAFE_INDEX
 };
 
-#define DIV_2_THRESHOLD		600000000
+#define DIV_THRESHOLD		600000000
 #define PWRCL_REG_OFFSET 0x0
 #define PERFCL_REG_OFFSET 0x80000
 #define MUX_OFFSET	0x40
@@ -138,6 +138,17 @@ static const struct alpha_pll_config cbfpll_config = {
 	.pre_div_mask = BIT(12),
 	.post_div_mask = 0x3 << 8,
 	.post_div_val = 0x1 << 8,
+	.main_output_mask = BIT(0),
+	.early_output_mask = BIT(3),
+};
+
+static const struct alpha_pll_config cbfpll_config_pro = {
+	.l = 72,
+	.config_ctl_val = 0x200d4aa8,
+	.config_ctl_hi_val = 0x006,
+	.pre_div_mask = BIT(12),
+	.post_div_mask = 0x3 << 8,
+	.post_div_val = 0x3 << 8,
 	.main_output_mask = BIT(0),
 	.early_output_mask = BIT(3),
 };
@@ -230,7 +241,8 @@ struct clk_cpu_8996_mux {
 	u8	width;
 	struct notifier_block nb;
 	struct clk_hw	*pll;
-	struct clk_hw	*pll_div_2;
+	struct clk_hw	*pll_div;
+	u8 div;
 	struct clk_regmap clkr;
 };
 
@@ -280,11 +292,11 @@ static int clk_cpu_8996_mux_determine_rate(struct clk_hw *hw,
 	struct clk_cpu_8996_mux *cpuclk = to_clk_cpu_8996_mux_hw(hw);
 	struct clk_hw *parent = cpuclk->pll;
 
-	if (cpuclk->pll_div_2 && req->rate < DIV_2_THRESHOLD) {
-		if (req->rate < (DIV_2_THRESHOLD / 2))
+	if (cpuclk->pll_div && req->rate < DIV_THRESHOLD) {
+		if (req->rate < (DIV_THRESHOLD / cpuclk->div))
 			return -EINVAL;
 
-		parent = cpuclk->pll_div_2;
+		parent = cpuclk->pll_div;
 	}
 
 	req->best_parent_rate = clk_hw_round_rate(parent, req->rate);
@@ -336,7 +348,8 @@ static struct clk_cpu_8996_mux pwrcl_pmux = {
 	.shift = 0,
 	.width = 2,
 	.pll = &pwrcl_pll.clkr.hw,
-	.pll_div_2 = &pwrcl_smux.clkr.hw,
+	.pll_div = &pwrcl_smux.clkr.hw,
+	.div = 2,
 	.nb.notifier_call = cpu_clk_notifier_cb,
 	.clkr.hw.init = &(struct clk_init_data) {
 		.name = "pwrcl_pmux",
@@ -358,7 +371,8 @@ static struct clk_cpu_8996_mux perfcl_pmux = {
 	.shift = 0,
 	.width = 2,
 	.pll = &perfcl_pll.clkr.hw,
-	.pll_div_2 = &perfcl_smux.clkr.hw,
+	.pll_div = &perfcl_smux.clkr.hw,
+	.div = 2,
 	.nb.notifier_call = cpu_clk_notifier_cb,
 	.clkr.hw.init = &(struct clk_init_data) {
 		.name = "perfcl_pmux",
@@ -481,19 +495,23 @@ static int qcom_cbf_clk_msm8996_register_clks(struct device *dev,
 					      struct regmap *regmap)
 {
 	int ret;
+	bool is_pro = of_device_is_compatible(dev->of_node, "qcom,msm8996pro-apcc");
 
-	cbf_mux.pll_div_2 = clk_hw_register_fixed_factor(dev, "cbf_pll_main",
-						      "cbf_pll", CLK_SET_RATE_PARENT,
-						      1, 2);
-	if (IS_ERR(cbf_mux.pll_div_2)) {
+	cbf_mux.div = is_pro ? 4 : 2;
+	cbf_mux.pll_div = clk_hw_register_fixed_factor(dev, "cbf_pll_main",
+						       "cbf_pll", CLK_SET_RATE_PARENT,
+						       1, cbf_mux.div);
+
+	if (IS_ERR(cbf_mux.pll_div)) {
 		dev_err(dev, "Failed to initialize cbf_pll_main\n");
-		return PTR_ERR(cbf_mux.pll_div_2);
+		return PTR_ERR(cbf_mux.pll_div);
 	}
 
 	ret = devm_clk_register_regmap(dev, cbf_msm8996_clks[0]);
 	ret = devm_clk_register_regmap(dev, cbf_msm8996_clks[1]);
 
-	clk_alpha_pll_configure(&cbf_pll, regmap, &cbfpll_config);
+	clk_alpha_pll_configure(&cbf_pll, regmap, is_pro ?
+				&cbfpll_config_pro : &cbfpll_config);
 	clk_set_rate(cbf_pll.clkr.hw.clk, 614400000);
 	clk_prepare_enable(cbf_pll.clkr.hw.clk);
 	clk_notifier_register(cbf_mux.clkr.hw.clk, &cbf_mux.nb);
@@ -575,7 +593,7 @@ static int cpu_clk_notifier_cb(struct notifier_block *nb, unsigned long event,
 		qcom_cpu_clk_msm8996_acd_init(base);
 		break;
 	case POST_RATE_CHANGE:
-		if (cnd->new_rate < DIV_2_THRESHOLD)
+		if (cnd->new_rate < DIV_THRESHOLD)
 			ret = clk_cpu_8996_mux_set_parent(&cpuclk->clkr.hw,
 							  DIV_2_INDEX);
 		else
@@ -600,15 +618,15 @@ static int cbf_clk_notifier_cb(struct notifier_block *nb, unsigned long event,
 
 	switch (event) {
 	case PRE_RATE_CHANGE:
-		parent = clk_hw_get_parent_by_index(&cbfclk->clkr.hw, CBF_DIV_2_INDEX);
-		ret = clk_cpu_8996_mux_set_parent(&cbfclk->clkr.hw, CBF_DIV_2_INDEX);
+		parent = clk_hw_get_parent_by_index(&cbfclk->clkr.hw, CBF_DIV_INDEX);
+		ret = clk_cpu_8996_mux_set_parent(&cbfclk->clkr.hw, CBF_DIV_INDEX);
 
-		if (cnd->old_rate > DIV_2_THRESHOLD && cnd->new_rate < DIV_2_THRESHOLD)
-			ret = clk_set_rate(parent->clk, cnd->old_rate / 2);
+		if (cnd->old_rate > DIV_THRESHOLD && cnd->new_rate < DIV_THRESHOLD)
+			ret = clk_set_rate(parent->clk, cnd->old_rate / cbfclk->div);
 		break;
 	case POST_RATE_CHANGE:
-		if (cnd->new_rate < DIV_2_THRESHOLD)
-			ret = clk_cpu_8996_mux_set_parent(&cbfclk->clkr.hw, CBF_DIV_2_INDEX);
+		if (cnd->new_rate < DIV_THRESHOLD)
+			ret = clk_cpu_8996_mux_set_parent(&cbfclk->clkr.hw, CBF_DIV_INDEX);
 		else {
 			parent = clk_hw_get_parent_by_index(&cbfclk->clkr.hw, CBF_PLL_INDEX);
 			ret = clk_set_rate(parent->clk, cnd->new_rate);
@@ -676,6 +694,7 @@ static int qcom_cpu_clk_msm8996_driver_remove(struct platform_device *pdev)
 
 static const struct of_device_id qcom_cpu_clk_msm8996_match_table[] = {
 	{ .compatible = "qcom,msm8996-apcc" },
+	{ .compatible = "qcom,msm8996pro-apcc" },
 	{}
 };
 MODULE_DEVICE_TABLE(of, qcom_cpu_clk_msm8996_match_table);
