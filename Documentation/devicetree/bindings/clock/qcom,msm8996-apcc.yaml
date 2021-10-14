@@ -10,8 +10,8 @@ maintainers:
   - Loic Poulain <loic.poulain@linaro.org>
 
 description: |
-  Qualcomm CPU clock controller for MSM8996 CPUs, clock 0 is for Power cluster
-  and clock 1 is for Perf cluster.
+  Qualcomm CPU clock controller for MSM8996 CPUs, clock 0 is for Power cluster,
+  clock 1 is for Perf cluster, and clock 2 is for Coherent bus fabric (CBF).
 
 properties:
   compatible:
@@ -19,7 +19,9 @@ properties:
       - qcom,msm8996-apcc
 
   reg:
-    maxItems: 1
+    items:
+      - description: Cluster clock registers
+      - description: CBF clock registers
 
   '#clock-cells':
     const: 1
@@ -49,6 +51,6 @@ examples:
   - |
     kryocc: clock-controller@6400000 {
         compatible = "qcom,msm8996-apcc";
-        reg = <0x6400000 0x90000>;
+        reg = <0x6400000 0x90000>, <0x09a11000 0x10000>;
         #clock-cells = <1>;
     };
