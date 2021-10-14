@@ -17,6 +17,7 @@ properties:
   compatible:
     enum:
       - qcom,msm8996-apcc
+      - qcom,msm8996pro-apcc
 
   reg:
     items:
