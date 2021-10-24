@@ -220,6 +220,15 @@ config DRM_PANEL_JDI_LT070ME05000
 	  The panel has a 1200(RGB)×1920 (WUXGA) resolution and uses
 	  24 bit per pixel.
 
+config DRM_PANEL_FAIRPHONE_FP3_HX83112B
+	tristate "HX83112B DSI panel used in Fairphone 3"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for the panel using
+	  HX83112B as found in Fairphone 3 devices.
+
 config DRM_PANEL_KHADAS_TS050
 	tristate "Khadas TS050 panel"
 	depends on OF
