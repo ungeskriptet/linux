@@ -1147,6 +1147,22 @@ int qcom_scm_qsmmu500_wait_safe_toggle(bool en)
 }
 EXPORT_SYMBOL(qcom_scm_qsmmu500_wait_safe_toggle);
 
+int qcom_scm_smmu_set_cb_format(int sec_id, int cbndx, int val)
+{
+	struct qcom_scm_desc desc = {
+		.svc = QCOM_SCM_SVC_SMMU_PROGRAM,
+		.cmd = QCOM_SCM_SMMU_CHANGE_PT_FORMAT,
+		.arginfo = QCOM_SCM_ARGS(3),
+		.args[0] = sec_id,
+		.args[1] = cbndx,
+		.args[2] = val,
+		.owner = ARM_SMCCC_OWNER_SIP,
+	};
+
+	return qcom_scm_call_atomic(__scm->dev, &desc, NULL);
+}
+EXPORT_SYMBOL(qcom_scm_smmu_set_cb_format);
+
 bool qcom_scm_lmh_dcvsh_available(void)
 {
 	return __qcom_scm_is_call_available(__scm->dev, QCOM_SCM_SVC_LMH, QCOM_SCM_LMH_LIMIT_DCVSH);
