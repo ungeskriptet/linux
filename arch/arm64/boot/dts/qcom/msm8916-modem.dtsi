@@ -6,6 +6,14 @@
 	status = "okay";
 };
 
+&bam_dmux {
+	status = "okay";
+};
+
+&bam_dmux_dma {
+	status = "okay";
+};
+
 &lpass {
 	status = "reserved"; /* Controlled by QDSP6 */
 };
