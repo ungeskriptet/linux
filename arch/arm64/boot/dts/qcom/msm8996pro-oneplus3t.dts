@@ -2,6 +2,7 @@
 
 /dts-v1/;
 
+#include "msm8996pro.dtsi"
 #include "msm8996-oneplus3.dtsi"
 
 / {
@@ -10,7 +11,6 @@
 	qcom,board-id = <8 0 15811 26>,
 			<8 0 15811 27>,
 			<8 0 15811 28>;
-	qcom,msm-id = <305 0x10000>;
 	qcom,pmic-id = <0x20009 0x10013 0x0 0x0>;
 };
 
@@ -21,13 +21,6 @@
 &gpu {
 	zap-shader {
 		firmware-name = "qcom/msm8996/oneplus3t/a530_zap.mbn";
-	};
-};
-
-&gpu_opp_table {
-	opp-652800000 {
-		opp-hz = /bits/ 64 <652800000>;
-		opp-supported-hw = <0x01>;
 	};
 };
 

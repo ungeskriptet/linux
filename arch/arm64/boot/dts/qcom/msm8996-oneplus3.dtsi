@@ -3,7 +3,6 @@
  * Copyright (c) 2020, The Linux Foundation. All rights reserved.
  */
 
-#include "msm8996.dtsi"
 #include "pm8994.dtsi"
 #include "pmi8994.dtsi"
 #include <dt-bindings/input/input.h>

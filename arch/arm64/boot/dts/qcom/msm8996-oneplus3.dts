@@ -2,6 +2,7 @@
 
 /dts-v1/;
 
+#include "msm8996.dtsi"
 #include "msm8996-oneplus3.dtsi"
 
 / {
