@@ -91,6 +91,8 @@
 				     <0x2 0x44 0x0 IRQ_TYPE_EDGE_BOTH>;
 			interrupt-names = "soc-delta", "mem-avail";
 
+			power-supplies = <&pmi8994_smbchg>;
+
 			status = "disabled";
 		};
 
