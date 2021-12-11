@@ -330,6 +330,12 @@ int qnoc_probe(struct platform_device *pdev)
 			dev_err(dev, "Cannot regmap interconnect bus resource\n");
 			return PTR_ERR(qp->regmap);
 		}
+	} else if (desc->inherit_regmap) {
+		qp->regmap = dev_get_regmap(dev->parent, NULL);
+		if (IS_ERR_OR_NULL(qp->regmap)) {
+			dev_err(dev, "Failed to get regmap for bus resource\n");
+			return qp->regmap ? PTR_ERR(qp->regmap) : -ENODEV;
+		}
 	}
 
 	ret = devm_clk_bulk_get(dev, qp->num_clks, qp->bus_clks);

@@ -79,6 +79,7 @@ struct qcom_icc_desc {
 	size_t num_clocks;
 	bool is_bimc_node;
 	const struct regmap_config *regmap_cfg;
+	bool inherit_regmap;
 	unsigned int qos_offset;
 };
 
