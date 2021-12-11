@@ -89,7 +89,7 @@ struct at24_data {
 	u8 flags;
 
 	struct nvmem_device *nvmem;
-	struct regulator *vcc_reg;
+	struct regulator_bulk_data vregs[2];
 	void (*read_post)(unsigned int off, char *buf, size_t count);
 
 	/*
@@ -694,10 +694,13 @@ static int at24_probe(struct i2c_client *client)
 	at24->offset_adj = at24_get_offset_adj(flags, byte_len);
 	at24->client[0].client = client;
 	at24->client[0].regmap = regmap;
+	at24->vregs[0].supply = "vcc";
+	at24->vregs[1].supply = "vio";
 
-	at24->vcc_reg = devm_regulator_get(dev, "vcc");
-	if (IS_ERR(at24->vcc_reg))
-		return PTR_ERR(at24->vcc_reg);
+	err = devm_regulator_bulk_get(dev, ARRAY_SIZE(at24->vregs),
+						at24->vregs);
+	if (err)
+		return err;
 
 	writable = !(flags & AT24_FLAG_READONLY);
 	if (writable) {
@@ -750,9 +753,9 @@ static int at24_probe(struct i2c_client *client)
 
 	full_power = acpi_dev_state_d0(&client->dev);
 	if (full_power) {
-		err = regulator_enable(at24->vcc_reg);
+		err = regulator_bulk_enable(ARRAY_SIZE(at24->vregs), at24->vregs);
 		if (err) {
-			dev_err(dev, "Failed to enable vcc regulator\n");
+			dev_err(dev, "Failed to enable regulators\n");
 			return err;
 		}
 
@@ -764,7 +767,7 @@ static int at24_probe(struct i2c_client *client)
 	if (IS_ERR(at24->nvmem)) {
 		pm_runtime_disable(dev);
 		if (!pm_runtime_status_suspended(dev))
-			regulator_disable(at24->vcc_reg);
+			regulator_bulk_disable(ARRAY_SIZE(at24->vregs), at24->vregs);
 		return PTR_ERR(at24->nvmem);
 	}
 
@@ -778,7 +781,7 @@ static int at24_probe(struct i2c_client *client)
 		if (err) {
 			pm_runtime_disable(dev);
 			if (!pm_runtime_status_suspended(dev))
-				regulator_disable(at24->vcc_reg);
+				regulator_bulk_disable(ARRAY_SIZE(at24->vregs), at24->vregs);
 			return -ENODEV;
 		}
 	}
@@ -802,7 +805,7 @@ static int at24_remove(struct i2c_client *client)
 	pm_runtime_disable(&client->dev);
 	if (acpi_dev_state_d0(&client->dev)) {
 		if (!pm_runtime_status_suspended(&client->dev))
-			regulator_disable(at24->vcc_reg);
+			regulator_bulk_disable(ARRAY_SIZE(at24->vregs), at24->vregs);
 		pm_runtime_set_suspended(&client->dev);
 	}
 
@@ -814,7 +817,7 @@ static int __maybe_unused at24_suspend(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct at24_data *at24 = i2c_get_clientdata(client);
 
-	return regulator_disable(at24->vcc_reg);
+	return regulator_bulk_disable(ARRAY_SIZE(at24->vregs), at24->vregs);
 }
 
 static int __maybe_unused at24_resume(struct device *dev)
@@ -822,7 +825,7 @@ static int __maybe_unused at24_resume(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct at24_data *at24 = i2c_get_clientdata(client);
 
-	return regulator_enable(at24->vcc_reg);
+	return regulator_bulk_enable(ARRAY_SIZE(at24->vregs), at24->vregs);
 }
 
 static const struct dev_pm_ops at24_pm_ops = {
