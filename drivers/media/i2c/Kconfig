@@ -147,6 +147,20 @@ config VIDEO_IMX290
 	  To compile this driver as a module, choose M here: the
 	  module will be called imx290.
 
+config VIDEO_IMX318
+	tristate "Sony IMX318 sensor support"
+	depends on I2C && VIDEO_DEV
+	select V4L2_FWNODE
+	select MEDIA_CONTROLLER
+	select VIDEO_V4L2_SUBDEV_API
+	select REGMAP_I2C
+	help
+	  This is a Video4Linux2 sensor driver for the Sony
+	  IMX318 camera.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called imx318.
+
 config VIDEO_IMX319
 	tristate "Sony IMX319 sensor support"
 	depends on I2C && VIDEO_DEV
