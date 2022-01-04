@@ -186,7 +186,12 @@ properties:
               - sony,kagura-row
               - sony,keyaki-row
               - xiaomi,gemini
+          - const: qcom,msm8996
+
+      - items:
+          - enum:
               - xiaomi,scorpio
+          - const: qcom,msm8996pro
           - const: qcom,msm8996
 
       - items:
