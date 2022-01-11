@@ -210,6 +210,11 @@ properties:
 
       - items:
           - enum:
+              - samsung,a6plte
+          - const: qcom,sdm450
+
+      - items:
+          - enum:
               - fairphone,fp3
           - const: qcom,sdm632
 
