@@ -42,8 +42,34 @@
 	};
 };
 
+&dsi0 {
+	panel@0 {
+		compatible = "fairphone,fp3-hx83112b";
+		reg = <0>;
+
+		reset-gpios = <&tlmm 61 GPIO_ACTIVE_LOW>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi0_out>;
+			};
+		};
+	};
+};
+
+&dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
 &hsusb_phy {
 	status = "okay";
+};
+
+&i2c_3 {
+	status = "okay";
+
+	/* Himax touchscreen @ 0x48 */
 };
 
 &pm8953_resin {
