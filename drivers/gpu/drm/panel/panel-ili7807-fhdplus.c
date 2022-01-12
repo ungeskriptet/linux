@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0 or later
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <linux/delay.h>
 #include <linux/gpio/consumer.h>
@@ -267,4 +267,4 @@ module_mipi_dsi_driver(ili7807_fhdplus_driver);
 
 MODULE_AUTHOR("Petr Blaha <petr.blaha@cleverdata.cz>");
 MODULE_DESCRIPTION("DRM driver for ili7807 fhdplus video mode dsi panel");
-MODULE_LICENSE("GPL v2 or later");
+MODULE_LICENSE("GPL v2");
