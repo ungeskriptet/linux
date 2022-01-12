@@ -258,6 +258,38 @@
 	};
 };
 
+&i2c_8 {
+	status = "okay";
+
+	extcon0: extcon@25 {
+		compatible = "siliconmitus,sm5708-muic";
+		reg = <0x25>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <63 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	pmic@49 {
+		compatible = "siliconmitus,sm5708";
+		reg = <0x49>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <60 IRQ_TYPE_EDGE_FALLING>;
+
+		charger: sm5708-charger {
+			compatible = "siliconmitus,sm5708-charger";
+
+			extcon = <&extcon0>;
+
+			enable-gpios = <&tlmm 34 GPIO_ACTIVE_HIGH>;
+
+			charge-current = <1800>;
+			float-voltage = <4100>;
+			input-current = <1500>;
+		};
+	};
+};
+
 &i2c_12 {
 	expander: gpio@20 {
 		compatible = "nxp,pcal6416";
@@ -270,6 +302,18 @@
 
 		gpio-controller;
 		#gpio-cells = <2>;
+	};
+};
+
+&i2c_13 {
+	fuelgauge@71 {
+		compatible = "sm5708-battery,a6plte";
+		reg = <0x71>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <62 IRQ_TYPE_LEVEL_HIGH>;
+
+		power-supplies = <&charger>;
 	};
 };
 
@@ -435,8 +479,10 @@
 
 &usb3 {
 	status = "okay";
+	extcon = <&extcon0>, <&extcon0>;
 };
 
 &usb3_dwc3 {
-	dr_mode = "peripheral";
+	dr_mode = "otg";
+	extcon = <&extcon0>, <&extcon0>;
 };
