@@ -70,7 +70,7 @@
 
 &dsi0 {
 	panel: panel@0 {
-		compatible = "himax,hx8399c-fhdplus";
+		compatible = "xiaomi,daisy-panel";
 		reg = <0>;
 
 		backlight = <&pmi8950_wled>;
