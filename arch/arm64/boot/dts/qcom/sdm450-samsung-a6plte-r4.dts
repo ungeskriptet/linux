@@ -258,6 +258,24 @@
 	};
 };
 
+&i2c_5 {
+	status = "okay";
+
+	speaker_codec: audio-codec@34 {
+		compatible = "nxp,tfa9872";
+		reg = <0x34>;
+
+		max-coil-current = <12>;
+		first-boost-voltage = <4>;
+		first-boost-trip-lvl = <7>;
+		second-boost-voltage = <5>;
+		second-boost-trip-lvl = <5>;
+
+		#sound-dai-cells = <0>;
+		status = "okay";
+	};
+};
+
 &i2c_8 {
 	status = "okay";
 
@@ -336,6 +354,13 @@
 &pm8953_resin {
 	status = "okay";
 	linux,code = <KEY_VOLUMEDOWN>;
+};
+
+&q6afedai {
+	dai@22 {
+		reg = <QUATERNARY_MI2S_RX>;
+		qcom,sd-lines = <0>;
+	};
 };
 
 &sdhc_1 {
@@ -450,9 +475,41 @@
 	};
 };
 
+&sound_card {
+	status = "okay";
+
+	model = "samsung-a2015";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&cdc_pdm_lines_act &cdc_pdm_lines_2_act &cdc_pdm_comp_lines_act &quat_tlmm_default>;
+	pinctrl-1 = <&cdc_pdm_lines_sus &cdc_pdm_lines_2_sus &cdc_pdm_comp_lines_act &quat_tlmm_default>;
+
+	quaternary-mi2s-dai-link {
+		link-name = "Quaternary MI2S";
+		cpu {
+			sound-dai = <&q6afedai QUATERNARY_MI2S_RX>;
+		};
+
+		platform {
+			sound-dai = <&q6routing>;
+		};
+
+		codec {
+			sound-dai = <&speaker_codec>;
+		};
+	};
+};
+
 &tlmm {
 	/* Fingerprint sensor at SPI4 (BLSP1 QUP4) */
 	gpio-reserved-ranges = <12 4>;
+
+	quat_tlmm_default: quat-tlmm-pins {
+		pins = "gpio135", "gpio136", "gpio137", "gpio138";
+		function = "sec_mi2s";
+		drive-strength = <8>;
+		bias-disable;
+	};
 
 	expander_reset_deasserted: expander-reset-pins {
 		pins = "gpio33";
@@ -485,4 +542,13 @@
 &usb3_dwc3 {
 	dr_mode = "otg";
 	extcon = <&extcon0>, <&extcon0>;
+};
+
+&wcd_codec {
+	jack-gpios = <&tlmm 48 GPIO_ACTIVE_LOW>;
+	qcom,micbias-lvl = <2800>;
+	qcom,micbias1-ext-cap;
+	qcom,micbias2-ext-cap;
+	qcom,mbhc-vthreshold-low = <150 237 450 500 600>;
+	qcom,mbhc-vthreshold-high = <150 237 450 500 600>;
 };
