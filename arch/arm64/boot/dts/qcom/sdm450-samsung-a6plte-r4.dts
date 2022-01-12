@@ -209,6 +209,33 @@
 	};
 };
 
+&dsi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mdss_te_default>;
+
+	panel@0 {
+		compatible = "samsung,s6e3fa7-ams604nl01-fhd";
+		reg = <0>;
+
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&panel_active>;
+		pinctrl-1 = <&panel_sleep>;
+
+		reset-gpios = <&tlmm 50 GPIO_ACTIVE_LOW>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi0_out>;
+			};
+		};
+	};
+};
+
+&dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
 &hsusb_phy {
 	status = "okay";
 };
@@ -389,6 +416,20 @@
 		drive-strength = <2>;
 		bias-disable;
 		output-high;
+	};
+
+	panel_active: panel-default-pins {
+		pins = "gpio35", "gpio93";
+		function = "gpio";
+		drive-strength = <8>;
+		output-high;
+	};
+
+	panel_sleep: panel-sleep-pins {
+		pins = "gpio35", "gpio93";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
 	};
 };
 
