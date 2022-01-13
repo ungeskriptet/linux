@@ -932,11 +932,40 @@
 				      "rbbmtimer",
 				      "alwayson";
 
-			power-domains = <&gcc OXILI_GX_GDSC>;
+			power-domains = <&gcc OXILI_CX_GDSC>,
+					<&gcc OXILI_GX_GDSC>,
+					<&rpmpd MSM8953_VDDCX>;
+			power-domain-names = "cx", "gx", "pstate";
 
 			iommus = <&gpu_iommu 0 1>;
 
+			operating-points-v2 = <&gpu_opp_table>;
+
 			#cooling-cells = <2>;
+
+			gpu_opp_table: opp-table {
+				compatible  ="operating-points-v2";
+
+// TODO expand this
+#define GPU_OPP(freq_khz, peakBW, lvl, supp)		\
+	opp-##freq_khz##000 {				\
+		opp-hz = /bits/ 64 <freq_khz##000>;	\
+		opp-supported-hw = <supp>;		\
+		opp-avg-kBps = <0>, <(peakBW/4)>;	\
+		opp-peak-kBps = <peakBW>, <(peakBW/2)>;	\
+		required-opps = <&lvl>;			\
+	}
+
+				GPU_OPP(200000, 1689600, rpmpd_opp_low_svs, 0xff);
+				GPU_OPP(266670, 3072000, rpmpd_opp_svs, 0xff);
+				GPU_OPP(320000, 3379200, rpmpd_opp_svs, 0xff);
+				GPU_OPP(400000, 5376000, rpmpd_opp_svs_plus, 0xff);
+				GPU_OPP(460800, 6144000, rpmpd_opp_nom, 0xff);
+				GPU_OPP(510000, 6451200, rpmpd_opp_nom, 0xff);
+				GPU_OPP(560000, 6758400, rpmpd_opp_nom_plus, 0xff);
+				GPU_OPP(600000, 7449600, rpmpd_opp_turbo, 0xff);
+				GPU_OPP(650000, 7449600, rpmpd_opp_turbo, 0xff);
+			};
 
 			zap-shader {
 				memory-region = <&zap_shader_region>;
