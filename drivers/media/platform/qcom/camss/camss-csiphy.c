@@ -581,6 +581,7 @@ int msm_csiphy_subdev_init(struct camss *camss,
 		csiphy->formats = csiphy_formats_8x16;
 		csiphy->nformats = ARRAY_SIZE(csiphy_formats_8x16);
 	} else if (camss->version == CAMSS_8x96 ||
+		   camss->version == CAMSS_8x53 ||
 		   camss->version == CAMSS_660) {
 		csiphy->ops = &csiphy_ops_3ph_1_0;
 		csiphy->formats = csiphy_formats_8x96;
@@ -600,6 +601,7 @@ int msm_csiphy_subdev_init(struct camss *camss,
 		return PTR_ERR(csiphy->base);
 
 	if (camss->version == CAMSS_8x16 ||
+	    camss->version == CAMSS_8x53 ||
 	    camss->version == CAMSS_8x96) {
 		csiphy->base_clk_mux =
 			devm_platform_ioremap_resource_byname(pdev, res->reg[1]);

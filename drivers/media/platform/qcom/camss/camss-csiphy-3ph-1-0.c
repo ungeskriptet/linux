@@ -347,6 +347,7 @@ static void csiphy_lanes_enable(struct csiphy_device *csiphy,
 	writel_relaxed(val, csiphy->base + CSIPHY_3PH_CMN_CSI_COMMON_CTRLn(0));
 
 	if (csiphy->camss->version == CAMSS_8x16 ||
+	    csiphy->camss->version == CAMSS_8x53 ||
 	    csiphy->camss->version == CAMSS_8x96)
 		csiphy_gen1_config_lanes(csiphy, cfg, settle_cnt);
 	else if (csiphy->camss->version == CAMSS_845)
