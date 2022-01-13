@@ -59,6 +59,11 @@
 			enable-method = "psci";
 			next-level-cache = <&L2_0>;
 			#cooling-cells = <2>;
+			clocks = <&apcc_pll>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp>;
+			power-domains = <&cpr 0>;
+			power-domain-names = "cpr";
 			l1-icache { compatible = "cache"; };
 			l1-dcache { compatible = "cache"; };
 		};
@@ -75,6 +80,11 @@
 			enable-method = "psci";
 			next-level-cache = <&L2_0>;
 			#cooling-cells = <2>;
+			clocks = <&apcc_pll>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp>;
+			power-domains = <&cpr 0>;
+			power-domain-names = "cpr";
 			l1-icache { compatible = "cache"; };
 			l1-dcache { compatible = "cache"; };
 		};
@@ -91,6 +101,11 @@
 			enable-method = "psci";
 			next-level-cache = <&L2_0>;
 			#cooling-cells = <2>;
+			clocks = <&apcc_pll>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp>;
+			power-domains = <&cpr 0>;
+			power-domain-names = "cpr";
 			l1-icache { compatible = "cache"; };
 			l1-dcache { compatible = "cache"; };
 		};
@@ -107,6 +122,11 @@
 			enable-method = "psci";
 			next-level-cache = <&L2_0>;
 			#cooling-cells = <2>;
+			clocks = <&apcc_pll>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp>;
+			power-domains = <&cpr 0>;
+			power-domain-names = "cpr";
 			l1-icache { compatible = "cache"; };
 			l1-dcache { compatible = "cache"; };
 		};
@@ -123,6 +143,11 @@
 			enable-method = "psci";
 			next-level-cache = <&L2_1>;
 			#cooling-cells = <2>;
+			clocks = <&apcc_pll>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp>;
+			power-domains = <&cpr 0>;
+			power-domain-names = "cpr";
 			l1-icache { compatible = "cache"; };
 			l1-dcache { compatible = "cache"; };
 		};
@@ -139,6 +164,11 @@
 			enable-method = "psci";
 			next-level-cache = <&L2_1>;
 			#cooling-cells = <2>;
+			clocks = <&apcc_pll>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp>;
+			power-domains = <&cpr 0>;
+			power-domain-names = "cpr";
 			l1-icache { compatible = "cache"; };
 			l1-dcache { compatible = "cache"; };
 		};
@@ -155,6 +185,11 @@
 			enable-method = "psci";
 			next-level-cache = <&L2_1>;
 			#cooling-cells = <2>;
+			clocks = <&apcc_pll>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp>;
+			power-domains = <&cpr 0>;
+			power-domain-names = "cpr";
 			l1-icache { compatible = "cache"; };
 			l1-dcache { compatible = "cache"; };
 		};
@@ -171,6 +206,11 @@
 			enable-method = "psci";
 			next-level-cache = <&L2_1>;
 			#cooling-cells = <2>;
+			clocks = <&apcc_pll>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp>;
+			power-domains = <&cpr 0>;
+			power-domain-names = "cpr";
 			l1-icache { compatible = "cache"; };
 			l1-dcache { compatible = "cache"; };
 		};
@@ -260,6 +300,37 @@
 			compatible = "cache";
 			cache-level = <2>;
 		};
+	};
+
+#define OPP(freqKhz, req, HW, peakBW, extra)		\
+	opp-freqKhz##000 {				\
+		opp-hz = /bits/ 64 <freqKhz##000>;	\
+		opp-supported-hw = <HW>;		\
+		required-opps = <&req>;			\
+		extra; \
+	}
+
+#define BIN_625  0x04
+#define BIN_626  0x81
+#define BIN_ALL	 0xff
+
+	cpu0_opp: cpu0-opp-table {
+		compatible = "operating-points-v2-qcom-cpu",
+			     "operating-points-v2-kryo-cpu";
+		nvmem-cells = <&cpu_speed_bin>;
+		opp-shared;
+
+		OPP( 652800, cpr_opp1, BIN_ALL, 1611000, opp-suspend);
+		OPP(1036800, cpr_opp2, BIN_ALL, 3221000, none);
+		OPP(1248000, cpr_opp3, BIN_ALL, 4550000, none);
+		OPP(1401600, cpr_opp4, BIN_ALL, 5859000, none);
+		OPP(1689600, cpr_opp5, BIN_ALL, 6445000, none);
+		OPP(1804800, cpr_opp6, BIN_ALL, 7104000, none);
+		OPP(1958400, cpr_opp7, BIN_625, 7104000, none);
+		OPP(2016000, cpr_opp8, BIN_625, 7104000, none);
+		OPP(2150400, cpr_opp9, BIN_626, 7104000, none);
+		OPP(2208000, cpr_opp10, BIN_626, 7104000, none);
+
 	};
 
 	firmware {
@@ -474,6 +545,158 @@
 			resets = <&gcc GCC_QUSB2_PHY_BCR>;
 
 			status = "disabled";
+		};
+
+		efuse@a4000 {
+			compatible = "qcom,qfprom";
+			reg = <0xa4000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			cpu_speed_bin: cpu_speed_bin@124 {
+				reg = <0x125 1>;
+				bits = <0 3>;
+			};
+
+			cpr_efuse_revision: fusing_rev@23c {
+				reg = <0x23e 1>;
+				bits = <5 3>;
+			};
+
+			cpr_efuse_ring1: ring1@248 {
+				reg = <0x248 1>;
+				bits = <0 4>;
+			};
+
+			cpr_efuse_ring2: ring2@248 {
+				reg = <0x248 1>;
+				bits = <4 4>;
+			};
+
+			cpr_efuse_ring3: ring3@249 {
+				reg = <0x249 1>;
+				bits = <0 4>;
+			};
+
+			cpr_efuse_ring4: ring4@249 {
+				reg = <0x249 1>;
+				bits = <4 4>;
+			};
+
+			cpr_efuse_ring5: ring5@24a {
+				reg = <0x24a 1>;
+				bits = <0 4>;
+			};
+
+			cpr_efuse_ring6: ring6@24a {
+				reg = <0x24a 1>;
+				bits = <4 4>;
+			};
+
+			cpr_efuse_ring7: ring7@24b {
+				reg = <0x24b 1>;
+				bits = <4 4>;
+			};
+
+			cpr_efuse_init_voltage1: ivoltage1@238 {
+				reg = <0x238 2>;
+				bits = <6 6>;
+			};
+
+			cpr_efuse_init_voltage2: ivoltage2@239 {
+				reg = <0x239 2>;
+				bits = <4 6>;
+			};
+
+			cpr_efuse_init_voltage3: ivoltage3@23a {
+				reg = <0x23a 1>;
+				bits = <2 6>;
+			};
+
+			cpr_efuse_init_voltage4: ivoltage4@23b {
+				reg = <0x23b 1>;
+				bits = <0 6>;
+			};
+
+			cpr_efuse_init_voltage5: ivoltage5@250 {
+				reg = <0x250 1>;
+				bits = <0 6>;
+			};
+
+			cpr_efuse_init_voltage6: ivoltage6@250 {
+				reg = <0x250 2>;
+				bits = <6 6>;
+			};
+
+			cpr_efuse_init_voltage7: ivoltage7@252 {
+				reg = <0x252 1>;
+				bits = <2 6>;
+			};
+
+			cpr_efuse_quot1: quot1@241 {
+				reg = <0x241 2>;
+				bits = <0 12>;
+			};
+
+			cpr_efuse_quot2: quot2@242 {
+				reg = <0x242 2>;
+				bits = <4 12>;
+			};
+
+			cpr_efuse_quot3: quot3@244 {
+				reg = <0x244 2>;
+				bits = <0 12>;
+			};
+
+			cpr_efuse_quot4: quot4@245 {
+				reg = <0x245 2>;
+				bits = <4 12>;
+			};
+
+			cpr_efuse_quot5: quot5@259 {
+				reg = <0x259 4>;
+				bits = <0 12>;
+			};
+
+			cpr_efuse_quot6: quot6@25a {
+				reg = <0x25a 2>;
+				bits = <4 12>;
+			};
+
+			cpr_efuse_quot7: quot7@25d {
+				reg = <0x25d 2>;
+				bits = <4 12>;
+			};
+
+			cpr_efuse_quot_offset1: qoffset1@23c {
+				reg = <0x23c 1>;
+				bits = <0 7>;
+			};
+
+			cpr_efuse_quot_offset2: qoffset2@23c {
+				reg = <0x23c 2>;
+				bits = <7 7>;
+			};
+
+			cpr_efuse_quot_offset3: qoffset3@23d {
+				reg = <0x23d 2>;
+				bits = <6 7>;
+			};
+
+			cpr_efuse_quot_offset4: qoffset4@253 {
+				reg = <0x253 1>;
+				bits = <0 7>;
+			};
+
+			cpr_efuse_quot_offset5: qoffset5@254 {
+				reg = <0x254 1>;
+				bits = <0 7>;
+			};
+
+			cpr_efuse_quot_offset6: qoffset6@255 {
+				reg = <0x255 1>;
+				bits = <0 7>;
+			};
 		};
 
 		rng@e3000 {
@@ -816,6 +1039,11 @@
 		tcsr_phy_clk_scheme_sel: syscon@193f044 {
 			compatible = "syscon";
 			reg = <0x193f044 0x4>;
+		};
+
+		apc_mem_acc: syscon@19461d4 {
+			compatible = "syscon";
+			reg = <0x19461d4 0x8>;
 		};
 
 		mdss: mdss@1a00000 {
@@ -1655,6 +1883,150 @@
 			#mbox-cells = <1>;
 		};
 
+		apcc_c1_mux: clock-controller@b011050 {
+			compatible = "qcom,cpu-mux-div-clock";
+			reg = <0xb011050 0x10>;
+			clocks = <&apcc_pll>, <&gcc GPLL0_EARLY>;
+			qcom,mux-values = <5>, <4>;
+			qcom,safe-div = <3>;
+			clock-output-names = "apcc-c1-mux";
+			assigned-clocks = <&apcc_c1_mux>;
+			assigned-clock-parents = <&apcc_pll>;
+			assigned-clock-rates = <883200000>;
+			#clock-cells = <0>;
+		};
+
+		cpr: power-controller@b018000 {
+			compatible = "qcom,msm8953-cpr4";
+
+			nvmem-cells = <&cpr_efuse_quot_offset3>,
+				      <&cpr_efuse_quot_offset2>,
+				      <&cpr_efuse_quot_offset1>,
+				      <&cpr_efuse_init_voltage4>,
+				      <&cpr_efuse_init_voltage3>,
+				      <&cpr_efuse_init_voltage2>,
+				      <&cpr_efuse_init_voltage1>,
+				      <&cpr_efuse_quot4>,
+				      <&cpr_efuse_quot3>,
+				      <&cpr_efuse_quot2>,
+				      <&cpr_efuse_quot1>,
+				      <&cpr_efuse_ring4>,
+				      <&cpr_efuse_ring3>,
+				      <&cpr_efuse_ring2>,
+				      <&cpr_efuse_ring1>,
+				      <&cpr_efuse_revision>,
+				      <&cpu_speed_bin>;
+			nvmem-cell-names = "cpr_thread0_quotient_offset2",
+					   "cpr_thread0_quotient_offset3",
+					   "cpr_thread0_quotient_offset4",
+					   "cpr_thread0_init_voltage1",
+					   "cpr_thread0_init_voltage2",
+					   "cpr_thread0_init_voltage3",
+					   "cpr_thread0_init_voltage4",
+					   "cpr_thread0_quotient1",
+					   "cpr_thread0_quotient2",
+					   "cpr_thread0_quotient3",
+					   "cpr_thread0_quotient4",
+					   "cpr_thread0_ring_osc1",
+					   "cpr_thread0_ring_osc2",
+					   "cpr_thread0_ring_osc3",
+					   "cpr_thread0_ring_osc4",
+					   "cpr_fuse_revision",
+					   "cpr_speed_bin";
+
+			reg = <0x0b018000 0x4000>;
+			reg-names = "cpr-iomem";
+
+			interrupts = <GIC_SPI 15 IRQ_TYPE_EDGE_RISING>;
+
+			clocks = <&xo_board>;
+			clock-names = "ref";
+
+			acc-syscon = <&apc_mem_acc>;
+			apm-syscon = <&apm>;
+
+			#power-domain-cells = <1>;
+			operating-points-v2 = <&cpr_opp_table>;
+
+			cpr_opp_table: cpr-opp-table {
+				compatible = "operating-points-v2-qcom-level";
+
+				cpr_opp1: opp1 {
+					opp-level = <1>;
+				};
+				cpr_opp2: opp2 {
+					opp-level = <2>;
+				};
+				cpr_opp3: opp3 {
+					opp-level = <3>;
+				};
+				cpr_opp4: opp4 {
+					opp-level = <4>;
+				};
+				cpr_opp5: opp5 {
+					opp-level = <5>;
+				};
+				cpr_opp6: opp6 {
+					opp-level = <6>;
+				};
+				cpr_opp7: opp7 {
+					opp-level = <7>;
+				};
+				cpr_opp8: opp8 {
+					opp-level = <8>;
+				};
+				cpr_opp9: opp9 {
+					opp-level = <9>;
+				};
+				cpr_opp10: opp10 {
+					opp-level = <10>;
+				};
+			};
+		};
+
+		apcc_pll: clock-controller@b106000 {
+			compatible = "qcom,msm8953-apcc-alpha-pll";
+			reg = <0xb116000 0x40>;
+			qcom,vco-ranges = <0 652800000 2208000000>;
+			clocks = <&xo_board>;
+			clock-output-names = "apcc-pll";
+			assigned-clocks = <&apcc_pll>;
+			assigned-clock-rates = <883200000>;
+			#clock-cells = <0>;
+		};
+
+		apm: syscon@b111000 {
+			compatible = "syscon";
+			reg = <0xb111000 0x1000>;
+		};
+
+		apcc_c0_mux: clock-controller@b111050 {
+			compatible = "qcom,cpu-mux-div-clock";
+			reg = <0xb111050 0x10>;
+			clocks = <&apcc_pll>, <&gcc GPLL0_EARLY>;
+			qcom,mux-values = <5>, <4>;
+			qcom,safe-div = <3>;
+			clock-output-names = "apcc-c0-mux";
+			assigned-clocks = <&apcc_c0_mux>;
+			assigned-clock-parents = <&apcc_pll>;
+			assigned-clock-rates = <883200000>;
+			#clock-cells = <0>;
+		};
+
+
+		apcc_cci_mux: clock-controller@b1d1050 {
+			compatible = "qcom,cpu-mux-div-clock";
+			reg = <0xb1d1050 0x10>;
+			clocks = <&apcc_pll>, <&gcc GPLL0_EARLY>;
+			qcom,mux-values = <5>, <4>;
+			qcom,safe-div = <5>;
+			clock-output-names = "apcc-cci-mux";
+			assigned-clocks = <&apcc_cci_mux>;
+			assigned-clock-parents = <&apcc_pll>;
+			assigned-clock-rates = <(883200000 * 2 / 5)>;
+			#clock-cells = <0>;
+		};
+
 		timer@b120000 {
 			compatible = "arm,armv7-timer-mem";
 			reg = <0xb120000 0x1000>;
@@ -1711,6 +2083,11 @@
 				reg = <0xb128000 0x1000>;
 				status = "disabled";
 			};
+		};
+
+		saw4: syscon@b1d2000 {
+			compatible = "syscon";
+			reg = <0xb1d2000 0x1000>;
 		};
 	};
 

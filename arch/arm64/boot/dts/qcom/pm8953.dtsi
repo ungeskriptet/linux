@@ -86,5 +86,19 @@
 		reg = <1 SPMI_USID>;
 		#address-cells = <1>;
 		#size-cells = <0>;
+
+		spmi_regulators: regulators {
+			compatible = "qcom,pm8950-regulators";
+			qcom,saw-reg = <&saw4>;
+
+			vreg_apc: s5 {
+				qcom,saw-leader;
+				regulator-min-microvolt = <400000>;
+				regulator-max-microvolt = <1065000>;
+				regulator-always-on;
+				regulator-initial-mode = <1>;
+				regulator-allowed-modes = <1>, <2>, <3>;
+			};
+		};
 	};
 };
