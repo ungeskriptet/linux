@@ -72,6 +72,7 @@ struct mdp5_kms {
 
 	int num_paths;
 	struct icc_path *paths[2];
+	struct icc_path *path_cfg;
 	struct icc_path *path_rot;
 };
 #define to_mdp5_kms(x) container_of(x, struct mdp5_kms, base)

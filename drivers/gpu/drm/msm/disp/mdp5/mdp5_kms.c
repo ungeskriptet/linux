@@ -20,6 +20,7 @@
 #include "mdp5_kms.h"
 
 #define MDP5_DEFAULT_BW MBps_to_icc(6400)
+#define MDP5_DEFAULT_BW_CFG MBps_to_icc(500)
 
 static int mdp5_hw_init(struct msm_kms *kms)
 {
@@ -332,6 +333,7 @@ static int mdp5_disable(struct mdp5_kms *mdp5_kms)
 		for (i = 0; i < mdp5_kms->num_paths; i++)
 			icc_set_bw(mdp5_kms->paths[i], 0, 0);
 		icc_set_bw(mdp5_kms->path_rot, 0, 0);
+		icc_set_bw(mdp5_kms->path_cfg, 0, 0);
 	}
 
 	return 0;
@@ -349,6 +351,7 @@ static int mdp5_enable(struct mdp5_kms *mdp5_kms)
 		for (i = 0; i < mdp5_kms->num_paths; i++)
 			icc_set_bw(mdp5_kms->paths[i], 0, MDP5_DEFAULT_BW);
 		icc_set_bw(mdp5_kms->path_rot, 0, MDP5_DEFAULT_BW);
+		icc_set_bw(mdp5_kms->path_cfg, 0, MDP5_DEFAULT_BW_CFG);
 	}
 
 	clk_prepare_enable(mdp5_kms->ahb_clk);
@@ -861,6 +864,7 @@ static int mdp5_setup_interconnect(struct mdp5_kms *mdp5_kms)
 {
 	struct icc_path *path0 = of_icc_get(&mdp5_kms->pdev->dev, "mdp0-mem");
 	struct icc_path *path1 = of_icc_get(&mdp5_kms->pdev->dev, "mdp1-mem");
+	struct icc_path *path_cfg = of_icc_get(&mdp5_kms->pdev->dev, "cpu-cfg");
 	struct icc_path *path_rot = of_icc_get(&mdp5_kms->pdev->dev, "rotator-mem");
 
 	if (IS_ERR(path0))
@@ -887,6 +891,9 @@ static int mdp5_setup_interconnect(struct mdp5_kms *mdp5_kms)
 
 	if (!IS_ERR_OR_NULL(path_rot))
 		mdp5_kms->path_rot = path_rot;
+
+	if (!IS_ERR_OR_NULL(path_cfg))
+		mdp5_kms->path_cfg = path_cfg;
 
 	return 0;
 }
