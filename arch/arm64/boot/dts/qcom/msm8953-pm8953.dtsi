@@ -10,6 +10,15 @@
 	vdda-phy-dpdm-supply = <&pm8953_l13>;
 };
 
+&dsi_phy0 {
+	vcca-supply = <&pm8953_l3>;
+};
+
+&dsi0 {
+	vdda-supply = <&pm8953_s3>;
+	vddio-supply = <&pm8953_l6>;
+};
+
 &sdhc_1 {
 	vmmc-supply = <&pm8953_l8>;
 	vqmmc-supply = <&pm8953_l5>;
