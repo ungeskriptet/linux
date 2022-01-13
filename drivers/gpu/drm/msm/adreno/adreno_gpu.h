@@ -20,6 +20,8 @@
 extern bool snapshot_debugbus;
 extern bool allow_vram_carveout;
 
+#define ADRENO_PM_DOMAINS_MAX 4
+
 enum {
 	ADRENO_FW_PM4 = 0,
 	ADRENO_FW_SQE = 0, /* a6xx */
@@ -105,6 +107,10 @@ struct adreno_gpu {
 		FW_LOCATION_LEGACY,    /* /lib/firmware/$fwfile */
 		FW_LOCATION_HELPER,
 	} fwloc;
+
+	struct device_link *pm_links[ADRENO_PM_DOMAINS_MAX];
+	struct device *pm_domains[ADRENO_PM_DOMAINS_MAX];
+	struct device **opp_pm_domains;
 
 	/* firmware: */
 	const struct firmware *fw[ADRENO_FW_MAX];

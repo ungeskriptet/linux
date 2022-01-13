@@ -43,6 +43,8 @@ static int msm_devfreq_target(struct device *dev, unsigned long *freq,
 
 	if (gpu->funcs->gpu_set_freq)
 		gpu->funcs->gpu_set_freq(gpu, opp);
+	else if (gpu->opp_table)
+		dev_pm_opp_set_rate(dev, *freq);
 	else
 		clk_set_rate(gpu->core_clk, *freq);
 

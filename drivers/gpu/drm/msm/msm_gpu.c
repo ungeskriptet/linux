@@ -55,7 +55,7 @@ static int disable_pwrrail(struct msm_gpu *gpu)
 
 static int enable_clk(struct msm_gpu *gpu)
 {
-	if (gpu->core_clk && gpu->fast_rate)
+	if (gpu->core_clk && gpu->fast_rate && !gpu->opp_table)
 		clk_set_rate(gpu->core_clk, gpu->fast_rate);
 
 	/* Set the RBBM timer rate to 19.2Mhz */
@@ -74,7 +74,7 @@ static int disable_clk(struct msm_gpu *gpu)
 	 * speed had to be non zero to avoid problems. On newer targets this
 	 * will be rounded down to zero anyway so it all works out.
 	 */
-	if (gpu->core_clk)
+	if (gpu->core_clk && !gpu->opp_table)
 		clk_set_rate(gpu->core_clk, 27000000);
 
 	if (gpu->rbbmtimer_clk)
