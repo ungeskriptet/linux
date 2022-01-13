@@ -42,6 +42,12 @@ struct a5xx_gpu {
 	uint64_t shadow_iova;
 	uint32_t *shadow;
 
+	spinlock_t suspend_lock;
+	bool active;
+	/* Busy time accumulated during rate changes (because performance
+	 * counters are in core clock cycles) */
+	uint64_t busy_time;
+
 	/* True if the microcode supports the WHERE_AM_I opcode */
 	bool has_whereami;
 };

@@ -15,6 +15,7 @@
 
 extern bool hang_debug;
 static void a5xx_dump(struct msm_gpu *gpu);
+static unsigned long a5xx_calc_busy_time(struct msm_gpu *gpu);
 
 #define GPU_PAS_ID 13
 
@@ -1337,12 +1338,18 @@ static void a5xx_dump(struct msm_gpu *gpu)
 static int a5xx_pm_resume(struct msm_gpu *gpu)
 {
 	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
+	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
+	unsigned long flags;
 	int ret;
 
 	/* Turn on the core power */
 	ret = msm_gpu_pm_resume(gpu);
 	if (ret)
 		return ret;
+
+	spin_lock_irqsave(&a5xx_gpu->suspend_lock, flags);
+	a5xx_gpu->active = true;
+	spin_unlock_irqrestore(&a5xx_gpu->suspend_lock, flags);
 
 	/* Adreno 506, 508, 509, 510, 512 needs manual RBBM sus/res control */
 	if (!(adreno_is_a530(adreno_gpu) || adreno_is_a540(adreno_gpu))) {
@@ -1384,6 +1391,7 @@ static int a5xx_pm_suspend(struct msm_gpu *gpu)
 {
 	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
 	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
+	unsigned long flags;
 	u32 mask = 0xf;
 	int i, ret;
 
@@ -1407,6 +1415,12 @@ static int a5xx_pm_suspend(struct msm_gpu *gpu)
 		gpu_write(gpu, REG_A5XX_RBBM_BLOCK_SW_RESET_CMD, 0x003C0000);
 		gpu_write(gpu, REG_A5XX_RBBM_BLOCK_SW_RESET_CMD, 0x00000000);
 	}
+
+	a5xx_gpu->busy_time += a5xx_calc_busy_time(gpu);
+
+	spin_lock_irqsave(&a5xx_gpu->suspend_lock, flags);
+	a5xx_gpu->active = false;
+	spin_unlock_irqrestore(&a5xx_gpu->suspend_lock, flags);
 
 	ret = msm_gpu_pm_suspend(gpu);
 	if (ret)
@@ -1656,28 +1670,59 @@ static struct msm_ringbuffer *a5xx_active_ring(struct msm_gpu *gpu)
 	return a5xx_gpu->cur_ring;
 }
 
-static unsigned long a5xx_gpu_busy(struct msm_gpu *gpu)
+static unsigned long a5xx_calc_busy_time(struct msm_gpu *gpu)
 {
+	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
+	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
 	u64 busy_cycles, busy_time;
+	unsigned long flags;
 
 	/* Only read the gpu busy if the hardware is already active */
-	if (pm_runtime_get_if_in_use(&gpu->pdev->dev) == 0)
+	spin_lock_irqsave(&a5xx_gpu->suspend_lock, flags);
+	if (!a5xx_gpu->active) {
+		spin_unlock_irqrestore(&a5xx_gpu->suspend_lock, flags);
 		return 0;
+	}
 
 	busy_cycles = gpu_read64(gpu, REG_A5XX_RBBM_PERFCTR_RBBM_0_LO,
 			REG_A5XX_RBBM_PERFCTR_RBBM_0_HI);
+
+	spin_unlock_irqrestore(&a5xx_gpu->suspend_lock, flags);
 
 	busy_time = busy_cycles - gpu->devfreq.busy_cycles;
 	do_div(busy_time, clk_get_rate(gpu->core_clk) / 1000000);
 
 	gpu->devfreq.busy_cycles = busy_cycles;
 
-	pm_runtime_put(&gpu->pdev->dev);
-
 	if (WARN_ON(busy_time > ~0LU))
 		return ~0LU;
 
 	return (unsigned long)busy_time;
+}
+
+static unsigned long a5xx_gpu_busy(struct msm_gpu *gpu)
+{
+	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
+	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
+	unsigned long busy_time;
+
+	busy_time = a5xx_calc_busy_time(gpu);
+
+	busy_time += a5xx_gpu->busy_time;
+
+	a5xx_gpu->busy_time = 0;
+
+	return busy_time;
+}
+
+static void a5xx_gpu_set_freq(struct msm_gpu *gpu, struct dev_pm_opp *opp)
+{
+	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
+	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
+
+	a5xx_gpu->busy_time += a5xx_calc_busy_time(gpu);
+
+	dev_pm_opp_set_opp(&gpu->pdev->dev, opp);
 }
 
 static uint32_t a5xx_get_rptr(struct msm_gpu *gpu, struct msm_ringbuffer *ring)
@@ -1705,6 +1750,7 @@ static const struct adreno_gpu_funcs funcs = {
 #if defined(CONFIG_DEBUG_FS) || defined(CONFIG_DEV_COREDUMP)
 		.show = a5xx_show,
 #endif
+		.gpu_set_freq = a5xx_gpu_set_freq,
 #if defined(CONFIG_DEBUG_FS)
 		.debugfs_init = a5xx_debugfs_init,
 #endif
@@ -1773,6 +1819,7 @@ struct msm_gpu *a5xx_gpu_init(struct drm_device *dev)
 	adreno_gpu->registers = a5xx_registers;
 
 	a5xx_gpu->lm_leakage = 0x4E001A;
+	spin_lock_init(&a5xx_gpu->suspend_lock);
 
 	check_speed_bin(&pdev->dev);
 
