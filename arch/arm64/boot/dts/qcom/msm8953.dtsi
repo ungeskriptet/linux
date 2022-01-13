@@ -51,6 +51,10 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			capacity-dmips-mhz = <1024>;
+			cpu-idle-states = <&CPU_PC>,
+					  <&CLUSTER_RET>,
+					  <&CLUSTER_GDHS>,
+					  <&CLUSTER_PC>;
 			reg = <0x0>;
 			enable-method = "psci";
 			next-level-cache = <&L2_0>;
@@ -63,6 +67,10 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			capacity-dmips-mhz = <1024>;
+			cpu-idle-states = <&CPU_PC>,
+					  <&CLUSTER_RET>,
+					  <&CLUSTER_GDHS>,
+					  <&CLUSTER_PC>;
 			reg = <0x1>;
 			enable-method = "psci";
 			next-level-cache = <&L2_0>;
@@ -75,6 +83,10 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			capacity-dmips-mhz = <1024>;
+			cpu-idle-states = <&CPU_PC>,
+					  <&CLUSTER_RET>,
+					  <&CLUSTER_GDHS>,
+					  <&CLUSTER_PC>;
 			reg = <0x2>;
 			enable-method = "psci";
 			next-level-cache = <&L2_0>;
@@ -87,6 +99,10 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			capacity-dmips-mhz = <1024>;
+			cpu-idle-states = <&CPU_PC>,
+					  <&CLUSTER_RET>,
+					  <&CLUSTER_GDHS>,
+					  <&CLUSTER_PC>;
 			reg = <0x3>;
 			enable-method = "psci";
 			next-level-cache = <&L2_0>;
@@ -99,6 +115,10 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			capacity-dmips-mhz = <1024>;
+			cpu-idle-states = <&CPU_PC>,
+					  <&CLUSTER_RET>,
+					  <&CLUSTER_GDHS>,
+					  <&CLUSTER_PC>;
 			reg = <0x100>;
 			enable-method = "psci";
 			next-level-cache = <&L2_1>;
@@ -111,6 +131,10 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			capacity-dmips-mhz = <1024>;
+			cpu-idle-states = <&CPU_PC>,
+					  <&CLUSTER_RET>,
+					  <&CLUSTER_GDHS>,
+					  <&CLUSTER_PC>;
 			reg = <0x101>;
 			enable-method = "psci";
 			next-level-cache = <&L2_1>;
@@ -123,6 +147,10 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			capacity-dmips-mhz = <1024>;
+			cpu-idle-states = <&CPU_PC>,
+					  <&CLUSTER_RET>,
+					  <&CLUSTER_GDHS>,
+					  <&CLUSTER_PC>;
 			reg = <0x102>;
 			enable-method = "psci";
 			next-level-cache = <&L2_1>;
@@ -135,6 +163,10 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
 			capacity-dmips-mhz = <1024>;
+			cpu-idle-states = <&CPU_PC>,
+					  <&CLUSTER_RET>,
+					  <&CLUSTER_GDHS>,
+					  <&CLUSTER_PC>;
 			reg = <0x103>;
 			enable-method = "psci";
 			next-level-cache = <&L2_1>;
@@ -172,6 +204,50 @@
 				core3 {
 					cpu = <&CPU7>;
 				};
+			};
+		};
+
+		idle-states {
+			entry-method = "psci";
+
+			CPU_PC: cpu-power-collapse {
+				compatible = "qcom,idle-state";
+				idle-state-name = "cpu-pc";
+				arm,psci-suspend-param = <0x40000003>;
+				entry-latency-us = <90>;
+				exit-latency-us = <180>;
+				min-residency-us = <400>;
+				local-timer-stop;
+			};
+
+			CLUSTER_RET: cluster-retention {
+				compatible = "qcom,idle-state";
+				idle-state-name = "cluster-ret";
+				arm,psci-suspend-param = <0x41000033>;
+				entry-latency-us = <120>;
+				exit-latency-us = <200>;
+				min-residency-us = <1200>;
+				local-timer-stop;
+			};
+
+			CLUSTER_GDHS: cluster-gdhs {
+				compatible = "qcom,idle-state";
+				idle-state-name = "cluster-gdhs";
+				arm,psci-suspend-param = <0x41000043>;
+				entry-latency-us = <150>;
+				exit-latency-us = <220>;
+				min-residency-us = <1800>;
+				local-timer-stop;
+			};
+
+			CLUSTER_PC: cluster-power-collapse {
+				compatible = "qcom,idle-state";
+				idle-state-name = "cluster-pc";
+				arm,psci-suspend-param = <0x41000053>;
+				entry-latency-us = <270>;
+				exit-latency-us = <430>;
+				min-residency-us = <2500>;
+				local-timer-stop;
 			};
 		};
 
