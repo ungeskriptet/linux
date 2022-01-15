@@ -125,7 +125,7 @@
 	pinctrl-1 = <&mdss_sleep>;
 
 	panel@0 {
-		compatible = "huawei,boe-otm8019a";
+		compatible = "huawei,y635-panel";
 		reg = <0>;
 
 		power-supply = <&pm8916_l17>;
