@@ -409,6 +409,7 @@
 		function = "gpio";
 		drive-strength = <2>;
 		bias-pull-up;
+		output-high;
 	};
 
 	pmx_mdss_default: pmx-mdss-default-pins {
