@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/extcon/extcon-usbc-fusb301.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: onsemi FUSB301 USB Type-C Controller
+
+maintainers:
+  - Xhivat Hoxhiq <xhivo97@gmail.com>
+
+properties:
+  compatible:
+    enum:
+      - onnn,fusb301
+
+  reg:
+    maxItems: 1
+
+  interrupts:
+    maxItems: 1
+
+required:
+  - compatible
+  - reg
+  - interrupts
+
+additionalProperties: false
+
+examples:
+  - |
+    i2c0 {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        fusb301@21 {
+            compatible = "onnn,fusb301";
+            reg = <0x21>;
+            interrupt-parent = <&gpio>;
+            interrupts = <27 1>;
+        };
+    };
+...
