@@ -188,4 +188,12 @@ config EXTCON_USBC_TUSB320
 	  Say Y here to enable support for USB Type C cable detection extcon
 	  support using a TUSB320.
 
+config EXTCON_USBC_FUSB301
+	tristate "onsemi FUSB301 USB-C extcon support"
+	depends on I2C
+	select REGMAP_I2C
+	help
+	  Say Y here to enable support for USB Type C cable detection extcon
+	  support using an FUSB301.
+
 endif
