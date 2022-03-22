@@ -120,6 +120,13 @@
 			pmsg-size = <0x8000>;
 		};
 	};
+
+	vph_pwr: vph-pwr-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vph_pwr";
+		regulator-always-on;
+		regulator-boot-on;
+	};
 };
 
 &dsi0 {
@@ -175,7 +182,6 @@
 
 		#address-cells = <1>;
 		#size-cells = <0>;
-
 
 		led@0 {
 			reg = <0>;
@@ -255,7 +261,18 @@
 };
 
 &smd_rpm_regulators {
-	// TODO Add supplies
+	vdd_s1-supply = <&vph_pwr>;
+	vdd_s2-supply = <&vph_pwr>;
+	vdd_s3-supply = <&vph_pwr>;
+	vdd_s4-supply = <&vph_pwr>;
+	vdd_s5-supply = <&vph_pwr>;
+	vdd_s6-supply = <&vph_pwr>;
+	vdd_s7-supply = <&vph_pwr>;
+	vdd_l1-supply = <&pm8953_s3>;
+	vdd_l2_l3-supply = <&pm8953_s3>;
+	vdd_l4_l5_l6_l7_l16_l19-supply = <&pm8953_s4>;
+	vdd_l8_l11_l12_l13_l14_l15-supply = <&vph_pwr>;
+	vdd_l9_l10_l17_l18_l22-supply = <&vph_pwr>;
 
 	s1 {
 		regulator-min-microvolt = <870000>;
@@ -394,7 +411,7 @@
 	};
 
 	pmx_mdss_default: pmx-mdss-default-pins {
-		pins = "gpio61", "gpio59";
+		pins = "gpio61";
 		function = "gpio";
 		drive-strength = <8>;
 		bias-disable = <0>;
@@ -402,7 +419,7 @@
 	};
 
 	pmx_mdss_sleep: pmx-mdss-sleep-pins {
-		pins = "gpio61", "gpio59";
+		pins = "gpio61";
 		function = "gpio";
 		drive-strength = <2>;
 		bias-pull-down;
