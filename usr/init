@@ -1,0 +1,11 @@
+#!/bin/busybox sh
+
+# Samsung kernels come with their own initramfs, which extract and load another
+# initramfs. Usually that depends on the recovery key combination being pressed
+# or not. For simplicity, we always boot the recovery image (from the recovery
+# partition) here.
+echo "### isorec initramfs ###"
+busybox mount -t proc proc /proc
+busybox mount -t sysfs sysfs /sys
+
+busybox clear; c1=$(busybox dmesg|busybox wc -l); c2=0; while busybox [[ $((c1*10)) != $c2 ]]; do c2=$((c2+10)); busybox dmesg|busybox head -n $c2|busybox tail -n10; echo; busybox sleep 2; done
