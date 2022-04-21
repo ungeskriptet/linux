@@ -48,6 +48,28 @@
 			//vci-supply = <&vusim>;
 		};
 	};
+
+	reg_espresso_internal: regulator-espresso-internal {
+		compatible = "regulator-fixed";
+		regulator-name = "eMMC_LDO";
+		regulator-max-microvolt = <1800000>;
+		regulator-min-microvolt = <1800000>;
+		gpios = <&gpio2 21 GPIO_ACTIVE_HIGH>;
+		startup-delay-us = <100000>;
+		regulator-boot-on;
+		regulator-always-on;
+		enable-active-high;
+	};
+
+	reg_espresso_external: regulator-espresso-external {
+		compatible = "regulator-fixed";
+		regulator-name = "vmmc2";
+		regulator-max-microvolt = <2800000>;
+		regulator-min-microvolt = <2800000>;
+		gpios = <&gpio2 2 GPIO_ACTIVE_HIGH>;
+		regulator-always-on;
+		enable-active-high;
+	};
 };
 
 &omap4_pmx_core {
@@ -153,15 +175,18 @@
 };
 
 &mmc1 {
-	status = "disabled";
-};
+	pinctrl-names = "default";
+	pinctrl-0 = <&reg_espresso_external>;
 
+	vmmc-supply = <&vmmc>;
+	bus-width = <4>;
+};
 
 &mmc2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc2_pins>;
 
-	vmmc-supply = <&vaux1>;
+	vmmc-supply = <&reg_espresso_internal>;
 	ti,non-removable;
 	bus-width = <8>;
 };
