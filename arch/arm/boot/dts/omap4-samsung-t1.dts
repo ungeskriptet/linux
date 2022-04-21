@@ -17,14 +17,6 @@
 		#size-cells = <1>;
 		ranges;
 
-		ramoops_region@A0000000 {
- 			no-map;
-			compatible = "ramoops";
-			reg = <0xA0000000 0x200000>;
-			status = "okay";
-		};
-
-
 		framebuffer_region@bef00000 {
 			no-map;
 			reg = <0xbef00000 (480 * 800 * 4)>;
@@ -35,6 +27,18 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		framebuffer@bef00000 {
+			compatible = "simple-framebuffer";
+			reg = <0xbef00000 (480 * 800 * 4)>;
+			width = <480>;
+			height = <800>;
+			stride = <(480 * 4)>;
+			format = "a8r8g8b8";
+
+			//vdd3-supply = <&vaux3>;
+			//vci-supply = <&vusim>;
+		};
 	};
 };
 
