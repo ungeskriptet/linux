@@ -8,4 +8,13 @@ echo "### isorec initramfs ###"
 busybox mount -t proc proc /proc
 busybox mount -t sysfs sysfs /sys
 
-busybox clear; c1=$(busybox dmesg|busybox wc -l); c2=0; while busybox [[ $((c1*10)) != $c2 ]]; do c2=$((c2+10)); busybox dmesg|busybox head -n $c2|busybox tail -n10; echo; busybox sleep 2; done
+#busybox clear; c1=$(busybox dmesg|busybox wc -l); c2=0; while busybox [[ $((c1*10)) != $c2 ]]; do c2=$((c2+10)); busybox dmesg|busybox head -n $c2|busybox tail -n10; echo; busybox sleep 2; done
+busybox clear; while :; do echo "dmesg|grep mmc"; busybox dmesg|busybox grep mmc; busybox sleep 3; done
+
+#load_image=/isorec.cpio
+#busybox lzop -dc /dev/mmcblk1p6 > ${load_image}
+#busybox cpio -iu < ${load_image}
+#busybox rm ${load_image}
+
+#busybox umount /sys
+#busybox umount /proc
