@@ -53,6 +53,7 @@
 		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
 		sck-gpios = <&gpio5 23 GPIO_ACTIVE_HIGH>;
 		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;
+		miso-gpios = <&gpio5 25 GPIO_ACTIVE_HIGH>;
 
 		lcd@0 {
 			compatible = "samsung,ld9040";
