@@ -42,6 +42,59 @@
 		enable-active-high;
 	};
 
+	spi_lcd: spi {
+		compatible = "spi-gpio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi_gpio_pins>;
+
+		num-chipselects = <1>;
+		cs-gpios = <&gpy4 3 GPIO_ACTIVE_LOW>;
+		sck-gpios = <&gpy3 1 GPIO_ACTIVE_HIGH>;
+		mosi-gpios = <&gpy3 3 GPIO_ACTIVE_HIGH>;
+
+		lcd@0 {
+			compatible = "samsung,ld9040";
+			reg = <0>;
+
+			spi-max-frequency = <1200000>;
+
+			vdd3-supply = <&vaux3>;
+			vci-supply = <&vusim>;
+
+			reset-gpios = <&gpy4 5 GPIO_ACTIVE_HIGH>;
+			power-on-delay = <10>;
+			reset-delay = <10>;
+
+			panel-width-mm = <90>;
+			panel-height-mm = <154>;
+
+			display-timings {
+				timing {
+					clock-frequency = <23492370>;
+					hactive = <480>;
+					vactive = <800>;
+					hback-porch = <16>;
+					hfront-porch = <16>;
+					vback-porch = <2>;
+					vfront-porch = <28>;
+					hsync-len = <2>;
+					vsync-len = <1>;
+					hsync-active = <0>;
+					vsync-active = <0>;
+					de-active = <0>;
+					pixelclk-active = <0>;
+				};
+			};
+
+			port {
+				lcd_ep: endpoint {
+					remote-endpoint = <&fimd_dpi_ep>;
+				};
+			};
+		};
+	};
 };
 
 &omap4_pmx_core {
@@ -75,7 +128,7 @@
 		>;
 	};
 
-	mcspi4_pins: pinmux_mcspi4_pins {
+	spi_gpio_pins: pinmux_spi_gpio_pins {
 		pinctrl-single,pins = <
 			OMAP4_IOPAD(0x154, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_clk */
 			OMAP4_IOPAD(0x156, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_simo */
