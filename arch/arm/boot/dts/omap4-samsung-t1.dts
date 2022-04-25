@@ -98,6 +98,10 @@
 	};
 };
 
+&gpio2_target {
+	 ti,no-reset-on-init;
+};
+
 &omap4_pmx_core {
 	pinctrl-names = "default";
 
