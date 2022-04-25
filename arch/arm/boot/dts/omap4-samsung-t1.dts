@@ -278,7 +278,7 @@
 };
 
 &mcspi4 {
-	status = "disabled";
+	status = "okay";
 };
 
 &i2c1 {
@@ -298,6 +298,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&dss_dpi_pins>;
 
+	vdd-supply = <&vcxio>;
 	port {
 		dpi_out: endpoint {
 			remote-endpoint = <&lcd_in>;
