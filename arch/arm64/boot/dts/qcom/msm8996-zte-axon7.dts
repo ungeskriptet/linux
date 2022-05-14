@@ -5,7 +5,14 @@
 
 /dts-v1/;
 
-#include "msm8996-zte-axon7.dtsi"
+#include "msm8996.dtsi"
+#include "pm8994.dtsi"
+#include "pmi8994.dtsi"
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
+#include <dt-bindings/sound/qcom,q6afe.h>
+#include <dt-bindings/sound/qcom,q6asm.h>
 
 / {
 	model = "ZTE Axon 7";
@@ -13,4 +20,153 @@
 	qcom,board-id = <100 0>;
 	qcom,msm-id = <246 0x30001>;
 	qcom,pmic-id = <0x20009 0x10013 0x0 0x0>;
+
+	reserved-memory {
+		ramoops {
+			compatible = "ramoops";
+			reg = <0 0xbfc00000 0 0x400000>;
+			record-size = <0x20000>;
+			console-size = <0x100000>;
+			ftrace-size = <0x100000>;
+			pmsg-size = <0x100000>;
+		};
+
+		cont_splash_mem: memory@83401000 {
+			reg = <0x0 0x83401000 0x0 (1440 * 2560 * 3)>;
+			no-map;
+		};
+	};
+
+	usb3_id: usb3-id {
+		compatible = "linux,extcon-usb-gpio";
+		id-gpio = <&pm8994_gpios 22 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb3_vbus_det_gpio>;
+	};
+
+	usb2_id: usb2-id {
+		compatible = "linux,extcon-usb-gpio";
+		id-gpio = <&pmi8994_gpios 6 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb2_vbus_det_gpio>;
+	};
+
+
 };
+
+&mmcc {
+	status = "disabled";
+};
+
+&tlmm {
+	gpio-reserved-ranges = <81 4>;
+
+	usb_detect: usb-detect {
+		pins = "gpio22";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+		output-high;
+	};
+
+};
+
+&usb2 {
+	status = "okay";
+	extcon = <&usb2_id>;
+
+	dwc3@7600000 {
+		extcon = <&usb2_id>;
+		dr_mode = "peripheral";
+		maximum-speed = "high-speed";
+	};
+};
+
+&usb3 {
+	status = "okay";
+	extcon = <&usb3_id>;
+
+	dwc3@6a00000 {
+		extcon = <&usb3_id>;
+		dr_mode = "peripheral";
+	};
+};
+
+&hsusb_phy1 {
+	status = "okay";
+
+	qcom,qusb-phy-init-seq = <0xf8 0x80
+				  0xb3 0x84
+				  0x83 0x88
+				  0xc0 0x8c
+				  0x30 0x08
+				  0x79 0x0c
+				  0x21 0x10
+				  0x14 0x9c
+				  0x9f 0x1c
+				  0x00 0x18>;
+
+	vdda-pll-supply = <&pm8994_l12>;
+	vdda-phy-dpdm-supply = <&pm8994_l24>;
+};
+
+&hsusb_phy2 {
+	status = "okay";
+
+	vdda-pll-supply = <&pm8994_l12>;
+	vdda-phy-dpdm-supply = <&pm8994_l24>;
+};
+
+&rpm_requests {
+	pm8994-regulators {
+		compatible = "qcom,rpm-pm8994-regulators";
+
+		pm8994_l12: l12 {
+			regulator-name = "pm8994_l12";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8994_l24: l24 {
+			regulator-name = "pm8994_l24";
+			regulator-min-microvolt = <3075000>;
+			regulator-max-microvolt = <3075000>;
+		};
+
+		pm8994_l28: l28 {
+			regulator-name = "pm8994_l28";
+			regulator-min-microvolt = <925000>;
+			regulator-max-microvolt = <925000>;
+			regulator-allow-set-load;
+		};
+	};
+};
+
+&pm8994_gpios {
+	pinctrl-names = "default";
+
+	usb3_vbus_det_gpio: pm8996_gpio22 {
+		pinconf {
+			pins = "gpio22";
+			function = PMIC_GPIO_FUNC_NORMAL;
+			input-enable;
+			bias-pull-down;
+			qcom,drive-strength = <PMIC_GPIO_STRENGTH_NO>;
+			power-source = <PM8994_GPIO_S4>; // 1.8V
+		};
+	};
+};
+
+&pmi8994_gpios {
+	usb2_vbus_det_gpio: pmi8996_gpio6 {
+		pinconf {
+			pins = "gpio6";
+			function = PMIC_GPIO_FUNC_NORMAL;
+			input-enable;
+			bias-pull-down;
+			qcom,drive-strength = <PMIC_GPIO_STRENGTH_NO>;
+			power-source = <PM8994_GPIO_S4>; // 1.8V
+		};
+	};
+};
+
