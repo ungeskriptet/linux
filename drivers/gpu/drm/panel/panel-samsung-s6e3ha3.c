@@ -10,22 +10,25 @@
 #include <linux/of.h>
 #include <linux/regulator/consumer.h>
 
+#include <video/mipi_display.h>
+
 #include <drm/drm_mipi_dsi.h>
 #include <drm/drm_modes.h>
 #include <drm/drm_panel.h>
 
-struct zte_samsung_5p5_wqhd_dualmipi {
+struct s6e3ha3 {
 	struct drm_panel panel;
 	struct mipi_dsi_device *dsi;
-	struct regulator_bulk_data supplies[3];
+	struct regulator_bulk_data supplies[2];
 	struct gpio_desc *reset_gpio;
+	struct gpio_desc *backlight_gpio;
 	bool prepared;
 };
 
 static inline
-struct zte_samsung_5p5_wqhd_dualmipi *to_zte_samsung_5p5_wqhd_dualmipi(struct drm_panel *panel)
+struct s6e3ha3 *to_s6e3ha3(struct drm_panel *panel)
 {
-	return container_of(panel, struct zte_samsung_5p5_wqhd_dualmipi, panel);
+	return container_of(panel, struct s6e3ha3, panel);
 }
 
 #define dsi_dcs_write_seq(dsi, seq...) do {				\
@@ -36,7 +39,7 @@ struct zte_samsung_5p5_wqhd_dualmipi *to_zte_samsung_5p5_wqhd_dualmipi(struct dr
 			return ret;					\
 	} while (0)
 
-static void zte_samsung_5p5_wqhd_dualmipi_reset(struct zte_samsung_5p5_wqhd_dualmipi *ctx)
+static void s6e3ha3_reset(struct s6e3ha3 *ctx)
 {
 	gpiod_set_value_cansleep(ctx->reset_gpio, 0);
 	usleep_range(2000, 3000);
@@ -46,7 +49,7 @@ static void zte_samsung_5p5_wqhd_dualmipi_reset(struct zte_samsung_5p5_wqhd_dual
 	usleep_range(5000, 6000);
 }
 
-static int zte_samsung_5p5_wqhd_dualmipi_on(struct zte_samsung_5p5_wqhd_dualmipi *ctx)
+static int s6e3ha3_on(struct s6e3ha3 *ctx)
 {
 	struct mipi_dsi_device *dsi = ctx->dsi;
 	struct device *dev = &dsi->dev;
@@ -71,10 +74,16 @@ static int zte_samsung_5p5_wqhd_dualmipi_on(struct zte_samsung_5p5_wqhd_dualmipi
 			  0x42, 0x57, 0x37, 0x00, 0xaa, 0xcc, 0xd0, 0x00, 0x00);
 	dsi_dcs_write_seq(dsi, 0xf0, 0xa5, 0xa5);
 	msleep(120);
-	dsi_dcs_write_seq(dsi, 0x12);
+	dsi_dcs_write_seq(dsi, MIPI_DCS_ENTER_PARTIAL_MODE);
 	usleep_range(1000, 2000);
-	dsi_dcs_write_seq(dsi, 0x35, 0x00);
-	dsi_dcs_write_seq(dsi, 0x53, 0x20);
+
+	ret = mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VBLANK);
+	if (ret < 0) {
+		dev_err(dev, "Failed to set tear on: %d\n", ret);
+		return ret;
+	}
+
+	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x20);
 
 	ret = mipi_dsi_dcs_set_display_on(dsi);
 	if (ret < 0) {
@@ -86,13 +95,17 @@ static int zte_samsung_5p5_wqhd_dualmipi_on(struct zte_samsung_5p5_wqhd_dualmipi
 	return 0;
 }
 
-static int zte_samsung_5p5_wqhd_dualmipi_off(struct zte_samsung_5p5_wqhd_dualmipi *ctx)
+static int s6e3ha3_off(struct s6e3ha3 *ctx)
 {
 	struct mipi_dsi_device *dsi = ctx->dsi;
 	struct device *dev = &dsi->dev;
 	int ret;
 
-	dsi_dcs_write_seq(dsi, 0x51, 0x00);
+	ret = mipi_dsi_dcs_set_display_brightness(dsi, 0x0000);
+	if (ret < 0) {
+		dev_err(dev, "Failed to set display brightness: %d\n", ret);
+		return ret;
+	}
 
 	ret = mipi_dsi_dcs_set_display_off(dsi);
 	if (ret < 0) {
@@ -111,9 +124,9 @@ static int zte_samsung_5p5_wqhd_dualmipi_off(struct zte_samsung_5p5_wqhd_dualmip
 	return 0;
 }
 
-static int zte_samsung_5p5_wqhd_dualmipi_prepare(struct drm_panel *panel)
+static int s6e3ha3_prepare(struct drm_panel *panel)
 {
-	struct zte_samsung_5p5_wqhd_dualmipi *ctx = to_zte_samsung_5p5_wqhd_dualmipi(panel);
+	struct s6e3ha3 *ctx = to_s6e3ha3(panel);
 	struct device *dev = &ctx->dsi->dev;
 	int ret;
 
@@ -126,9 +139,9 @@ static int zte_samsung_5p5_wqhd_dualmipi_prepare(struct drm_panel *panel)
 		return ret;
 	}
 
-	zte_samsung_5p5_wqhd_dualmipi_reset(ctx);
+	s6e3ha3_reset(ctx);
 
-	ret = zte_samsung_5p5_wqhd_dualmipi_on(ctx);
+	ret = s6e3ha3_on(ctx);
 	if (ret < 0) {
 		dev_err(dev, "Failed to initialize panel: %d\n", ret);
 		gpiod_set_value_cansleep(ctx->reset_gpio, 1);
@@ -140,16 +153,16 @@ static int zte_samsung_5p5_wqhd_dualmipi_prepare(struct drm_panel *panel)
 	return 0;
 }
 
-static int zte_samsung_5p5_wqhd_dualmipi_unprepare(struct drm_panel *panel)
+static int s6e3ha3_unprepare(struct drm_panel *panel)
 {
-	struct zte_samsung_5p5_wqhd_dualmipi *ctx = to_zte_samsung_5p5_wqhd_dualmipi(panel);
+	struct s6e3ha3 *ctx = to_s6e3ha3(panel);
 	struct device *dev = &ctx->dsi->dev;
 	int ret;
 
 	if (!ctx->prepared)
 		return 0;
 
-	ret = zte_samsung_5p5_wqhd_dualmipi_off(ctx);
+	ret = s6e3ha3_off(ctx);
 	if (ret < 0)
 		dev_err(dev, "Failed to un-initialize panel: %d\n", ret);
 
@@ -160,7 +173,7 @@ static int zte_samsung_5p5_wqhd_dualmipi_unprepare(struct drm_panel *panel)
 	return 0;
 }
 
-static const struct drm_display_mode zte_samsung_5p5_wqhd_dualmipi_mode = {
+static const struct drm_display_mode s6e3ha3_mode = {
 	.clock = (720 + 140 + 16 + 66) * (2560 + 16 + 16 + 8) * 60 / 1000,
 	.hdisplay = 720,
 	.hsync_start = 720 + 140,
@@ -174,12 +187,12 @@ static const struct drm_display_mode zte_samsung_5p5_wqhd_dualmipi_mode = {
 	.height_mm = 121,
 };
 
-static int zte_samsung_5p5_wqhd_dualmipi_get_modes(struct drm_panel *panel,
+static int s6e3ha3_get_modes(struct drm_panel *panel,
 						   struct drm_connector *connector)
 {
 	struct drm_display_mode *mode;
 
-	mode = drm_mode_duplicate(connector->dev, &zte_samsung_5p5_wqhd_dualmipi_mode);
+	mode = drm_mode_duplicate(connector->dev, &s6e3ha3_mode);
 	if (!mode)
 		return -ENOMEM;
 
@@ -193,17 +206,20 @@ static int zte_samsung_5p5_wqhd_dualmipi_get_modes(struct drm_panel *panel,
 	return 1;
 }
 
-static const struct drm_panel_funcs zte_samsung_5p5_wqhd_dualmipi_panel_funcs = {
-	.prepare = zte_samsung_5p5_wqhd_dualmipi_prepare,
-	.unprepare = zte_samsung_5p5_wqhd_dualmipi_unprepare,
-	.get_modes = zte_samsung_5p5_wqhd_dualmipi_get_modes,
+static const struct drm_panel_funcs s6e3ha3_panel_funcs = {
+	.prepare = s6e3ha3_prepare,
+	.unprepare = s6e3ha3_unprepare,
+	.get_modes = s6e3ha3_get_modes,
 };
 
-static int zte_samsung_5p5_wqhd_dualmipi_bl_update_status(struct backlight_device *bl)
+static int s6e3ha3_bl_update_status(struct backlight_device *bl)
 {
 	struct mipi_dsi_device *dsi = bl_get_data(bl);
+	struct s6e3ha3 *ctx = mipi_dsi_get_drvdata(dsi);
 	u16 brightness = backlight_get_brightness(bl);
 	int ret;
+
+	gpiod_set_value_cansleep(ctx->backlight_gpio, !!brightness);
 
 	dsi->mode_flags &= ~MIPI_DSI_MODE_LPM;
 
@@ -218,7 +234,7 @@ static int zte_samsung_5p5_wqhd_dualmipi_bl_update_status(struct backlight_devic
 
 // TODO: Check if /sys/class/backlight/.../actual_brightness actually returns
 // correct values. If not, remove this function.
-static int zte_samsung_5p5_wqhd_dualmipi_bl_get_brightness(struct backlight_device *bl)
+static int s6e3ha3_bl_get_brightness(struct backlight_device *bl)
 {
 	struct mipi_dsi_device *dsi = bl_get_data(bl);
 	u16 brightness;
@@ -235,13 +251,13 @@ static int zte_samsung_5p5_wqhd_dualmipi_bl_get_brightness(struct backlight_devi
 	return brightness & 0xff;
 }
 
-static const struct backlight_ops zte_samsung_5p5_wqhd_dualmipi_bl_ops = {
-	.update_status = zte_samsung_5p5_wqhd_dualmipi_bl_update_status,
-	.get_brightness = zte_samsung_5p5_wqhd_dualmipi_bl_get_brightness,
+static const struct backlight_ops s6e3ha3_bl_ops = {
+	.update_status = s6e3ha3_bl_update_status,
+	.get_brightness = s6e3ha3_bl_get_brightness,
 };
 
 static struct backlight_device *
-zte_samsung_5p5_wqhd_dualmipi_create_backlight(struct mipi_dsi_device *dsi)
+s6e3ha3_create_backlight(struct mipi_dsi_device *dsi)
 {
 	struct device *dev = &dsi->dev;
 	const struct backlight_properties props = {
@@ -251,22 +267,21 @@ zte_samsung_5p5_wqhd_dualmipi_create_backlight(struct mipi_dsi_device *dsi)
 	};
 
 	return devm_backlight_device_register(dev, dev_name(dev), dev, dsi,
-					      &zte_samsung_5p5_wqhd_dualmipi_bl_ops, &props);
+					      &s6e3ha3_bl_ops, &props);
 }
 
-static int zte_samsung_5p5_wqhd_dualmipi_probe(struct mipi_dsi_device *dsi)
+static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 {
 	struct device *dev = &dsi->dev;
-	struct zte_samsung_5p5_wqhd_dualmipi *ctx;
+	struct s6e3ha3 *ctx;
 	int ret;
 
 	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
 
-	ctx->supplies[0].supply = "vddio";
-	ctx->supplies[1].supply = "vdda";
-	ctx->supplies[2].supply = "vcca";
+	ctx->supplies[0].supply = "vci";
+	ctx->supplies[1].supply = "vdd3";
 	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(ctx->supplies),
 				      ctx->supplies);
 	if (ret < 0)
@@ -277,6 +292,11 @@ static int zte_samsung_5p5_wqhd_dualmipi_probe(struct mipi_dsi_device *dsi)
 		return dev_err_probe(dev, PTR_ERR(ctx->reset_gpio),
 				     "Failed to get reset-gpios\n");
 
+	ctx->backlight_gpio = devm_gpiod_get(dev, "backlight", GPIOD_OUT_LOW);
+	if (IS_ERR(ctx->backlight_gpio))
+		return dev_err_probe(dev, PTR_ERR(ctx->backlight_gpio),
+				     "Failed to get backlight-gpios\n");
+
 	ctx->dsi = dsi;
 	mipi_dsi_set_drvdata(dsi, ctx);
 
@@ -285,10 +305,10 @@ static int zte_samsung_5p5_wqhd_dualmipi_probe(struct mipi_dsi_device *dsi)
 	dsi->mode_flags = MIPI_DSI_MODE_NO_EOT_PACKET |
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS;
 
-	drm_panel_init(&ctx->panel, dev, &zte_samsung_5p5_wqhd_dualmipi_panel_funcs,
+	drm_panel_init(&ctx->panel, dev, &s6e3ha3_panel_funcs,
 		       DRM_MODE_CONNECTOR_DSI);
 
-	ctx->panel.backlight = zte_samsung_5p5_wqhd_dualmipi_create_backlight(dsi);
+	ctx->panel.backlight = s6e3ha3_create_backlight(dsi);
 	if (IS_ERR(ctx->panel.backlight))
 		return dev_err_probe(dev, PTR_ERR(ctx->panel.backlight),
 				     "Failed to create backlight\n");
@@ -305,9 +325,9 @@ static int zte_samsung_5p5_wqhd_dualmipi_probe(struct mipi_dsi_device *dsi)
 	return 0;
 }
 
-static int zte_samsung_5p5_wqhd_dualmipi_remove(struct mipi_dsi_device *dsi)
+static int s6e3ha3_remove(struct mipi_dsi_device *dsi)
 {
-	struct zte_samsung_5p5_wqhd_dualmipi *ctx = mipi_dsi_get_drvdata(dsi);
+	struct s6e3ha3 *ctx = mipi_dsi_get_drvdata(dsi);
 	int ret;
 
 	ret = mipi_dsi_detach(dsi);
@@ -319,22 +339,22 @@ static int zte_samsung_5p5_wqhd_dualmipi_remove(struct mipi_dsi_device *dsi)
 	return 0;
 }
 
-static const struct of_device_id zte_samsung_5p5_wqhd_dualmipi_of_match[] = {
-	{ .compatible = "samsung,s6e3ha3" }, // FIXME
+static const struct of_device_id s6e3ha3_of_match[] = {
+	{ .compatible = "samsung,s6e3ha3.c" }, // FIXME
 	{ /* sentinel */ }
 };
-MODULE_DEVICE_TABLE(of, zte_samsung_5p5_wqhd_dualmipi_of_match);
+MODULE_DEVICE_TABLE(of, s6e3ha3_of_match);
 
-static struct mipi_dsi_driver zte_samsung_5p5_wqhd_dualmipi_driver = {
-	.probe = zte_samsung_5p5_wqhd_dualmipi_probe,
-	.remove = zte_samsung_5p5_wqhd_dualmipi_remove,
+static struct mipi_dsi_driver s6e3ha3_driver = {
+	.probe = s6e3ha3_probe,
+	.remove = s6e3ha3_remove,
 	.driver = {
-		.name = "panel-zte-samsung-5p5-wqhd-dualmipi",
-		.of_match_table = zte_samsung_5p5_wqhd_dualmipi_of_match,
+		.name = "panel-samsung-s6e3ha3.c",
+		.of_match_table = s6e3ha3_of_match,
 	},
 };
-module_mipi_dsi_driver(zte_samsung_5p5_wqhd_dualmipi_driver);
+module_mipi_dsi_driver(s6e3ha3_driver);
 
 MODULE_AUTHOR("linux-mdss-dsi-panel-driver-generator <fix@me>"); // FIXME
-MODULE_DESCRIPTION("DRM driver for zteSAM_S6E3HA3_SAM_25601440_5P5Inch");
+MODULE_DESCRIPTION("DRM driver for samsungSAM_S6E3HA3_SAM_25601440_5P5Inch");
 MODULE_LICENSE("GPL v2");

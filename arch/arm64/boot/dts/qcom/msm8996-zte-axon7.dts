@@ -123,6 +123,9 @@
 
 	qcom,dual-dsi-mode;
 
+	/* DSI1 is slave, so use DSI0 clocks */
+	assigned-clock-parents = <&dsi0_phy 0>, <&dsi0_phy 1>;
+
 	vddio-supply = <&pm8994_l14>;
 	vdda-supply = <&pm8994_l2>;
 	vcca-supply = <&pm8994_l28>;
