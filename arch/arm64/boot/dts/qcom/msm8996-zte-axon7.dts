@@ -36,14 +36,165 @@
 			no-map;
 		};
 	};
+
+	/* WL_EN pin defined as a fixed regulator */
+	wlan_en: wlan-en-1-8v {
+		compatible = "regulator-fixed";
+		regulator-name = "wlan-en-regulator";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+
+		gpio = <&pm8994_gpios 8 0>;
+		/* WLAN card specific delay */
+		startup-delay-us = <70000>;
+		enable-active-high;
+		pinctrl-names = "default";
+		pinctrl-0 = <&wlan_en_default>;
+	};
+
+};
+
+&dsi0 {
+	status = "okay";
+
+	vddio-supply = <&pm8994_l14>;
+	vdda-supply = <&pm8994_l2>;
+	vcca-supply = <&pm8994_l28>;
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&mdss_dsi_default &mdss_te_default>;
+	pinctrl-1 = <&mdss_dsi_sleep &mdss_te_sleep>;
+
+	qcom,dual-dsi-mode;
+	qcom,master-dsi;
+
+	ports {
+		port@1 {
+			endpoint {
+				remote-endpoint = <&panel0_in>;
+				data-lanes = <0 1 2 3>;
+			};
+		};
+	};
+
+
+	panel: panel@0 {
+		compatible = "samsung,s6e3ha3";
+		reg = <0>;
+
+		vddio-supply = <&pm8994_l14>;
+		vdda-supply = <&pm8994_l2>;
+		vcca-supply = <&pm8994_l28>;
+
+		reset-gpios = <&tlmm 8 0>;
+		enable-gpios = <&tlmm 40 0>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				panel0_in: endpoint {
+					remote-endpoint = <&dsi0_out>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				panel1_in: endpoint {
+					remote-endpoint = <&dsi1_out>;
+				};
+			};
+		};
+	};
+};
+
+&dsi0_phy {
+	status = "okay";
+
+	vddio-supply = <&pm8994_l14>;
+	vdda-supply = <&pm8994_l2>;
+	vcca-supply = <&pm8994_l28>;
+};
+
+&dsi1 {
+	status = "okay";
+
+	qcom,dual-dsi-mode;
+
+	vddio-supply = <&pm8994_l14>;
+	vdda-supply = <&pm8994_l2>;
+	vcca-supply = <&pm8994_l28>;
+
+	ports {
+		port@1 {
+			endpoint {
+				remote-endpoint = <&panel1_in>;
+				data-lanes = <0 1 2 3>;
+			};
+		};
+	};
+
+};
+
+&dsi1_phy {
+	status = "okay";
+
+	vddio-supply = <&pm8994_l14>;
+	vdda-supply = <&pm8994_l2>;
+	vcca-supply = <&pm8994_l28>;
 };
 
 &mmcc {
 	status = "disabled";
 };
 
+&mdp {
+	status = "okay";
+};
+
+&mdss {
+	status = "okay";
+};
+
+&mss_pil {
+	status = "okay";
+
+	pll-supply = <&pm8994_l12>;
+};
+
+
 &tlmm {
 	gpio-reserved-ranges = <81 4>;
+
+	mdss_dsi_default: mdss_dsi_default {
+		pins = "gpio8";
+		function = "gpio";
+		drive-strength = <8>;
+		bias-disable;
+	};
+
+	mdss_dsi_sleep: mdss_dsi_sleep {
+		pins = "gpio8";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+
+	mdss_te_default: mdss_te_default {
+		pins = "gpio10";
+		function = "mdp_vsync";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
+
+	mdss_te_sleep: mdss_te_sleep {
+		pins = "gpio10";
+		function = "mdp_vsync";
+		drive-strength = <2>;
+		bias-pull-down;
+	};
 };
 
 &ufsphy {
@@ -88,6 +239,22 @@
 	};
 };
 
+&pcie0 {
+	status = "okay";
+
+	/* Supplied by vdd_3v3, but choose wlan_en to drive enable pin high */
+	vddpe-3v3-supply = <&wlan_en>;
+	vdda-supply = <&pm8994_l28>;
+
+	perst-gpios = <&tlmm 35 GPIO_ACTIVE_LOW>;
+	wake-gpios = <&tlmm 37 GPIO_ACTIVE_HIGH>;
+};
+
+&pcie_phy {
+	status = "okay";
+	vdda-phy-supply = <&pm8994_l28>;
+	vdda-pll-supply = <&pm8994_l12>;
+};
 
 &hsusb_phy1 {
 	status = "okay";
@@ -106,8 +273,20 @@
 			regulator-max-microvolt = <1800000>;
 		};
 
+		pm8994_l2: l2 {
+			regulator-name = "pm8994_l2";
+			regulator-min-microvolt = <1250000>;
+			regulator-max-microvolt = <1250000>;
+		};
+
 		pm8994_l12: l12 {
 			regulator-name = "pm8994_l12";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8994_l14: l14 {
+			regulator-name = "pm8994_l14";
 			regulator-min-microvolt = <1800000>;
 			regulator-max-microvolt = <1800000>;
 		};
@@ -138,5 +317,16 @@
 			regulator-max-microvolt = <925000>;
 			regulator-allow-set-load;
 		};
+	};
+};
+
+&pm8994_gpios {
+	wlan_en_default: wlan-en-default {
+		pins = "gpio8";
+		function = PMIC_GPIO_FUNC_NORMAL;
+		output-low;
+		qcom,drive-strength = <PMIC_GPIO_STRENGTH_LOW>;
+		power-source = <PM8994_GPIO_S4>;
+		bias-disable;
 	};
 };
