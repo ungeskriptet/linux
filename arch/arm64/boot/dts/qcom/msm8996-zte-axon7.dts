@@ -212,11 +212,16 @@
 };
 
 &mmcc {
-	status = "disabled";
+	vdd-gfx-supply = <&vdd_gfx>;
 };
 
-&mdp {
-	status = "okay";
+&mdp_smmu {
+	/*
+	 * HACK: Remove power-domains to stop SMMU from being suspended
+	 * and losing simplefb as a result. MMAGIC_MDSS_GDSC is flagged
+	 * always-on so it does not need any consumers to stay on.
+	 */
+	/delete-property/ power-domains;
 };
 
 &mdss {
@@ -370,6 +375,16 @@
 
 	vdda-pll-supply = <&pm8994_l12>;
 	vdda-phy-dpdm-supply = <&pm8994_l24>;
+};
+
+&pmi8994_spmi_regulators {
+	vdd_gfx: s2@1700 {
+		reg = <0x1700 0x100>;
+		regulator-name = "vdd-gfx";
+		regulator-always-on;
+		regulator-min-microvolt = <980000>;
+		regulator-max-microvolt = <1230000>;
+	};
 };
 
 &rpm_requests {
