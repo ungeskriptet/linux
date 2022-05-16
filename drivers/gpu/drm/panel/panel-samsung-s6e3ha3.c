@@ -10,8 +10,6 @@
 #include <linux/of.h>
 #include <linux/regulator/consumer.h>
 
-#include <video/mipi_display.h>
-
 #include <drm/drm_mipi_dsi.h>
 #include <drm/drm_modes.h>
 #include <drm/drm_panel.h>
@@ -74,16 +72,10 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 			  0x42, 0x57, 0x37, 0x00, 0xaa, 0xcc, 0xd0, 0x00, 0x00);
 	dsi_dcs_write_seq(dsi, 0xf0, 0xa5, 0xa5);
 	msleep(120);
-	dsi_dcs_write_seq(dsi, MIPI_DCS_ENTER_PARTIAL_MODE);
+	dsi_dcs_write_seq(dsi, 0x12);
 	usleep_range(1000, 2000);
-
-	ret = mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VBLANK);
-	if (ret < 0) {
-		dev_err(dev, "Failed to set tear on: %d\n", ret);
-		return ret;
-	}
-
-	dsi_dcs_write_seq(dsi, MIPI_DCS_WRITE_CONTROL_DISPLAY, 0x20);
+	dsi_dcs_write_seq(dsi, 0x35, 0x00);
+	dsi_dcs_write_seq(dsi, 0x53, 0x20);
 
 	ret = mipi_dsi_dcs_set_display_on(dsi);
 	if (ret < 0) {
@@ -101,11 +93,7 @@ static int s6e3ha3_off(struct s6e3ha3 *ctx)
 	struct device *dev = &dsi->dev;
 	int ret;
 
-	ret = mipi_dsi_dcs_set_display_brightness(dsi, 0x0000);
-	if (ret < 0) {
-		dev_err(dev, "Failed to set display brightness: %d\n", ret);
-		return ret;
-	}
+	dsi_dcs_write_seq(dsi, 0x51, 0x00);
 
 	ret = mipi_dsi_dcs_set_display_off(dsi);
 	if (ret < 0) {
@@ -280,8 +268,8 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 	if (!ctx)
 		return -ENOMEM;
 
-	ctx->supplies[0].supply = "vci";
-	ctx->supplies[1].supply = "vdd3";
+	ctx->supplies[0].supply = "vddio";
+	ctx->supplies[1].supply = "vdda";
 	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(ctx->supplies),
 				      ctx->supplies);
 	if (ret < 0)
@@ -340,7 +328,7 @@ static int s6e3ha3_remove(struct mipi_dsi_device *dsi)
 }
 
 static const struct of_device_id s6e3ha3_of_match[] = {
-	{ .compatible = "samsung,s6e3ha3.c" }, // FIXME
+	{ .compatible = "samsung,s6e3ha3" }, // FIXME
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, s6e3ha3_of_match);
@@ -349,7 +337,7 @@ static struct mipi_dsi_driver s6e3ha3_driver = {
 	.probe = s6e3ha3_probe,
 	.remove = s6e3ha3_remove,
 	.driver = {
-		.name = "panel-samsung-s6e3ha3.c",
+		.name = "panel-samsung-s6e3ha3",
 		.of_match_table = s6e3ha3_of_match,
 	},
 };

@@ -61,6 +61,20 @@
 		regulator-min-microvolt = <3700000>;
 		regulator-max-microvolt = <3700000>;
 	};
+
+	reg_panel_vdd3: regulator-panel-vdd3 {
+		compatible = "regulator-fixed";
+		regulator-name = "panel_vdd3";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+
+		gpio = <&tlmm 40 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&panel_vdd3_default>;
+	};
+
 };
 
 &dsi0 {
@@ -75,6 +89,7 @@
 
 	qcom,dual-dsi-mode;
 	qcom,master-dsi;
+	qcom,sync-dual-dsi;
 
 	ports {
 		port@1 {
@@ -85,17 +100,18 @@
 		};
 	};
 
-
 	panel: panel@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
 		compatible = "samsung,s6e3ha3";
 		reg = <0>;
 
-		vci-supply = <&pm8994_l2>;
-		vdd3-supply = <&pm8994_l14>;
+		vddio-supply = <&reg_panel_vdd3>;
+		vdda-supply = <&pm8994_l19>;
 
 		reset-gpios = <&tlmm 8 GPIO_ACTIVE_LOW>;
-		enable-gpios = <&tlmm 40 GPIO_ACTIVE_LOW>;
-		disp-te-gpios = <&tlmm 10 GPIO_ACTIVE_LOW>;
+		//enable-gpios = <&tlmm 40 0>;
 
 		ports {
 			#address-cells = <1>;
@@ -130,11 +146,11 @@
 
 };
 
-
 &dsi1 {
 	status = "okay";
 
 	qcom,dual-dsi-mode;
+	qcom,sync-dual-dsi;
 
 	/* DSI1 is slave, so use DSI0 clocks */
 	assigned-clock-parents = <&dsi0_phy 0>, <&dsi0_phy 1>;
@@ -212,6 +228,13 @@
 		function = "mdp_vsync";
 		drive-strength = <2>;
 		bias-pull-down;
+	};
+
+	panel_vdd3_default: panel-vdd3-default {
+		pins = "gpio40";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
 	};
 };
 
@@ -307,6 +330,12 @@
 			regulator-name = "pm8994_l14";
 			regulator-min-microvolt = <1800000>;
 			regulator-max-microvolt = <1800000>;
+		};
+
+		pm8994_l19: l19 {
+        		regulator-name = "pm8994_l19";
+        		regulator-min-microvolt = <3000000>;
+        		regulator-max-microvolt = <3000000>;
 		};
 
 		pm8994_l20: l20 {
