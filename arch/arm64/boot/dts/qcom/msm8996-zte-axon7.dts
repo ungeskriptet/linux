@@ -229,6 +229,16 @@
 	pll-supply = <&pm8994_l12>;
 };
 
+&sdhc2 {
+	status = "okay";
+
+	// Detecting SD card does't work for now
+	//cd-gpios = <&tlmm 95 GPIO_ACTIVE_LOW>;
+	non-removable;
+	vmmc-supply = <&pm8994_l21>;
+	vqmmc-supply = <&pm8994_l13>;
+};
+
 &tlmm {
 	gpio-reserved-ranges = <81 4>;
 
@@ -265,6 +275,20 @@
 		function = "gpio";
 		drive-strength = <2>;
 		bias-disable;
+	};
+
+	sdc2_cd_on: sdc2_cd_on {
+		pins = "gpio95";
+		function = "gpio";
+		bias-disable;
+		drive-strength = <16>;
+	};
+
+	sdc2_cd_off: sdc2_cd_off {
+		pins = "gpio95";
+		function = "gpio";
+		bias-pull-up;
+		drive-strength = <2>;
 	};
 
 	touch_default: touch_active {
@@ -370,6 +394,12 @@
 			regulator-max-microvolt = <1800000>;
 		};
 
+		pm8994_l13: l13 {
+			regulator-name = "pm8994_l13";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <2950000>;
+		};
+
 		pm8994_l14: l14 {
 			regulator-name = "pm8994_l14";
 			regulator-min-microvolt = <1800000>;
@@ -387,6 +417,12 @@
 			regulator-min-microvolt = <2950000>;
 			regulator-max-microvolt = <2950000>;
 			regulator-allow-set-load;
+		};
+
+		pm8994_l21: l21 {
+			regulator-name = "pm8994_l21";
+			regulator-min-microvolt = <2950000>;
+			regulator-max-microvolt = <2950000>;
 		};
 
 		pm8994_l22: l22 {
