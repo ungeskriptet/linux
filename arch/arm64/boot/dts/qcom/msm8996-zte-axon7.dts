@@ -52,12 +52,20 @@
 		pinctrl-0 = <&wlan_en_default>;
 	};
 
+	vph_pwr: vph-pwr-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vph_pwr";
+		regulator-always-on;
+		regulator-boot-on;
+
+		regulator-min-microvolt = <3700000>;
+		regulator-max-microvolt = <3700000>;
+	};
 };
 
 &dsi0 {
 	status = "okay";
 
-	vddio-supply = <&pm8994_l14>;
 	vdda-supply = <&pm8994_l2>;
 	vcca-supply = <&pm8994_l28>;
 
@@ -82,12 +90,12 @@
 		compatible = "samsung,s6e3ha3";
 		reg = <0>;
 
-		vddio-supply = <&pm8994_l14>;
-		vdda-supply = <&pm8994_l2>;
-		vcca-supply = <&pm8994_l28>;
+		vci-supply = <&pm8994_l2>;
+		vdd3-supply = <&pm8994_l14>;
 
-		reset-gpios = <&tlmm 8 0>;
-		enable-gpios = <&tlmm 40 0>;
+		reset-gpios = <&tlmm 8 GPIO_ACTIVE_LOW>;
+		enable-gpios = <&tlmm 40 GPIO_ACTIVE_LOW>;
+		disp-te-gpios = <&tlmm 10 GPIO_ACTIVE_LOW>;
 
 		ports {
 			#address-cells = <1>;
@@ -113,10 +121,15 @@
 &dsi0_phy {
 	status = "okay";
 
-	vddio-supply = <&pm8994_l14>;
 	vdda-supply = <&pm8994_l2>;
 	vcca-supply = <&pm8994_l28>;
 };
+
+&dsi0_out {
+	remote-endpoint = <&panel0_in>;
+
+};
+
 
 &dsi1 {
 	status = "okay";
@@ -126,7 +139,6 @@
 	/* DSI1 is slave, so use DSI0 clocks */
 	assigned-clock-parents = <&dsi0_phy 0>, <&dsi0_phy 1>;
 
-	vddio-supply = <&pm8994_l14>;
 	vdda-supply = <&pm8994_l2>;
 	vcca-supply = <&pm8994_l28>;
 
@@ -144,9 +156,12 @@
 &dsi1_phy {
 	status = "okay";
 
-	vddio-supply = <&pm8994_l14>;
 	vdda-supply = <&pm8994_l2>;
 	vcca-supply = <&pm8994_l28>;
+};
+
+&dsi1_out {
+	remote-endpoint = <&panel1_in>;
 };
 
 &mmcc {
