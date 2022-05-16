@@ -77,6 +77,37 @@
 
 };
 
+&blsp2_i2c6 {
+	status = "okay";
+
+	touchscreen: synaptics-rmi4-i2c@20 {
+		compatible = "syna,rmi4-i2c";
+		reg = <0x20>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts-extended = <&tlmm 125 0x2008>;
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&touch_default>;
+		pinctrl-1 = <&touch_suspend>;
+		vdd-supply = <&pm8994_l14>;
+		vio-supply = <&pm8994_l22>;
+		syna,reset-delay-ms = <100>;
+		syna,startup-delay-ms = <100>;
+
+		rmi4-f01@1 {
+			reg = <0x1>;
+			syna,nosleep-mode = <1>;
+		};
+
+		rmi4-f12@12 {
+			reg = <0x12>;
+			syna,sensor-type = <1>;
+			touchscreen-x-mm = <68>;
+			touchscreen-y-mm = <122>;
+		};
+	};
+};
+
 &dsi0 {
 	status = "okay";
 
@@ -198,7 +229,6 @@
 	pll-supply = <&pm8994_l12>;
 };
 
-
 &tlmm {
 	gpio-reserved-ranges = <81 4>;
 
@@ -232,6 +262,20 @@
 
 	panel_vdd3_default: panel-vdd3-default {
 		pins = "gpio40";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+	};
+
+	touch_default: touch_active {
+		pins = "gpio89", "gpio125";
+		function = "gpio";
+		drive-strength = <16>;
+		bias-pull-up;
+	};
+
+	touch_suspend: touch_suspend {
+		pins = "gpio89", "gpio125";
 		function = "gpio";
 		drive-strength = <2>;
 		bias-disable;
@@ -343,6 +387,12 @@
 			regulator-min-microvolt = <2950000>;
 			regulator-max-microvolt = <2950000>;
 			regulator-allow-set-load;
+		};
+
+		pm8994_l22: l22 {
+			regulator-name = "pm8994_l22";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
 		};
 
 		pm8994_l24: l24 {
