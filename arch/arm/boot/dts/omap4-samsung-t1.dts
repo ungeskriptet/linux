@@ -69,7 +69,7 @@
 			reg = <0>;
 
 			pinctrl-names = "default";
-			pinctrl-0 = <&lcd_reset_pins>;
+			pinctrl-0 = <&panel_rst>;
 
 			spi-max-frequency = <1200000>;
 
@@ -117,7 +117,7 @@
 &omap4_pmx_wkup {
 	twl6030_wkup_pins: pinmux_twl6030_wkup_pins {
 		pinctrl-single,pins = <
-			OMAP4_IOPAD(0x54, PIN_OUTPUT_PULLUP | MUX_MODE2)	/* fref_clk3_req.sys_drm_msecure */
+			OMAP4_IOPAD(0x54, PIN_OUTPUT_PULLUP | MUX_MODE2)
 		>;
 	};
 };
@@ -161,7 +161,7 @@
 		>;
 	};
 
-	lcd_reset_pins: pinmux_lcd_reset_pins {
+	panel_rst: pinmux_panel_rst {
 		pinctrl-single,pins = <
 			OMAP4_IOPAD(0x56, PIN_OUTPUT | MUX_MODE3)
 		>;
