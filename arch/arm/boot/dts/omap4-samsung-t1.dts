@@ -73,8 +73,8 @@
 
 			spi-max-frequency = <1200000>;
 
-			vdd3-supply = <&vcxio>;
-			vci-supply = <&vaux3>;
+			//vdd3-supply = <&vdac>;
+			//vci-supply = <&vaux3>;
 
 			reset-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
 			power-on-delay = <20>;
@@ -164,6 +164,12 @@
 	panel_rst: pinmux_panel_rst {
 		pinctrl-single,pins = <
 			OMAP4_IOPAD(0x56, PIN_OUTPUT | MUX_MODE3)
+		>;
+	};
+
+	touch_pins: pinmux_touch_pins {
+		pinctrl-single,pins = <
+			OMAP4_IOPAD(0x06c, PIN_INPUT | MUX_MODE3)
 		>;
 	};
 
@@ -456,6 +462,16 @@
 &i2c3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c3_pins>;
+
+	touchscreen@4a {
+        	compatible = "atmel,maxtouch";
+        	reg = <0x4a>;
+        	pinctrl-names = "default";
+        	pinctrl-0 = <&touch_pins>;
+
+		interrupt-parent = <&gpio2>;
+		interrupts = <14 IRQ_TYPE_EDGE_FALLING>;
+	};
 };
 
 &i2c4 {
