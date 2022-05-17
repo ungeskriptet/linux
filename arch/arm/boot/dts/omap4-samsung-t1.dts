@@ -68,9 +68,12 @@
 			compatible = "samsung,ld9040";
 			reg = <0>;
 
+			pinctrl-names = "default";
+			pinctrl-0 = <&lcd_reset_pins>;
+
 			spi-max-frequency = <1200000>;
 
-			//vdd3-supply = <&vcxio>;
+			vdd3-supply = <&vcxio>;
 			vci-supply = <&vaux3>;
 
 			reset-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
@@ -114,7 +117,7 @@
 &omap4_pmx_wkup {
 	twl6030_wkup_pins: pinmux_twl6030_wkup_pins {
 		pinctrl-single,pins = <
-			OMAP4_IOPAD(0x56, PIN_OUTPUT_PULLUP | MUX_MODE2)	/* fref_clk3_req.sys_drm_msecure */
+			OMAP4_IOPAD(0x54, PIN_OUTPUT_PULLUP | MUX_MODE2)	/* fref_clk3_req.sys_drm_msecure */
 		>;
 	};
 };
@@ -155,7 +158,12 @@
 			OMAP4_IOPAD(0x154, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_clk */
 			OMAP4_IOPAD(0x156, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_simo */
 			OMAP4_IOPAD(0x15a, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_cs0 */
-			OMAP4_IOPAD(0x056, PIN_OUTPUT | MUX_MODE3)
+		>;
+	};
+
+	lcd_reset_pins: pinmux_lcd_reset_pins {
+		pinctrl-single,pins = <
+			OMAP4_IOPAD(0x56, PIN_OUTPUT | MUX_MODE3)
 		>;
 	};
 
@@ -356,19 +364,75 @@
 #include "twl6030.dtsi"
 #include "twl6030_omap4.dtsi"
 
+&vaux1 {
+	regulator-min-microvolt = <1000000>;
+	regulator-max-microvolt = <3000000>;
+	regulator-always-on;
+};
+
+&vaux2 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+};
+
 &vaux3 {
 	regulator-min-microvolt = <3000000>;
 	regulator-max-microvolt = <3000000>;
 };
 
-&vusim {
+&vmmc {
 	regulator-min-microvolt = <1200000>;
 	regulator-max-microvolt = <3000000>;
+};
+
+&vpp {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <2500000>;
+	regulator-state-mem {
+		regulator-off-in-suspend;
+	};
+};
+
+&vusim {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <3000000>;
+	regulator-state-mem {
+		regulator-off-in-suspend;
+	};
+};
+
+&vana {
+	regulator-min-microvolt = <2100000>;
+	regulator-max-microvolt = <2100000>;
+	regulator-always-on;
 };
 
 &vcxio {
 	regulator-min-microvolt = <1800000>;
 	regulator-max-microvolt = <1800000>;
+	regulator-always-on;
+	regulator-state-mem {
+		regulator-off-in-suspend;
+	};
+};
+
+&vdac {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+};
+
+&vusb {
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-state-mem {
+		regulator-off-in-suspend;
+	};
+};
+
+&v2v1 {
+	regulator-min-microvolt = <2100000>;
+	regulator-max-microvolt = <2100000>;
+	regulator-always-on;
 	regulator-state-mem {
 		regulator-off-in-suspend;
 	};
