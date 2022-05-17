@@ -1,5 +1,5 @@
 dir /dev 755 0 0
-rod /dev/mmcblk1 600 0 0 b 179 0
+nod /dev/mmcblk1 600 0 0 b 179 0
 nod /dev/mmcblk1p1 600 0 0 b 179 1
 nod /dev/mmcblk1p2 600 0 0 b 179 2
 nod /dev/mmcblk1p3 600 0 0 b 179 3

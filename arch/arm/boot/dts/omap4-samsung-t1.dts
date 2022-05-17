@@ -51,9 +51,9 @@
 
 		num-chipselects = <1>;
 		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
-		sck-gpios = <&gpio5 23 GPIO_ACTIVE_HIGH>;
-		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;
-		miso-gpios = <&gpio5 25 GPIO_ACTIVE_HIGH>;
+		sck-gpios = <&gpio5 23 GPIO_ACTIVE_LOW>;
+		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_LOW>;
+		//miso-gpios = <&gpio5 25 GPIO_ACTIVE_HIGH>;
 
 		lcd@0 {
 			compatible = "samsung,ld9040";
@@ -61,12 +61,12 @@
 
 			spi-max-frequency = <1200000>;
 
-			vdd3-supply = <&vaux3>;
-			vci-supply = <&vusim>;
+			//vdd3-supply = <&vaux3>;
+			//vci-supply = <&vusim>;
 
-			reset-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
-			power-on-delay = <10>;
-			reset-delay = <10>;
+			reset-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
+			power-on-delay = <20>;
+			reset-delay = <20>;
 
 			panel-width-mm = <90>;
 			panel-height-mm = <154>;
@@ -228,10 +228,11 @@
 };
 
 &mmc1 {
+	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc1_pins>;
 
-	vmmc-supply = <&vmmc>;
+	vmmc-supply = <&vaux1>;
 	bus-width = <4>;
 };
 
@@ -239,7 +240,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc2_pins>;
 
-	vmmc-supply = <&vaux1>;
+	vmmc-supply = <&vmmc>;
 	ti,non-removable;
 	bus-width = <8>;
 };
@@ -286,13 +287,30 @@
 };
 
 &i2c1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2c1_pins>;
+	// We need i2c1 muxed early on the boot process for pmic
+	// bootloader already done it for us
+	// pinctrl-names = "default";
+	// pinctrl-0 = <&i2c1_pins>;
+
+	clock-frequency = <400000>;
 
 	twl: twl@48 {
 		reg = <0x48>;
-		/* IRQ# = 7 */
+
+		pinctrl-names = "default";
+		pinctrl-0 = <
+			&twl6030_pins
+			&twl6030_wkup_pins
+		>;
+
+		/* SPI = 0, IRQ# = 7, 4 = active high level-sensitive */
 		interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>; /* IRQ_SYS_1N cascaded to gic */
+		interrupt-parent = <&gic>;
+
+		twl_power: power {
+			compatible = "ti,twl6030-power";
+			ti,system-power-controller;
+		};
 	};
 };
 
@@ -302,7 +320,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&dss_dpi_pins>;
 
-	vdd-supply = <&vcxio>;
 	port {
 		dpi_out: endpoint {
 			remote-endpoint = <&lcd_in>;
@@ -313,6 +330,16 @@
 
 #include "twl6030.dtsi"
 #include "twl6030_omap4.dtsi"
+
+&vaux3 {
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+};
+
+&vusim {
+	regulator-min-microvolt = <1200000>;
+	regulator-max-microvolt = <3000000>;
+};
 
 &twl_usb_comparator {
 	usb-supply = <&vusb>;
