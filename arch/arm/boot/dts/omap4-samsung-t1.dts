@@ -42,6 +42,16 @@
 		enable-active-high;
 	};
 
+	reg_touch_ldo_en: regulator-touch-ldo-en  {
+		compatible = "regulator-fixed";
+		regulator-name = "touch_ldo_en";
+		regulator-max-microvolt = <2800000>;
+		regulator-min-microvolt = <2800000>;
+		gpios = <&gpio2 22 GPIO_ACTIVE_HIGH>;
+		regulator-always-on;
+		enable-active-high;
+	};
+
 	spi_lcd: spi {
 		compatible = "spi-gpio";
 		#address-cells = <1>;
@@ -53,7 +63,6 @@
 		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
 		sck-gpios = <&gpio5 23 GPIO_ACTIVE_LOW>;
 		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_LOW>;
-		//miso-gpios = <&gpio5 25 GPIO_ACTIVE_HIGH>;
 
 		lcd@0 {
 			compatible = "samsung,ld9040";
@@ -61,8 +70,8 @@
 
 			spi-max-frequency = <1200000>;
 
-			//vdd3-supply = <&vaux3>;
-			//vci-supply = <&vusim>;
+			//vdd3-supply = <&vcxio>;
+			vci-supply = <&vaux3>;
 
 			reset-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
 			power-on-delay = <20>;
@@ -102,6 +111,14 @@
 	 ti,no-reset-on-init;
 };
 
+&omap4_pmx_wkup {
+	twl6030_wkup_pins: pinmux_twl6030_wkup_pins {
+		pinctrl-single,pins = <
+			OMAP4_IOPAD(0x56, PIN_OUTPUT_PULLUP | MUX_MODE2)	/* fref_clk3_req.sys_drm_msecure */
+		>;
+	};
+};
+
 &omap4_pmx_core {
 	pinctrl-names = "default";
 
@@ -137,8 +154,8 @@
 		pinctrl-single,pins = <
 			OMAP4_IOPAD(0x154, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_clk */
 			OMAP4_IOPAD(0x156, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_simo */
-			OMAP4_IOPAD(0x158, PIN_OFF_OUTPUT_LOW | MUX_MODE3)	/* mcspi4_somi */
 			OMAP4_IOPAD(0x15a, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_cs0 */
+			OMAP4_IOPAD(0x056, PIN_OUTPUT | MUX_MODE3)
 		>;
 	};
 
@@ -225,6 +242,12 @@
 			OMAP4_IOPAD(0x096, PIN_OUTPUT | MUX_MODE3)		/* gpmc_ncs7.gpio_104 */
 		>;
 	};
+
+	twl6030_pins: pinmux_twl6030_pins {
+		pinctrl-single,pins = <
+			OMAP4_IOPAD(0x19e, WAKEUP_EN | PIN_INPUT_PULLUP | MUX_MODE0)	/* sys_nirq1.sys_nirq1 */
+		>;
+	};
 };
 
 &mmc1 {
@@ -283,7 +306,7 @@
 };
 
 &mcspi4 {
-	status = "okay";
+	status = "disabled";
 };
 
 &i2c1 {
@@ -320,6 +343,8 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&dss_dpi_pins>;
 
+	vdda_video-supply = <&vcxio>;
+
 	port {
 		dpi_out: endpoint {
 			remote-endpoint = <&lcd_in>;
@@ -339,6 +364,14 @@
 &vusim {
 	regulator-min-microvolt = <1200000>;
 	regulator-max-microvolt = <3000000>;
+};
+
+&vcxio {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-state-mem {
+		regulator-off-in-suspend;
+	};
 };
 
 &twl_usb_comparator {
