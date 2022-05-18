@@ -27,6 +27,15 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
+
+		framebuffer@bef00000 {
+			compatible = "simple-framebuffer";
+			reg = <0xbef00000 (480 * 800 * 4)>;
+			width = <480>;
+			height = <800>;
+			stride = <(480 * 4)>;
+			format = "a8r8g8b8";
+		};
 	};
 
 	reg_t1_vwlan: regulator-t1-vwlan {
@@ -56,8 +65,8 @@
 		compatible = "spi-gpio";
 		#address-cells = <1>;
 		#size-cells = <0>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&spi_gpio_pins>;
+		//pinctrl-names = "default";
+		//pinctrl-0 = <&spi_gpio_pins>;
 
 		num-chipselects = <1>;
 		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
@@ -73,10 +82,10 @@
 
 			spi-max-frequency = <1200000>;
 
-			//vdd3-supply = <&vdac>;
-			//vci-supply = <&vaux3>;
+			vdd3-supply = <&vaux1>;
+			vci-supply = <&vaux3>;
 
-			reset-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
+			reset-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
 			power-on-delay = <20>;
 			reset-delay = <20>;
 
@@ -290,7 +299,7 @@
 
 	non-removable;
 	bus-width = <4>;
-	vmmc-supply = <&reg_t1_vwlan>;
+	//vmmc-supply = <&reg_t1_vwlan>;
 
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc5_pins>;
@@ -305,22 +314,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&wlan_host_wake>;
 	};
-};
-
-&mcspi1 {
-	status = "disabled";
-};
-
-&mcspi2 {
-	status = "disabled";
-};
-
-&mcspi3 {
-	status = "disabled";
-};
-
-&mcspi4 {
-	status = "disabled";
 };
 
 &i2c1 {
@@ -356,8 +349,6 @@
 
 	pinctrl-names = "default";
 	pinctrl-0 = <&dss_dpi_pins>;
-
-	vdda_video-supply = <&vcxio>;
 
 	port {
 		dpi_out: endpoint {
@@ -454,11 +445,6 @@
 	power = <50>;
 };
 
-&i2c2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2c2_pins>;
-};
-
 &i2c3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c3_pins>;
@@ -472,9 +458,4 @@
 		interrupt-parent = <&gpio2>;
 		interrupts = <14 IRQ_TYPE_EDGE_FALLING>;
 	};
-};
-
-&i2c4 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2c4_pins>;
 };
