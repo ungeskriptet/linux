@@ -96,22 +96,16 @@
 		lcd@0 {
 			compatible = "samsung,ld9040";
 			reg = <0>;
-
-			pinctrl-names = "default";
-			pinctrl-0 = <&panel_rst>;
-
+			vdd3-supply = <&vcxio>;
+			vci-supply = <&vaux2>;
+			reset-gpios = <&gpio2 3 0>;
 			spi-max-frequency = <1200000>;
-
-			vdd3-supply = <&vaux1>;
-			vci-supply = <&vaux3>;
-
-			reset-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
-			power-on-delay = <20>;
-			geset-delay = <20>;
-
+			spi-cpol;
+			spi-cpha;
+			power-on-delay = <10>;
+			reset-delay = <10>;
 			panel-width-mm = <90>;
 			panel-height-mm = <154>;
-
 			display-timings {
 				timing {
 					clock-frequency = <23492370>;
@@ -364,7 +358,7 @@
 	};
 };
 
-/*&dss {
+&dss {
 	status = "okay";
 
 	pinctrl-names = "default";
@@ -376,7 +370,7 @@
 			data-lines = <24>;
 		};
 	};
-};*/
+};
 
 #include "twl6030.dtsi"
 #include "twl6030_omap4.dtsi"
