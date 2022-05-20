@@ -38,6 +38,24 @@
 		};
 	};
 
+	i2c-gpio-5 {
+		compatible = "i2c-gpio";
+		sda-gpios = <&gpio4 2 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		scl-gpios = <&gpio4 3 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		i2c-gpio,delay-us = <10>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	i2c-gpio-7 {
+		compatible = "i2c-gpio";
+		sda-gpios = <&gpio2 30 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		scl-gpios = <&gpio2 29 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+		i2c-gpio,delay-us = <3>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
 	reg_t1_vwlan: regulator-t1-vwlan {
 		pinctrl-names = "default";
 		pinctrl-0 = <&wlanen_gpio>;
