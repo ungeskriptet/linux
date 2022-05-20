@@ -88,15 +88,15 @@
 		compatible = "spi-gpio";
 		#address-cells = <1>;
 		#size-cells = <0>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&spi_gpio_pins>;
+		//pinctrl-names = "default";
+		//pinctrl-0 = <&spi_gpio_pins>;
 
 		num-chipselects = <1>;
 		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
 		sck-gpios = <&gpio5 23 GPIO_ACTIVE_HIGH>;
 		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;
 
-		lcd@0 {
+		panel@0 {
 			compatible = "samsung,ld9040";
 			reg = <0>;
 			vdd3-supply = <&vcxio>;
@@ -137,8 +137,6 @@
 
 	gpio-keys {
 		compatible = "gpio-keys";
-		//pinctrl-names = "default";
-		//pinctrl-0 = <&gpio_keys>;
 
 		power {
 			label = "power";
@@ -168,17 +166,13 @@
 	};
 };
 
-&gpio2_target {
-	 ti,no-reset-on-init;
-};
-
-&omap4_pmx_wkup {
+/*&omap4_pmx_wkup {
 	twl6030_wkup_pins: pinmux_twl6030_wkup_pins {
 		pinctrl-single,pins = <
 			OMAP4_IOPAD(0x54, PIN_OUTPUT_PULLUP | MUX_MODE2)
 		>;
 	};
-};
+};*/
 
 &omap4_pmx_core {
 	pinctrl-names = "default";
@@ -211,19 +205,13 @@
 		>;
 	};
 
-	spi_gpio_pins: pinmux_spi_gpio_pins {
+	/*spi_gpio_pins: pinmux_spi_gpio_pins {
 		pinctrl-single,pins = <
-			OMAP4_IOPAD(0x154, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_clk */
-			OMAP4_IOPAD(0x156, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_simo */
-			OMAP4_IOPAD(0x15a, PIN_OFF_OUTPUT_LOW | MUX_MODE0)	/* mcspi4_cs0 */
+			OMAP4_IOPAD(0x154, PIN_OFF_OUTPUT_LOW | MUX_MODE0)
+			OMAP4_IOPAD(0x156, PIN_OFF_OUTPUT_LOW | MUX_MODE0)
+			OMAP4_IOPAD(0x15a, PIN_OFF_OUTPUT_LOW | MUX_MODE0)
 		>;
-	};
-
-	panel_rst: pinmux_panel_rst {
-		pinctrl-single,pins = <
-			OMAP4_IOPAD(0x56, PIN_OUTPUT | MUX_MODE3)
-		>;
-	};
+	};*/
 
 	touch_pins: pinmux_touch_pins {
 		pinctrl-single,pins = <
@@ -315,11 +303,11 @@
 		>;
 	};
 
-	twl6030_pins: pinmux_twl6030_pins {
+	/*twl6030_pins: pinmux_twl6030_pins {
 		pinctrl-single,pins = <
-			OMAP4_IOPAD(0x19e, WAKEUP_EN | PIN_INPUT_PULLUP | MUX_MODE0)	/* sys_nirq1.sys_nirq1 */
+			OMAP4_IOPAD(0x19e, WAKEUP_EN | PIN_INPUT_PULLUP | MUX_MODE0)
 		>;
-	};
+	};*/
 };
 
 &mmc1 {
@@ -366,21 +354,13 @@
 };
 
 &i2c1 {
-	// We need i2c1 muxed early on the boot process for pmic
-	// bootloader already done it for us
-	// pinctrl-names = "default";
-	// pinctrl-0 = <&i2c1_pins>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins>;
 
 	clock-frequency = <400000>;
 
 	twl: twl@48 {
 		reg = <0x48>;
-
-		pinctrl-names = "default";
-		pinctrl-0 = <
-			&twl6030_pins
-			&twl6030_wkup_pins
-		>;
 
 		/* SPI = 0, IRQ# = 7, 4 = active high level-sensitive */
 		interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>; /* IRQ_SYS_1N cascaded to gic */
@@ -393,11 +373,29 @@
 	};
 };
 
+&i2c4 {
+        kxtf9: accelerometer@f {
+                compatible = "kionix,kxtf9";
+                reg = <0x0f>;
+
+                vdd-supply = <&vaux2>;
+
+                interrupt-parent = <&gpio2>;
+                interrupts = <2 IRQ_TYPE_EDGE_RISING>;
+
+                mount-matrix = "0", "-1", "0",
+                               "-1", "0", "0",
+                               "0", "0", "1";
+        };
+};
+
 &dss {
 	status = "okay";
 
 	pinctrl-names = "default";
 	pinctrl-0 = <&dss_dpi_pins>;
+
+	vdda_video-supply = <&vcxio>;
 
 	port {
 		dpi_out: endpoint {
