@@ -35,6 +35,8 @@
 			height = <800>;
 			stride = <(480 * 4)>;
 			format = "a8r8g8b8";
+
+			vci-supply = <&vaux3>;
 		};
 	};
 
@@ -83,8 +85,8 @@
 		compatible = "spi-gpio";
 		#address-cells = <1>;
 		#size-cells = <0>;
-		//pinctrl-names = "default";
-		//pinctrl-0 = <&spi_gpio_pins>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi_gpio_pins>;
 
 		num-chipselects = <1>;
 		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
@@ -100,8 +102,8 @@
 
 			spi-max-frequency = <1200000>;
 
-			//vdd3-supply = <&vaux1>;
-			//vci-supply = <&vaux3>;
+			vdd3-supply = <&vaux1>;
+			vci-supply = <&vaux3>;
 
 			reset-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
 			power-on-delay = <20>;
@@ -317,7 +319,7 @@
 
 	non-removable;
 	bus-width = <4>;
-	//vmmc-supply = <&reg_t1_vwlan>;
+	vmmc-supply = <&reg_t1_vwlan>;
 
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc5_pins>;
@@ -362,11 +364,11 @@
 	};
 };
 
-&dss {
+/*&dss {
 	status = "okay";
 
-	//pinctrl-names = "default";
-	//pinctrl-0 = <&dss_dpi_pins>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&dss_dpi_pins>;
 
 	port {
 		dpi_out: endpoint {
@@ -374,7 +376,7 @@
 			data-lines = <24>;
 		};
 	};
-};
+};*/
 
 #include "twl6030.dtsi"
 #include "twl6030_omap4.dtsi"
