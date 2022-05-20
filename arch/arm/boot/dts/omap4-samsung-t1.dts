@@ -100,12 +100,12 @@
 
 			spi-max-frequency = <1200000>;
 
-			vdd3-supply = <&vaux1>;
-			vci-supply = <&vaux3>;
+			//vdd3-supply = <&vaux1>;
+			//vci-supply = <&vaux3>;
 
-			reset-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
+			reset-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
 			power-on-delay = <20>;
-			reset-delay = <20>;
+			geset-delay = <20>;
 
 			panel-width-mm = <90>;
 			panel-height-mm = <154>;
@@ -365,8 +365,8 @@
 &dss {
 	status = "okay";
 
-	pinctrl-names = "default";
-	pinctrl-0 = <&dss_dpi_pins>;
+	//pinctrl-names = "default";
+	//pinctrl-0 = <&dss_dpi_pins>;
 
 	port {
 		dpi_out: endpoint {

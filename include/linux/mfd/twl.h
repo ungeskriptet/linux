@@ -113,6 +113,7 @@ enum twl6030_module_ids {
 #define REG_INT_MSK_STS_C		0x08
 
 /* MASK INT REG GROUP A */
+#define TWL6030_PWRON_INT_MASK		0x01
 #define TWL6030_PWR_INT_MASK 		0x07
 #define TWL6030_RTC_INT_MASK 		0x18
 #define TWL6030_HOTDIE_INT_MASK 	0x20

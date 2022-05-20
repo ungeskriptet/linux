@@ -1,0 +1,32 @@
+
+Texas Instruments TWL family (twl6030) reset and power management module
+
+For now, the binding only supports the complete shutdown of the system after
+poweroff.
+
+Required properties:
+- compatible : must be
+	"ti,twl6030-power"
+
+Optional properties:
+
+- ti,system-power-controller: This indicates that TWL6030 is the
+  power supply master of the system. With this flag, the chip will
+  initiate an ACTIVE-to-OFF or SLEEP-to-OFF transition when the
+  system poweroffs.
+
+Example:
+&i2c1 {
+	clock-frequency = <2600000>;
+
+	twl: twl@48 {
+		reg = <0x48>;
+		interrupts = <7>; /* SYS_NIRQ cascaded to intc */
+		interrupt-parent = <&intc>;
+
+		twl_power: power {
+			compatible = "ti,twl6030-power";
+			ti,system-power-controller;
+		};
+	};
+};

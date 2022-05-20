@@ -832,9 +832,16 @@ add_children(struct twl4030_platform_data *pdata, unsigned irq_base,
 			return PTR_ERR(child);
 	}
 
-	if (IS_ENABLED(CONFIG_INPUT_TWL4030_PWRBUTTON) && twl_class_is_4030()) {
-		child = add_child(TWL_MODULE_PM_MASTER, "twl4030_pwrbutton",
+	if (IS_ENABLED(CONFIG_INPUT_TWL_PWRBUTTON) && twl_class_is_4030()) {
+		child = add_child(TWL_MODULE_PM_MASTER, "twl_pwrbutton",
 				  NULL, 0, true, irq_base + 8 + 0, 0);
+		if (IS_ERR(child))
+			return PTR_ERR(child);
+	}
+
+	if (IS_ENABLED(CONFIG_INPUT_TWL_PWRBUTTON) && twl_class_is_6030()) {
+		child = add_child(TWL_MODULE_PM_MASTER, "twl_pwrbutton",
+				  NULL, 0, true, irq_base + 0, 0);
 		if (IS_ERR(child))
 			return PTR_ERR(child);
 	}
@@ -950,6 +957,14 @@ add_children(struct twl4030_platform_data *pdata, unsigned irq_base,
 
 	if (IS_ENABLED(CONFIG_TWL4030_POWER) && pdata->power) {
 		child = add_child(TWL_MODULE_PM_MASTER, "twl4030_power",
+				  pdata->power, sizeof(*pdata->power), false,
+				  0, 0);
+		if (IS_ERR(child))
+			return PTR_ERR(child);
+	}
+
+	if (IS_ENABLED(CONFIG_TWL6030_POWER) && pdata->power) {
+		child = add_child(TWL_MODULE_PM_MASTER, "twl6030_power",
 				  pdata->power, sizeof(*pdata->power), false,
 				  0, 0);
 		if (IS_ERR(child))

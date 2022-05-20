@@ -102,4 +102,9 @@
 		interrupts = <3>;
 		#io-channel-cells = <1>;
 	};
+
+	twl_pwrbutton: pwrbutton {
+		compatible = "ti,twl6030-pwrbutton";
+		interrupts = <0>;
+	};
 };

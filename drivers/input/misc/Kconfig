@@ -479,15 +479,15 @@ config INPUT_AXP20X_PEK
 	  be called axp20x-pek.
 
 
-config INPUT_TWL4030_PWRBUTTON
-	tristate "TWL4030 Power button Driver"
+config INPUT_TWL_PWRBUTTON
+	tristate "TWL Power button Driver"
 	depends on TWL4030_CORE
 	help
 	  Say Y here if you want to enable power key reporting via the
-	  TWL4030 family of chips.
+	  TWL family of chips.
 
 	  To compile this driver as a module, choose M here. The module will
-	  be called twl4030_pwrbutton.
+	  be called twl_pwrbutton
 
 config INPUT_TWL4030_VIBRA
 	tristate "Support for TWL4030 Vibrator"

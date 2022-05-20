@@ -1660,6 +1660,16 @@ config MFD_TWL4030_AUDIO
 	select MFD_CORE
 	default n
 
+config TWL6030_POWER
+	bool "TI TWL6030 power resources"
+	depends on TWL4030_CORE && ARM
+	help
+	  Say yes here if you want to use the power resources on the
+	  TWL6030 family chips.
+
+	  When used as system power controller, this driver allows turning off
+	  the main power supply.
+
 config TWL6040_CORE
 	bool "TI TWL6040 audio codec"
 	depends on I2C=y
