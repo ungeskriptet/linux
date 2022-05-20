@@ -1,5 +1,8 @@
 /dts-v1/;
 
+#include "dt-bindings/gpio/gpio.h"
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/input/input.h>
 #include "omap443x.dtsi"
 
 / {
@@ -28,7 +31,7 @@
 		#size-cells = <1>;
 		ranges;
 
-		framebuffer@bef00000 {
+		/*framebuffer@bef00000 {
 			compatible = "simple-framebuffer";
 			reg = <0xbef00000 (480 * 800 * 4)>;
 			width = <480>;
@@ -37,7 +40,7 @@
 			format = "a8r8g8b8";
 
 			vci-supply = <&vaux3>;
-		};
+		};*/
 	};
 
 	i2c-gpio-5 {
@@ -90,14 +93,14 @@
 
 		num-chipselects = <1>;
 		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
-		sck-gpios = <&gpio5 23 GPIO_ACTIVE_LOW>;
-		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_LOW>;
+		sck-gpios = <&gpio5 23 GPIO_ACTIVE_HIGH>;
+		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;
 
 		lcd@0 {
 			compatible = "samsung,ld9040";
 			reg = <0>;
 			vdd3-supply = <&vcxio>;
-			vci-supply = <&vaux2>;
+			vci-supply = <&vaux3>;
 			reset-gpios = <&gpio2 3 0>;
 			spi-max-frequency = <1200000>;
 			spi-cpol;
@@ -129,6 +132,38 @@
 					remote-endpoint = <&dpi_out>;
 				};
 			};
+		};
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		//pinctrl-names = "default";
+		//pinctrl-0 = <&gpio_keys>;
+
+		power {
+			label = "power";
+			gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_POWER>;
+			wakeup-source;
+		};
+
+		home {
+			linux,code = <KEY_HOME>;
+			label = "home"; /* GPIO31 */
+			gpios = <&gpio1 31 GPIO_ACTIVE_LOW>;
+		};
+
+
+		button-volup {
+			linux,code = <KEY_VOLUMEUP>;
+			label = "volume_up"; /* GPIO30 */
+			gpios = <&gpio1 30 GPIO_ACTIVE_LOW>;
+		};
+
+		button-voldown {
+			linux,code = <KEY_VOLUMEDOWN>;
+			label = "volume_down"; /* GPIO8 */
+			gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
 		};
 	};
 };
