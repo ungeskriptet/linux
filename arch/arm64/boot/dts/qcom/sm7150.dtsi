@@ -1,0 +1,194 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Snapdragon 730 (SM7150-AA), 730G (SM7150-AB), 732G (SM7150-AC) specific device tree
+ *
+ * Copyright (c) 2022, The Linux Foundation. All rights reserved.
+ */
+
+#include "sc7180.dtsi"
+
+/* SM7150 uses Kryo kryo470 instead of Kryo 468 */
+&CPU0 {
+	compatible = "qcom,kryo470";
+	/delete-property/ operating-points-v2;
+	
+	d-cache-size = <0x9000>;
+	i-cache-size = <0x8800>;
+};
+
+&L2_0 {
+	cache-size = <0x20000>;
+	cache-level = <2>;
+};
+
+&L3_0 {
+	cache-size = <0x100000>;
+	cache-level = <3>;
+};
+
+&CPU1 {
+	compatible = "qcom,kryo470";
+	/delete-property/ operating-points-v2;
+	
+	d-cache-size = <0x9000>;
+	i-cache-size = <0x8800>;
+};
+
+&L2_100 {
+	cache-size = <0x20000>;
+	cache-level = <2>;
+};
+
+&CPU2 {
+	compatible = "qcom,kryo470";
+	/delete-property/ operating-points-v2;
+	
+	d-cache-size = <0x9000>;
+	i-cache-size = <0x8800>;
+};
+
+&L2_200 {
+	cache-size = <0x20000>;
+	cache-level = <2>;
+};
+
+&CPU3 {
+	compatible = "qcom,kryo470";
+	/delete-property/ operating-points-v2;
+	
+	d-cache-size = <0x9000>;
+	i-cache-size = <0x8800>;
+};
+
+&L2_300 {
+	cache-size = <0x20000>;
+	cache-level = <2>;
+};
+
+&CPU4 {
+	compatible = "qcom,kryo470";
+	/delete-property/ operating-points-v2;
+	
+	d-cache-size = <0x9000>;
+	i-cache-size = <0x8800>;
+};
+
+&L2_400 {
+	cache-size = <0x20000>;
+	cache-level = <2>;
+};
+
+&CPU5 {
+	compatible = "qcom,kryo470";
+	/delete-property/ operating-points-v2;
+	
+	d-cache-size = <0x9000>;
+	i-cache-size = <0x8800>;
+};
+
+&L2_500 {
+	cache-size = <0x20000>;
+	cache-level = <2>;
+};
+
+&CPU6 {
+	compatible = "qcom,kryo470";
+	/delete-property/ operating-points-v2;
+	
+	d-cache-size = <0x12000>;
+	i-cache-size = <0x11000>;
+};
+
+&L2_600 {
+	cache-size = <0x48000>;
+	cache-level = <2>;
+};
+
+&CPU7 {
+	compatible = "qcom,kryo470";
+	/delete-property/ operating-points-v2;
+	
+	d-cache-size = <0x12000>;
+	i-cache-size = <0x11000>;
+};
+
+&L2_700 {
+	cache-size = <0x48000>;
+	cache-level = <2>;
+};
+
+// SC7180 doesn't have UFS yet.
+&soc {
+	ufs_mem_hc: ufshc@1d84000 {
+		compatible = "qcom,sm7125-ufshc", "qcom,ufshc",
+					"jedec,ufs-2.0";
+		reg = <0 0x01d84000 0 0x3000>,
+				<0 0x01d90000 0 0x8000>;
+		reg-names = "std", "ice";
+		interrupts = <GIC_SPI 265 IRQ_TYPE_LEVEL_HIGH>;
+		phys = <&ufs_mem_phy_lanes>;
+		phy-names = "ufsphy";
+		lanes-per-direction = <1>;
+		power-domains = <&gcc UFS_PHY_GDSC>;
+		#reset-cells = <1>;
+		resets = <&gcc GCC_UFS_PHY_BCR>;
+		reset-names = "rst";
+
+		iommus = <&apps_smmu 0xa0 0x0>;
+
+		clock-names =
+			"core_clk",
+			"bus_aggr_clk",
+			"iface_clk",
+			"core_clk_unipro",
+			"ref_clk",
+			"tx_lane0_sync_clk",
+			"rx_lane0_sync_clk",
+			"ice_core_clk";
+		clocks =
+			<&gcc GCC_UFS_PHY_AXI_CLK>,
+			<&gcc GCC_AGGRE_UFS_PHY_AXI_CLK>,
+			<&gcc GCC_UFS_PHY_AHB_CLK>,
+			<&gcc GCC_UFS_PHY_UNIPRO_CORE_CLK>,
+			<&rpmhcc RPMH_CXO_CLK>,
+			<&gcc GCC_UFS_PHY_TX_SYMBOL_0_CLK>,
+			<&gcc GCC_UFS_PHY_RX_SYMBOL_0_CLK>,
+			<&gcc GCC_UFS_PHY_ICE_CORE_CLK>;
+		freq-table-hz =
+			<50000000 200000000>,
+			<0 0>,
+			<0 0>,
+			<37500000 150000000>,
+			<75000000 300000000>,
+			<0 0>,
+			<0 0>,
+			<0 0>;
+
+		status = "disabled";
+	};
+
+	ufs_mem_phy: phy@1d87000 {
+		compatible = "qcom,sm7125-qmp-ufs-phy";
+		reg = <0 0x01d87000 0 0xddc>;
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		clock-names = "ref",
+					"ref_aux";
+		clocks = <&gcc GCC_UFS_MEM_CLKREF_CLK>,
+				<&gcc GCC_UFS_PHY_PHY_AUX_CLK>;
+
+		resets = <&ufs_mem_hc 0>;
+		reset-names = "ufsphy";
+		status = "disabled";
+
+		ufs_mem_phy_lanes: lanes@1d87400 {
+			reg = <0 0x01d87400 0 0x108>,
+					<0 0x01d87600 0 0x1e0>,
+					<0 0x01d87c00 0 0x1dc>,
+					<0 0x01d87800 0 0x108>,
+					<0 0x01d87a00 0 0x1e0>;
+			#phy-cells = <0>;
+		};
+	};
+};
