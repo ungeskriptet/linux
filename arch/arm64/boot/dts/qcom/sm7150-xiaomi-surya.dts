@@ -1,0 +1,324 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * SM7150-AC Xiaomi POCO X3 NFC specific device tree
+ *
+ * Copyright (c) 2022, The Linux Foundation. All rights reserved.
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/regulator/qcom,rpmh-regulator.h>
+#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
+#include "sm7150.dtsi"
+#include "pm6150.dtsi"
+#include "pm6150l.dtsi"
+
+/delete-node/ &rmtfs_mem;
+/delete-node/ &ipa_fw_mem;
+
+/ {
+	model = "Xiaomi POCO X3 NFC";
+	compatible = "xiaomi,surya", "qcom,sm7150";
+	qcom,msm-id = <0x16d 0x00>;
+	qcom,board-id = <0x22 0x00>;
+	
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		framebuffer_region@9c000000 {
+			reg = <0x0 0x9c000000 0x0 0x01800000>;
+			no-map;
+		};
+
+		mpss_mem: memory@86000000 {
+			reg = <0x0 0x8b000000 0x0 0x8900000>;
+			no-map;
+		};
+
+		venus_mem: memory@8ee00000 {
+			reg = <0 0x98400000 0 0x500000>;
+			no-map;
+		};
+
+		wlan_mem: memory@93900000 {
+			reg = <0x0 0x97500000 0x0 0x180000>;
+			no-map;
+		};
+
+		ipa_fw_mem: memory@93b00000 {
+			reg = <0x0 0x93b00000 0x0 0x10000>;
+			no-map;
+		};
+
+		ramoops@B4600000 {
+			compatible = "ramoops";
+			reg = <0x0 0x9d800000 0x0 0x00400000>;
+			record-size = <0x80000>;
+			console-size = <0x100000>;
+			ftrace-size = <0x80000>;
+			pmsg-size = <0x200000>;
+		};
+
+		rmtfs_mem: memory@f3701000 {
+			compatible = "qcom,rmtfs-mem";
+			reg = <0 0xf3701000 0 0x200000>;
+			no-map;
+
+			qcom,client-id = <1>;
+			qcom,vmid = <15>;
+		};
+	};
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		framebuffer@9c000000 {
+			compatible = "simple-framebuffer";
+			reg = <0x0 0x9c000000 0x0 (1080 * 2400 * 4)>;
+			width = <1080>;
+			height = <2400>;
+			stride = <(1080 * 4)>;
+			format = "a8r8g8b8";
+			/*
+			 * That's a lot of clocks, but it's necessary due
+			 * to unused clk cleanup & no panel driver yet..
+			 */
+			/*clocks = <&gcc GCC_DISP_HF_AXI_CLK>,
+				 <&dispcc DISP_CC_MDSS_BYTE0_CLK>,
+				 <&dispcc DISP_CC_MDSS_BYTE0_INTF_CLK>,
+				 <&dispcc DISP_CC_MDSS_MDP_CLK>,
+				 <&dispcc DISP_CC_MDSS_PCLK0_CLK>,
+				 <&dispcc DISP_CC_MDSS_VSYNC_CLK>;
+			power-domains = <&dispcc MDSS_GDSC>;*/
+		};
+	};
+};
+
+&apps_rsc {
+	pm6150-rpmh-regulators {
+		compatible = "qcom,pm6150-rpmh-regulators";
+		qcom,pmic-id = "a";
+
+		vreg_l4a: ldo4 {
+			regulator-min-microvolt = <824000>;
+			regulator-max-microvolt = <920000>;
+		};
+
+		vreg_l9a: ldo9 {
+			regulator-min-microvolt = <624000>;
+			regulator-max-microvolt = <760000>;
+		};
+
+		vreg_l10a: ldo10 {
+			regulator-min-microvolt = <1720000>;
+			regulator-max-microvolt = <1832000>;
+		};
+
+		vreg_l11a: ldo11 {
+			regulator-min-microvolt = <1696000>;
+			regulator-max-microvolt = <1984000>;
+		};
+
+		vreg_l12a: ldo12 {
+			regulator-min-microvolt = <1696000>;
+			regulator-max-microvolt = <1952000>;
+		};
+
+		vreg_l17a: ldo17 {
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3232000>;
+		};
+
+		/*vreg_l18a: ldo18 {
+			regulator-min-microvolt = <1696000>;
+			regulator-max-microvolt = <1904000>;
+		};*/
+
+		vreg_l19a: ldo19 {
+			regulator-min-microvolt = <2944000>;
+			regulator-max-microvolt = <3304000>;
+		};
+	};
+
+	pm6150l-rpmh-regulators {
+		compatible = "qcom,pm6150l-rpmh-regulators";
+		qcom,pmic-id = "c";
+
+		vreg_l1c: ldo1 {
+			regulator-min-microvolt = <1616000>;
+			regulator-max-microvolt = <1984000>;
+		};
+
+		vreg_l2c: ldo2 {
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1352000>;
+		};
+
+		vreg_l3c: ldo3 {
+			regulator-min-microvolt = <1144000>;
+			regulator-max-microvolt = <1256000>;
+		};
+
+		vreg_l6c: ldo6 {
+			regulator-min-microvolt = <1648000>;
+			regulator-max-microvolt = <3100000>;
+		};
+
+		vreg_l7c: ldo7 {
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3312000>;
+			regulator-always-on;
+		};
+
+		vreg_l8c: ldo8 { /* Unused yet */
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1900000>;
+			regulator-always-on;
+		};
+
+		vreg_l9c: ldo9 {
+			regulator-min-microvolt = <2950000>;
+			regulator-max-microvolt = <3312000>;
+		};
+
+		vreg_l10c: ldo10 {
+			regulator-min-microvolt = <3200000>;
+			regulator-max-microvolt = <3312000>;
+		};
+
+		vreg_l11c: ldo11 {
+			regulator-min-microvolt = <2950000>;
+			regulator-max-microvolt = <3400000>;
+		};
+	};
+};
+
+&tlmm {
+	gpio-reserved-ranges = <0 4>, <34 4>, <59 4>;
+
+	sdc2_on: sdc2-on {
+		pinconf-clk {
+			pins = "sdc2_clk";
+			bias-disable;
+			drive-strength = <16>;
+		};
+
+		pinconf-cmd {
+			pins = "sdc2_cmd";
+			bias-pull-up;
+			drive-strength = <10>;
+		};
+
+		pinconf-data {
+			pins = "sdc2_data";
+			bias-pull-up;
+			drive-strength = <10>;
+		};
+
+		pinconf-sd-cd {
+			pins = "gpio69";
+			bias-pull-up;
+			drive-strength = <2>;
+		};
+	};
+
+	sdc2_off: sdc2-off {
+		pinconf-clk {
+			pins = "sdc2_clk";
+			bias-disable;
+			drive-strength = <2>;
+		};
+
+		pinconf-cmd {
+			pins = "sdc2_cmd";
+			bias-pull-up;
+			drive-strength = <2>;
+		};
+
+		pinconf-data {
+			pins = "sdc2_data";
+			bias-pull-up;
+			drive-strength = <2>;
+		};
+
+		pinconf-sd-cd {
+			pins = "gpio69";
+			bias-pull-up;
+			drive-strength = <2>;
+		};
+	};
+};
+
+&ipa {
+	status = "okay";
+
+	memory-region = <&ipa_fw_mem>;
+	firmware-name = "qcom/sm7150/surya/ipa_fws.mdt";
+};
+
+&sdhc_2 {
+	status = "okay";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc2_on>;
+	pinctrl-1 = <&sdc2_off>;
+	vmmc-supply = <&vreg_l9c>;
+	vqmmc-supply = <&vreg_l6c>;
+
+	cd-gpios = <&tlmm 69 GPIO_ACTIVE_LOW>;
+};
+
+&ufs_mem_hc {
+	status = "okay";
+
+	vcc-supply = <&vreg_l19a>;
+	vcc-max-microamp = <600000>;
+	vccq2-supply = <&vreg_l12a>;
+	vccq2-max-microamp = <600000>;
+};
+
+&ufs_mem_phy {
+	status = "okay";
+
+	vdda-phy-supply = <&vreg_l4a>;
+	vdda-pll-supply = <&vreg_l3c>;
+	vdda-phy-max-microamp = <62900>;
+	vdda-pll-max-microamp = <18300>;
+};
+
+&usb_1 {
+	status = "okay";
+};
+
+&usb_1_dwc3 {
+	dr_mode = "peripheral";
+};
+
+&usb_1_hsphy {
+	status = "okay";
+	vdd-supply = <&vreg_l4a>;
+	vdda-pll-supply = <&vreg_l11a>;
+	vdda-phy-dpdm-supply = <&vreg_l17a>;
+};
+
+&usb_1_qmpphy {
+	status = "okay";
+	vdda-phy-supply = <&vreg_l4a>;
+	vdda-pll-supply = <&vreg_l3c>;
+};
+
+&lpasscc {
+	status = "disabled";
+};
+
+&lpass_cpu {
+	status = "disabled";
+};
+
+&lpass_hm {
+	status = "disabled";
+};
