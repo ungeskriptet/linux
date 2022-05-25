@@ -16,29 +16,61 @@
 
 /delete-node/ &rmtfs_mem;
 /delete-node/ &ipa_fw_mem;
+/delete-node/ &hyp_mem;
+/delete-node/ &xbl_mem;
+/delete-node/ &aop_mem;
+/delete-node/ &aop_cmd_db_mem;
+/delete-node/ &sec_apps_mem;
+/delete-node/ &smem_mem;
+/delete-node/ &tz_mem;
 
 / {
 	model = "Xiaomi POCO X3 NFC";
 	compatible = "xiaomi,surya", "qcom,sm7150";
 	qcom,msm-id = <0x16d 0x00>;
 	qcom,board-id = <0x22 0x00>;
-	
+
 	reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
 
 		framebuffer_region@9c000000 {
-			reg = <0x0 0x9c000000 0x0 0x01800000>;
+			reg = <0x0 0x9c000000 0x0 (1080 * 2400 * 4)>;
 			no-map;
 		};
 
-		mpss_mem: memory@86000000 {
-			reg = <0x0 0x8b000000 0x0 0x8900000>;
+		hyp_mem: memory@85700000 {
+			reg = <0x0 0x85700000 0x0 0x600000>;
 			no-map;
 		};
 
-		venus_mem: memory@8ee00000 {
+		xbl_mem: memory@85e00000 {
+			reg = <0x0 0x85e00000 0x0 0x1ff000>;
+			no-map;
+		};
+
+		tz_mem: memory@86200000 {
+			reg = <0x0 0x86200000 0x0 0x2d00000>;
+			no-map;
+		};
+
+		sec_apps_mem: memory@85fff000 {
+			reg = <0x0 0x85fff000 0x0 0x1000>;
+			no-map;
+		};
+
+		smem_mem: memory@86000000 {
+			reg = <0x0 0x86000000 0x0 0x200000>;
+			no-map;
+		};
+
+		mpss_mem: memory@8b000000 {
+			reg = <0x0 0x8b000000 0x0 0x8400000>;
+			no-map;
+		};
+
+		venus_mem: memory@93400000 {
 			reg = <0 0x98400000 0 0x500000>;
 			no-map;
 		};
@@ -48,23 +80,23 @@
 			no-map;
 		};
 
-		ipa_fw_mem: memory@93b00000 {
-			reg = <0x0 0x93b00000 0x0 0x10000>;
+		ipa_fw_mem: memory@97700000 {
+			reg = <0x0 0x97700000 0x0 0x10000>;
 			no-map;
 		};
 
-		ramoops@B4600000 {
+		ramoops@9d800000 {
 			compatible = "ramoops";
 			reg = <0x0 0x9d800000 0x0 0x00400000>;
+
 			record-size = <0x80000>;
-			console-size = <0x100000>;
-			ftrace-size = <0x80000>;
 			pmsg-size = <0x200000>;
+			console-size = <0x100000>;
 		};
 
-		rmtfs_mem: memory@f3701000 {
+		rmtfs_mem: memory@fde01000 {
 			compatible = "qcom,rmtfs-mem";
-			reg = <0 0xf3701000 0 0x200000>;
+			reg = <0 0xfde01000 0 0x200000>;
 			no-map;
 
 			qcom,client-id = <1>;
