@@ -289,7 +289,13 @@
 	status = "okay";
 
 	memory-region = <&ipa_fw_mem>;
-	firmware-name = "qcom/sm7150/surya/ipa_fws.mdt";
+	firmware-name = "qcom/sm7150/surya/ipa_fws.mbn";
+};
+
+&remoteproc_mpss {
+	status = "okay";
+
+	firmware-name = "qcom/sm7150/surya/modem.mbn";
 };
 
 &sdhc_2 {
