@@ -395,7 +395,7 @@
 	vmmc-supply = <&vreg_l9c>;
 	vqmmc-supply = <&vreg_l6c>;
 
-	cd-gpios = <&tlmm 69 GPIO_ACTIVE_LOW>;
+	cd-gpios = <&tlmm 69 GPIO_ACTIVE_HIGH>;
 };
 
 &ufs_mem_hc {
