@@ -135,44 +135,105 @@
 		compatible = "qcom,pm6150-rpmh-regulators";
 		qcom,pmic-id = "a";
 
+		vreg_l1a: ldo1 {
+			regulator-min-microvolt = <1096000>;
+			regulator-max-microvolt = <1304000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l2a: ldo2 {
+			regulator-min-microvolt = <944000>;
+			regulator-max-microvolt = <920000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l3a: ldo3 {
+			regulator-min-microvolt = <968000>;
+			regulator-max-microvolt = <1064000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
 		vreg_l4a: ldo4 {
 			regulator-min-microvolt = <824000>;
 			regulator-max-microvolt = <920000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		/*vreg_l5a: ldo5 {
+			regulator-min-microvolt = <2600000>;
+			regulator-max-microvolt = <2800000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};*/
+
+		vreg_l6a: ldo6 {
+			regulator-min-microvolt = <1096000>;
+			regulator-max-microvolt = <1304000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l9a: ldo9 {
 			regulator-min-microvolt = <624000>;
 			regulator-max-microvolt = <760000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l10a: ldo10 {
 			regulator-min-microvolt = <1720000>;
 			regulator-max-microvolt = <1832000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l11a: ldo11 {
 			regulator-min-microvolt = <1696000>;
 			regulator-max-microvolt = <1984000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l12a: ldo12 {
 			regulator-min-microvolt = <1696000>;
 			regulator-max-microvolt = <1952000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l13a: ldo13 {
+			regulator-min-microvolt = <1696000>;
+			regulator-max-microvolt = <1904000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l14a: ldo14 {
+			regulator-min-microvolt = <1720000>;
+			regulator-max-microvolt = <1856000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l15a: ldo15 {
+			regulator-min-microvolt = <1696000>;
+			regulator-max-microvolt = <1904000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l16a: ldo16 {
+			regulator-min-microvolt = <2424000>;
+			regulator-max-microvolt = <2976000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l17a: ldo17 {
 			regulator-min-microvolt = <3000000>;
 			regulator-max-microvolt = <3232000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
-		/*vreg_l18a: ldo18 {
+		vreg_l18a: ldo18 {
 			regulator-min-microvolt = <1696000>;
 			regulator-max-microvolt = <1904000>;
-		};*/
+		};
 
 		vreg_l19a: ldo19 {
 			regulator-min-microvolt = <2944000>;
 			regulator-max-microvolt = <3304000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 	};
 
@@ -183,48 +244,75 @@
 		vreg_l1c: ldo1 {
 			regulator-min-microvolt = <1616000>;
 			regulator-max-microvolt = <1984000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l2c: ldo2 {
 			regulator-min-microvolt = <1200000>;
 			regulator-max-microvolt = <1352000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l3c: ldo3 {
 			regulator-min-microvolt = <1144000>;
 			regulator-max-microvolt = <1256000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l4c: ldo4 {
+			regulator-min-microvolt = <1648000>;
+			regulator-max-microvolt = <2950000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_l5c: ldo5 {
+			regulator-min-microvolt = <1648000>;
+			regulator-max-microvolt = <2950000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l6c: ldo6 {
 			regulator-min-microvolt = <1648000>;
 			regulator-max-microvolt = <3100000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l7c: ldo7 {
 			regulator-min-microvolt = <3000000>;
 			regulator-max-microvolt = <3312000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 			regulator-always-on;
 		};
 
-		vreg_l8c: ldo8 { /* Unused yet */
+		vreg_l8c: ldo8 {
 			regulator-min-microvolt = <1800000>;
 			regulator-max-microvolt = <1900000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 			regulator-always-on;
 		};
 
 		vreg_l9c: ldo9 {
 			regulator-min-microvolt = <2950000>;
 			regulator-max-microvolt = <3312000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l10c: ldo10 {
 			regulator-min-microvolt = <3200000>;
 			regulator-max-microvolt = <3312000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 
 		vreg_l11c: ldo11 {
 			regulator-min-microvolt = <2950000>;
 			regulator-max-microvolt = <3400000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_LPM>;
+		};
+
+		vreg_bob: bob {
+			regulator-min-microvolt = <3296000>;
+			regulator-max-microvolt = <3960000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_AUTO>;
 		};
 	};
 };
