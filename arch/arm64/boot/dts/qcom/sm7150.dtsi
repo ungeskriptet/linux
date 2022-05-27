@@ -11,7 +11,7 @@
 &CPU0 {
 	compatible = "qcom,kryo470";
 	/delete-property/ operating-points-v2;
-	
+
 	d-cache-size = <0x9000>;
 	i-cache-size = <0x8800>;
 };
@@ -29,7 +29,7 @@
 &CPU1 {
 	compatible = "qcom,kryo470";
 	/delete-property/ operating-points-v2;
-	
+
 	d-cache-size = <0x9000>;
 	i-cache-size = <0x8800>;
 };
@@ -42,7 +42,7 @@
 &CPU2 {
 	compatible = "qcom,kryo470";
 	/delete-property/ operating-points-v2;
-	
+
 	d-cache-size = <0x9000>;
 	i-cache-size = <0x8800>;
 };
@@ -55,7 +55,7 @@
 &CPU3 {
 	compatible = "qcom,kryo470";
 	/delete-property/ operating-points-v2;
-	
+
 	d-cache-size = <0x9000>;
 	i-cache-size = <0x8800>;
 };
@@ -68,7 +68,7 @@
 &CPU4 {
 	compatible = "qcom,kryo470";
 	/delete-property/ operating-points-v2;
-	
+
 	d-cache-size = <0x9000>;
 	i-cache-size = <0x8800>;
 };
@@ -81,7 +81,7 @@
 &CPU5 {
 	compatible = "qcom,kryo470";
 	/delete-property/ operating-points-v2;
-	
+
 	d-cache-size = <0x9000>;
 	i-cache-size = <0x8800>;
 };
@@ -94,7 +94,7 @@
 &CPU6 {
 	compatible = "qcom,kryo470";
 	/delete-property/ operating-points-v2;
-	
+
 	d-cache-size = <0x12000>;
 	i-cache-size = <0x11000>;
 };
@@ -107,7 +107,7 @@
 &CPU7 {
 	compatible = "qcom,kryo470";
 	/delete-property/ operating-points-v2;
-	
+
 	d-cache-size = <0x12000>;
 	i-cache-size = <0x11000>;
 };
