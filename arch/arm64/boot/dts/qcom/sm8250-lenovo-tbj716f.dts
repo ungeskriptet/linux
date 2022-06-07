@@ -1,0 +1,46 @@
+/dts-v1/;
+
+#include <dt-bindings/regulator/qcom,rpmh-regulator.h>
+#include <dt-bindings/phy/phy.h>
+#include "sm8250.dtsi"
+#include "pm8150.dtsi"
+#include "pm8150b.dtsi"
+#include "pm8150l.dtsi"
+#include "pm8009.dtsi"
+
+/delete-node/ &xbl_aop_mem;
+/delete-node/ &spss_mem;
+/delete-node/ &cdsp_secure_heap;
+
+/ {
+	model = "Lenovo Xiaoxin Pad Pro 2021";
+	compatible = "lenovo,tbj716f", "qcom,sm8250";
+	classis-type = "tablet";
+
+	/* required for bootloader to select correct board */
+	qcom,msm-id = <0x164 0x20001>; /* SM8250 v2.1 */
+	qcom,board-id = <0x2010008 0>;
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		framebuffer: framebuffer@9c000000 {
+			compatible = "simple-framebuffer";
+			reg = <0 0x9c000000 0 (2560 * 1600 *4)>;
+			width = <2560>;
+			height = <1600>;
+			stride = <(2560 * 4)>;
+			format = "a8r8g8b8";
+		};
+	};
+
+	reserved-memory {
+		cont_splash_memory: memory@9c000000 {
+			reg = <0x0 0x9c000000 0x0 (2560 * 1600 *4)>;
+			no-map;
+		};
+
+	};
+};
