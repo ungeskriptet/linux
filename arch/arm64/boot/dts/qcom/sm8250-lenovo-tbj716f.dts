@@ -29,6 +29,20 @@
 			height = <1600>;
 			stride = <(2560 * 4)>;
 			format = "a8r8g8b8";
+			/*
+			 * That's a lot of clocks, but it's necessary due
+			 * to unused clk cleanup & no panel driver yet..
+			 */
+			clocks = <&dispcc DISP_CC_MDSS_AHB_CLK>,
+				 <&gcc GCC_DISP_HF_AXI_CLK>,
+				 <&gcc GCC_DISP_SF_AXI_CLK>,
+				 <&dispcc DISP_CC_MDSS_VSYNC_CLK>,
+				 <&dispcc DISP_CC_MDSS_MDP_CLK>,
+				 <&dispcc DISP_CC_MDSS_BYTE0_CLK>,
+				 <&dispcc DISP_CC_MDSS_BYTE0_INTF_CLK>,
+				 <&dispcc DISP_CC_MDSS_PCLK0_CLK>,
+				 <&dispcc DISP_CC_MDSS_ESC0_CLK>;
+			power-domains = <&dispcc MDSS_GDSC>;
 		};
 	};
 
@@ -56,10 +70,6 @@
 		regulator-always-on;
 		vin-supply = <&vph_pwr>;
 	};
-};
-
-&tlmm {
-	gpio-reserved-ranges = <40 4>;
 };
 
 &apps_rsc {
@@ -352,6 +362,10 @@
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 		};
 	};
+};
+
+&tlmm {
+	gpio-reserved-ranges = <40 4>;
 };
 
 &usb_1 {
