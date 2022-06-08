@@ -22,9 +22,9 @@
 		ranges;
 
 		framebuffer_region@9c000000 {
-                        reg = <0x0 0x9c000000 0x0 (1080 * 2400 * 4)>;
-                        no-map;
-                };
+			reg = <0x0 0x9c000000 0x0 (1080 * 2400 * 4)>;
+			no-map;
+		};
 
 		mpss_mem: memory@86000000 {
 			reg = <0x0 0x86000000 0x0 0x8400000>;
@@ -86,6 +86,17 @@
 			height = <2400>;
 			stride = <(1080 * 4)>;
 			format = "a8r8g8b8";
+			/*
+			 * That's a lot of clocks, but it's necessary due
+			 * to unused clk cleanup & no panel driver yet..
+			 */
+			clocks = <&gcc GCC_DISP_HF_AXI_CLK>,
+				 <&dispcc DISP_CC_MDSS_BYTE0_CLK>,
+				 <&dispcc DISP_CC_MDSS_BYTE0_INTF_CLK>,
+				 <&dispcc DISP_CC_MDSS_MDP_CLK>,
+				 <&dispcc DISP_CC_MDSS_PCLK0_CLK>,
+				 <&dispcc DISP_CC_MDSS_VSYNC_CLK>;
+			power-domains = <&dispcc MDSS_GDSC>;
 		};
 	};
 };
@@ -100,6 +111,33 @@
 	vqmmc-supply = <&vreg_l6c>;
 
 	cd-gpios = <&tlmm 69 GPIO_ACTIVE_HIGH>;
+};
+
+&dsi0 {
+	status = "okay";
+
+	panel@0 {
+		compatible = "huaxing,ft8756";
+		reg = <0>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&panel_te_pin>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi0_out>;
+			};
+		};
+	};
+};
+
+&dsi0_out {
+	remote-endpoint = <&panel_in>;
+	data-lanes = <0 1 2 3>;
+};
+
+&dsi_phy {
+	status = "okay";
 };
 
 &mdp {
@@ -229,6 +267,15 @@
 			drive-strength = <2>;
 		};
 	};
+
+	panel_te_pin: panel-te {
+		mux {
+			pins = "gpio10";
+			function = "mdp_vsync";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
 };
 
 &lpasscc {
@@ -283,11 +330,11 @@
 			regulator-max-microvolt = <928000>;
 		};
 
-		vreg_l5a: ldo5 {
+		/*vreg_l5a: ldo5 {
 			regulator-min-microvolt = <2496000>;
 			regulator-max-microvolt = <3000000>;
 			regulator-always-on;
-		};
+		};*/
 
 		vreg_l6a: ldo6 {
 			regulator-min-microvolt = <568000>;
