@@ -8,10 +8,6 @@
 #include "pm8150l.dtsi"
 #include "pm8009.dtsi"
 
-/delete-node/ &xbl_aop_mem;
-/delete-node/ &spss_mem;
-/delete-node/ &cdsp_secure_heap;
-
 / {
 	model = "Lenovo Xiaoxin Pad Pro 2021";
 	compatible = "lenovo,tbj716f", "qcom,sm8250";
@@ -43,4 +39,8 @@
 		};
 
 	};
+};
+
+&tlmm {
+	gpio-reserved-ranges = <40 4>;
 };
