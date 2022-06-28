@@ -502,11 +502,26 @@ static const struct panel_mipi_dsi_info ili9885_boe_fhd_info = {
 		      MIPI_DSI_MODE_VIDEO_HSE | MIPI_DSI_MODE_NO_EOT_PACKET |
 		      MIPI_DSI_CLOCK_NON_CONTINUOUS
 };
-MIPI_DSI_PANEL_DRIVER(r63350_ebbg_fhd, "r63350-ebbg-fhd", "xiaomi,ebbg-r63350");
-MIPI_DSI_PANEL_DRIVER(otm1911_fhd, "otm1911-fhd", "xiaomi,otm1911");
-MIPI_DSI_PANEL_DRIVER(nt35596_tianma_fhd, "nt35596-tianma-fhd", "xiaomi,tianma-nt35596");
-MIPI_DSI_PANEL_DRIVER(nt35532_fhd, "nt35532-fhd", "xiaomi,nt35532");
-MIPI_DSI_PANEL_DRIVER(ili9885_boe_fhd, "ili9885-boe-fhd", "xiaomi,boe-ili9885");
+
+static const struct of_device_id mido_panel_of_match[] = {
+	{ .compatible = "xiaomi,ebbg-r63350", &r63350_ebbg_fhd_info },
+	{ .compatible = "xiaomi,otm1911", &otm1911_fhd_info },
+	{ .compatible = "xiaomi,tianma-nt35596", &nt35596_tianma_fhd_info },
+	{ .compatible = "xiaomi,nt35532", &nt35532_fhd_info },
+	{ .compatible = "xiaomi,boe-ili9885", &ili9885_boe_fhd_info },
+	{ }
+};
+MODULE_DEVICE_TABLE(of, mido_panel_of_match);	
+		
+static struct mipi_dsi_driver mido_panel_driver = {		
+	.probe = panel_mipi_dsi_common_probe,			
+	.remove = panel_mipi_dsi_common_remove,			
+	.driver = {						
+		.name = "panel-xiaomi-mido",				
+		.of_match_table = mido_panel_of_match,		
+	},							
+};
+module_mipi_dsi_driver(mido_panel_driver);
 
 MODULE_AUTHOR("linux-mdss-dsi-panel-driver-generator <fix@me>"); // FIXME
 MODULE_DESCRIPTION("DRM driver for multiple DSI panels found in Xiaomi Redmi Note 4X smartphone");
