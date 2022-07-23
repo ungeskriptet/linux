@@ -13,7 +13,7 @@
 	};
 
 	chosen {
-		bootargs = "earlycon console=ttySAC0,115200 root=/dev/sda15 rw";
+		bootargs = "earlycon=simplefb,0xe2a00000,1440,2560 console=tty0 clk_ignore_unused pd_ignore_unused PMOS_NO_OUTPUT_REDIRECT PMOS_NOSPLASH";
 		stdout-path = &serial_1;
 	};
 
