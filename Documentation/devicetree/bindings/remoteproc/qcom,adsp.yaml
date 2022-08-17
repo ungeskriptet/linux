@@ -40,6 +40,9 @@ properties:
       - qcom,sm6350-adsp-pas
       - qcom,sm6350-cdsp-pas
       - qcom,sm6350-mpss-pas
+      - qcom,sm7150-adsp-pas
+      - qcom,sm7150-cdsp-pas
+      - qcom,sm7150-mpss-pas
       - qcom,sm8150-adsp-pas
       - qcom,sm8150-cdsp-pas
       - qcom,sm8150-mpss-pas
@@ -182,6 +185,9 @@ allOf:
               - qcom,sm6350-adsp-pas
               - qcom,sm6350-cdsp-pas
               - qcom,sm6350-mpss-pas
+              - qcom,sm7150-adsp-pas
+              - qcom,sm7150-cdsp-pas
+              - qcom,sm7150-mpss-pas
               - qcom,sm8150-adsp-pas
               - qcom,sm8150-cdsp-pas
               - qcom,sm8150-mpss-pas
@@ -300,6 +306,8 @@ allOf:
               - qcom,sdm845-cdsp-pas
               - qcom,sm6350-adsp-pas
               - qcom,sm6350-cdsp-pas
+              - qcom,sm7150-adsp-pas
+              - qcom,sm7150-cdsp-pas
               - qcom,sm8150-adsp-pas
               - qcom,sm8150-cdsp-pas
               - qcom,sm8150-slpi-pas
@@ -339,6 +347,7 @@ allOf:
               - qcom,sc8180x-mpss-pas
               - qcom,sdx55-mpss-pas
               - qcom,sm6350-mpss-pas
+              - qcom,sm7150-mpss-pas
               - qcom,sm8150-mpss-pas
               - qcom,sm8350-mpss-pas
               - qcom,sm8450-mpss-pas
@@ -431,6 +440,7 @@ allOf:
           contains:
             enum:
               - qcom,sm6350-cdsp-pas
+              - qcom,sm7150-cdsp-pas
     then:
       properties:
         power-domains:
@@ -463,6 +473,7 @@ allOf:
               - qcom,sc7280-mpss-pas
               - qcom,sdx55-mpss-pas
               - qcom,sm6350-mpss-pas
+              - qcom,sm7150-mpss-pas
               - qcom,sm8150-mpss-pas
               - qcom,sm8350-mpss-pas
               - qcom,sm8450-mpss-pas
@@ -486,6 +497,7 @@ allOf:
               - qcom,sc8180x-cdsp-pas
               - qcom,sc8280xp-adsp-pas
               - qcom,sm6350-adsp-pas
+              - qcom,sm7150-adsp-pas
               - qcom,sm8150-slpi-pas
               - qcom,sm8250-adsp-pas
               - qcom,sm8250-slpi-pas
