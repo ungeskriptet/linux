@@ -366,6 +366,16 @@
 	};
 };
 
+&remoteproc_cdsp {
+	status = "okay";
+	firmware-name = "qcom/sm7150/surya/cdsp.mbn";
+};
+
+&remoteproc_mpss {
+	status = "okay";
+	firmware-name = "qcom/sm7150/surya/modem.mbn";
+};
+
 &ufs_mem_hc {
 	status = "okay";
 
