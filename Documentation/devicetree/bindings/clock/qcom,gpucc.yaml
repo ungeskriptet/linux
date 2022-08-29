@@ -29,6 +29,7 @@ properties:
       - qcom,sc7280-gpucc
       - qcom,sc8180x-gpucc
       - qcom,sm6350-gpucc
+      - qcom,sm7150-gpucc
       - qcom,sm8150-gpucc
       - qcom,sm8250-gpucc
 
