@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2022, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022, Danila Tikhonov <JIaxyga@protonmail.com>
+ * Copyright (c) 2022, David Wronek <w.david0@protonmail.com>
  */
 
 #include <linux/clk-provider.h>
