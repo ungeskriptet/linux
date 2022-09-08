@@ -552,8 +552,6 @@
 	bluetooth: bluetooth {
 		compatible = "qcom,wcn3990-bt";
 
-		firmware-name = "crnv21.bin";
-
 		vddio-supply = <&vreg_l10a_1p8>;
 		vddxo-supply = <&vreg_l1c_1p8>;
 		vddrf-supply = <&vreg_l2c_1p3>;
