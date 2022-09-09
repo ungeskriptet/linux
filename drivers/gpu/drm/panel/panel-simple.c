@@ -4364,6 +4364,36 @@ static const struct panel_desc_dsi boe_tv080wum_nl0 = {
 	.lanes = 4,
 };
 
+static const struct drm_display_mode nt36672c_mode = {
+	.clock = (1080 + 73 + 12 + 40) * (2400 + 32 + 2 + 30) * 120 / 1000,
+	.hdisplay = 1080,
+	.hsync_start = 1080 + 73,
+	.hsync_end = 1080 + 73 + 12,
+	.htotal = 1080 + 73 + 12 + 40,
+	.vdisplay = 2400,
+	.vsync_start = 2400 + 32,
+	.vsync_end = 2400 + 32 + 2,
+	.vtotal = 2400 + 32 + 2 + 30,
+	.width_mm = 70,
+	.height_mm = 154,
+};
+
+static const struct panel_desc_dsi nt36672c = {
+	.desc = {
+		.modes = &nt36672c_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 70,
+			.height = 152,
+		},
+		.connector_type = DRM_MODE_CONNECTOR_DSI,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_CLOCK_NON_CONTINUOUS,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 4,
+};
+
 static const struct drm_display_mode lg_ld070wx3_sl01_mode = {
 	.clock = 71000,
 	.hdisplay = 800,
@@ -4518,6 +4548,9 @@ static const struct of_device_id dsi_of_match[] = {
 	}, {
 		.compatible = "lg,ld070wx3-sl01",
 		.data = &lg_ld070wx3_sl01
+	}, {
+		.compatible = "simple,nt36672c",
+		.data = &nt36672c
 	}, {
 		.compatible = "lg,lh500wx1-sd03",
 		.data = &lg_lh500wx1_sd03

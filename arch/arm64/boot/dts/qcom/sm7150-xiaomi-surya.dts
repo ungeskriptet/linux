@@ -42,7 +42,7 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
-		framebuffer@9c000000 {
+		/*framebuffer@9c000000 {
 			compatible = "simple-framebuffer";
 			reg = <0x0 0x9c000000 0x0 (1080 * 2400 * 4)>;
 			width = <1080>;
@@ -53,9 +53,9 @@
 			 * That's (going to be) a lot of clocks, but it's necessary due
 			 * to unused clk cleanup & no panel driver yet (& no dispcc either)..
 			 */
-			clocks = <&gcc GCC_DISP_HF_AXI_CLK>,
+			/*clocks = <&gcc GCC_DISP_HF_AXI_CLK>,
 				 <&gcc GCC_DISP_SF_AXI_CLK>;
-		};
+		};*/
 	};
 
 	gpio-keys {
@@ -76,10 +76,10 @@
 		#size-cells = <2>;
 		ranges;
 
-		framebuffer_region@9c000000 {
+		/*framebuffer_region@9c000000 {
 			reg = <0x0 0x9c000000 0x0 (1080 * 2400 * 4)>;
 			no-map;
-		};
+		};*/
 
 		ramoops@9d800000 {
 			compatible = "ramoops";
@@ -359,6 +359,40 @@
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 		};
 	};
+};
+
+&dsi0 {
+	status= "okay";
+
+	panel: panel@0 {
+		compatible = "simple,nt36672c";
+		reg = <0>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi0_out>;
+			};
+		};
+	};
+
+
+};
+
+&dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel_in>;
+};
+
+&dsi_phy0 {
+	status = "okay";
+};
+
+&mdp {
+	status = "okay";
+};
+
+&mdss {
+	status = "okay";
 };
 
 &i2c1 {
