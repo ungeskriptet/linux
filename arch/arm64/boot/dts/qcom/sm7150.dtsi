@@ -1760,7 +1760,7 @@
 			status = "disabled";
 			#phy-cells = <0>;
 			clocks = <&gcc GCC_USB_PHY_CFG_AHB2PHY_CLK>,
-				 <&xo_board>; //FIXME
+				 <&rpmhcc RPMH_CXO_CLK>;
 			clock-names = "cfg_ahb", "ref";
 			resets = <&gcc GCC_QUSB2PHY_PRIM_BCR>;
 		};
