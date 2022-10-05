@@ -245,7 +245,7 @@ static int goodix_ts_read_input_report(struct goodix_ts_data *ts, u8 *data)
 	unsigned long max_timeout;
 	int touch_num;
 	int error;
-	u16 addr = GOODIX_READ_COOR_ADDR;
+	u16 addr = GOODIX_GT738X_READ_COOR_ADDR;
 	/*
 	 * We are going to read 1-byte header,
 	 * ts->contact_size * max(1, touch_num) bytes of coordinates
@@ -500,7 +500,7 @@ static irqreturn_t goodix_ts_irq_handler(int irq, void *dev_id)
 	struct goodix_ts_data *ts = dev_id;
 
 	goodix_process_events(ts);
-	goodix_i2c_write_u8(ts->client, GOODIX_READ_COOR_ADDR, 0);
+	goodix_i2c_write_u8(ts->client, GOODIX_GT738X_READ_COOR_ADDR, 0);
 
 	return IRQ_HANDLED;
 }
@@ -951,6 +951,15 @@ static int goodix_get_gpio_config(struct goodix_ts_data *ts)
 		return error;
 	}
 
+	ts->vdd = devm_regulator_get(dev, "VDD");
+	if (IS_ERR(ts->vdd)) {
+		error = PTR_ERR(ts->vdd);
+		if (error != -EPROBE_DEFER)
+			dev_err(dev,
+				"Failed to get VDD regulator: %d\n", error);
+		return error;
+	};
+
 	ts->vddio = devm_regulator_get(dev, "VDDIO");
 	if (IS_ERR(ts->vddio)) {
 		error = PTR_ERR(ts->vddio);
@@ -1069,7 +1078,7 @@ static int goodix_read_version(struct goodix_ts_data *ts)
 	u8 buf[6];
 	char id_str[GOODIX_ID_MAX_LEN + 1];
 
-	error = goodix_i2c_read(ts->client, GOODIX_REG_ID, buf, sizeof(buf));
+	error = goodix_i2c_read(ts->client, GOODIX_GT738X_REG_ID, buf, sizeof(buf));
 	if (error)
 		return error;
 
@@ -1097,7 +1106,7 @@ static int goodix_i2c_test(struct i2c_client *client)
 	u8 test;
 
 	while (retry++ < 2) {
-		error = goodix_i2c_read(client, GOODIX_REG_ID, &test, 1);
+		error = goodix_i2c_read(client, GOODIX_GT738X_REG_ID, &test, 1);
 		if (!error)
 			return 0;
 
@@ -1267,6 +1276,7 @@ static void goodix_disable_regulators(void *arg)
 {
 	struct goodix_ts_data *ts = arg;
 
+	regulator_disable(ts->vdd);
 	regulator_disable(ts->vddio);
 	regulator_disable(ts->avdd28);
 }
@@ -1307,12 +1317,22 @@ static int goodix_ts_probe(struct i2c_client *client,
 		return error;
 	}
 
+	error = regulator_enable(ts->vdd);
+	if (error) {
+		dev_err(&client->dev,
+			"Failed to enable VDD regulator: %d\n",
+			error);
+		regulator_disable(ts->avdd28);
+		return error;
+	};
+
 	error = regulator_enable(ts->vddio);
 	if (error) {
 		dev_err(&client->dev,
 			"Failed to enable VDDIO regulator: %d\n",
 			error);
 		regulator_disable(ts->avdd28);
+		regulator_disable(ts->vdd);
 		return error;
 	}
 
@@ -1512,6 +1532,7 @@ static const struct of_device_id goodix_of_match[] = {
 	{ .compatible = "goodix,gt1158" },
 	{ .compatible = "goodix,gt5663" },
 	{ .compatible = "goodix,gt5688" },
+	{ .compatible = "goodix,gt738x" },
 	{ .compatible = "goodix,gt911" },
 	{ .compatible = "goodix,gt9110" },
 	{ .compatible = "goodix,gt912" },

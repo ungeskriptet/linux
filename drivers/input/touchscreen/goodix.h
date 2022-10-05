@@ -50,7 +50,9 @@
 #define GOODIX_GT1X_REG_CONFIG_DATA		0x8050
 #define GOODIX_GT9X_REG_CONFIG_DATA		0x8047
 #define GOODIX_REG_ID				0x8140
+#define GOODIX_GT738X_REG_ID		0x8240
 #define GOODIX_READ_COOR_ADDR			0x814E
+#define GOODIX_GT738X_READ_COOR_ADDR	0x824E
 #define GOODIX_REG_BAK_REF			0x99D0
 
 #define GOODIX_ID_MAX_LEN			4
@@ -83,6 +85,7 @@ struct goodix_ts_data {
 	unsigned int max_touch_num;
 	unsigned int int_trigger_type;
 	struct regulator *avdd28;
+	struct regulator *vdd;
 	struct regulator *vddio;
 	struct gpio_desc *gpiod_int;
 	struct gpio_desc *gpiod_rst;
