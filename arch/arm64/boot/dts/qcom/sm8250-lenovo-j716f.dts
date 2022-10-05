@@ -76,6 +76,11 @@
 	};
 };
 
+&adsp {
+	status = "okay";
+	firmware-name = "qcom/sm8250/j716f/adsp.mbn";
+};
+
 &apps_rsc {
     pm8150-rpmh-regulators {
         compatible = "qcom,pm8150-rpmh-regulators";
@@ -420,6 +425,11 @@
 	};
 };
 
+&cdsp {
+	status = "okay";
+	firmware-name = "qcom/sm8250/j716f/cdsp.mbn";
+};
+
 &gpi_dma0 {
 	status = "okay";
 };
@@ -499,6 +509,11 @@
 
 &qupv3_id_2 {
 	status = "okay";
+};
+
+&slpi {
+	status = "okay";
+	firmware-name = "qcom/sm8250/j716f/slpi.mbn";
 };
 
 &tlmm {
