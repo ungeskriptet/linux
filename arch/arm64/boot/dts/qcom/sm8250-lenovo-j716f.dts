@@ -186,13 +186,12 @@
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 		};
 
-		/* L13 is unused. */
-		/*vreg_l13a_3p0: ldo13 {
+		vreg_l13a_3p0: ldo13 {
 			regulator-name = "vreg_l13a_3p0";
 			regulator-min-microvolt = <3008000>;
 			regulator-max-microvolt = <3008000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
-		};*/
+		};
 
 		vreg_l14a_1p8: ldo14 {
 			regulator-name = "vreg_l14a_1p8";
@@ -475,7 +474,22 @@
 	status = "okay";
 	clock-frequency = <400000>;
 
-	/* goodix,gt738x (Touchscreen) @ 5d */
+	goodix-gt738x@5d {
+		compatible = "goodix,gt738x";
+		reg = <0x5d>;
+		reset-gpios = <&tlmm 38 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <39 IRQ_TYPE_LEVEL_LOW>;
+		AVDD28-supply = <&vreg_l13a_3p0>;
+		VDD-supply = <&vreg_l1c_1p8>;
+		VDDIO-supply = <&vreg_l14a_1p8>;
+		touchscreen-size-x = <2560>;
+		touchscreen-size-y = <1600>;
+		pinctrl-names = "ts_active", "ts_suspend", "ts_release";
+		pinctrl-0 = <&ts_active>;
+		pinctrl-1 = <&ts_suspend &ts_reset_suspend>;
+		pinctrl-2 = <&ts_release>;
+	};
 };
 
 &i2c15 {
@@ -518,6 +532,46 @@
 
 &tlmm {
 	gpio-reserved-ranges = <40 4>;
+
+	ts_active: ts_active {
+		ts_active {
+			pins = "gpio38", "gpio39";
+			function = "gpio";
+
+			drive-strength = <8>;
+			bias-pull-up;
+		};
+	};
+
+	ts_release: ts_release {
+		ts_release {
+			pins = "gpio38", "gpio39";
+			function = "gpio";
+
+			driver-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	ts_reset_suspend: ts_reset_suspend {
+		ts_reset_suspend {
+			pins = "gpio38";
+			function = "gpio";
+
+			drive-stength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	ts_suspend: ts_suspend {
+		ts_suspend {
+			pins = "gpio39";
+			function = "gpio";
+
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
 };
 
 &ufs_mem_hc {
