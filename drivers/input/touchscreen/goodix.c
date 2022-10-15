@@ -75,22 +75,22 @@ static const struct goodix_chip_data gt1x_chip_data = {
 static const struct goodix_chip_data gt911_chip_data = {
 	.config_addr		= GOODIX_GT9X_REG_CONFIG_DATA,
 	.config_len		= GOODIX_CONFIG_911_LENGTH,
-	.check_config		= goodix_check_cfg_16,
-	.calc_config_checksum	= goodix_calc_cfg_checksum_16,
+	.check_config		= goodix_check_cfg_8,
+	.calc_config_checksum	= goodix_calc_cfg_checksum_8,
 };
 
 static const struct goodix_chip_data gt967_chip_data = {
 	.config_addr		= GOODIX_GT9X_REG_CONFIG_DATA,
 	.config_len		= GOODIX_CONFIG_967_LENGTH,
-	.check_config		= goodix_check_cfg_16,
-	.calc_config_checksum	= goodix_calc_cfg_checksum_16,
+	.check_config		= goodix_check_cfg_8,
+	.calc_config_checksum	= goodix_calc_cfg_checksum_8,
 };
 
 static const struct goodix_chip_data gt9x_chip_data = {
 	.config_addr		= GOODIX_GT9X_REG_CONFIG_DATA,
 	.config_len		= GOODIX_CONFIG_GT9X_LENGTH,
-	.check_config		= goodix_check_cfg_16,
-	.calc_config_checksum	= goodix_calc_cfg_checksum_16,
+	.check_config		= goodix_check_cfg_8,
+	.calc_config_checksum	= goodix_calc_cfg_checksum_8,
 };
 
 static const struct goodix_chip_id goodix_chip_ids[] = {
