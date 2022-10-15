@@ -237,7 +237,7 @@ static const struct goodix_chip_data *goodix_get_chip_data(const char *id)
 			return goodix_chip_ids[i].data;
 	}
 
-	return &gt1x_chip_data;
+	return &gt9x_chip_data;
 }
 
 static int goodix_ts_read_input_report(struct goodix_ts_data *ts, u8 *data)
@@ -1081,7 +1081,8 @@ static int goodix_read_version(struct goodix_ts_data *ts)
 	u8 buf[6];
 	char id_str[GOODIX_ID_MAX_LEN + 1];
 
-	error = goodix_i2c_read(ts->client, GOODIX_REG_ID, buf, sizeof(buf));
+	msleep(1000);
+	error = goodix_i2c_read(ts->client, GOODIX_GT738X_REG_ID, buf, sizeof(buf));
 	if (error)
 		return error;
 
