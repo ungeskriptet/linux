@@ -1385,7 +1385,7 @@ reset:
 				 "goodix/%s", cfg_name);
 		else
 			snprintf(ts->cfg_name, sizeof(ts->cfg_name),
-				 "goodix_cfg_group.bin", ts->id);
+				 "goodix_%s_cfg.bin", ts->id);
 
 		error = request_firmware_nowait(THIS_MODULE, true, ts->cfg_name,
 						&client->dev, GFP_KERNEL, ts,
