@@ -36,9 +36,9 @@
 #define GOODIX_MAX_CONTACTS		10
 
 #define GOODIX_CONFIG_MIN_LENGTH	186
-#define GOODIX_CONFIG_911_LENGTH	186
-#define GOODIX_CONFIG_967_LENGTH	228
-#define GOODIX_CONFIG_GT9X_LENGTH	240
+#define GOODIX_CONFIG_911_LENGTH	583
+#define GOODIX_CONFIG_967_LENGTH	583
+#define GOODIX_CONFIG_GT9X_LENGTH	583
 
 #define GOODIX_BUFFER_STATUS_READY	BIT(7)
 #define GOODIX_HAVE_KEY			BIT(4)
@@ -75,22 +75,22 @@ static const struct goodix_chip_data gt1x_chip_data = {
 static const struct goodix_chip_data gt911_chip_data = {
 	.config_addr		= GOODIX_GT9X_REG_CONFIG_DATA,
 	.config_len		= GOODIX_CONFIG_911_LENGTH,
-	.check_config		= goodix_check_cfg_8,
-	.calc_config_checksum	= goodix_calc_cfg_checksum_8,
+	.check_config		= goodix_check_cfg_16,
+	.calc_config_checksum	= goodix_calc_cfg_checksum_16,
 };
 
 static const struct goodix_chip_data gt967_chip_data = {
 	.config_addr		= GOODIX_GT9X_REG_CONFIG_DATA,
 	.config_len		= GOODIX_CONFIG_967_LENGTH,
-	.check_config		= goodix_check_cfg_8,
-	.calc_config_checksum	= goodix_calc_cfg_checksum_8,
+	.check_config		= goodix_check_cfg_16,
+	.calc_config_checksum	= goodix_calc_cfg_checksum_16,
 };
 
 static const struct goodix_chip_data gt9x_chip_data = {
 	.config_addr		= GOODIX_GT9X_REG_CONFIG_DATA,
 	.config_len		= GOODIX_CONFIG_GT9X_LENGTH,
-	.check_config		= goodix_check_cfg_8,
-	.calc_config_checksum	= goodix_calc_cfg_checksum_8,
+	.check_config		= goodix_check_cfg_16,
+	.calc_config_checksum	= goodix_calc_cfg_checksum_16,
 };
 
 static const struct goodix_chip_id goodix_chip_ids[] = {
@@ -237,7 +237,7 @@ static const struct goodix_chip_data *goodix_get_chip_data(const char *id)
 			return goodix_chip_ids[i].data;
 	}
 
-	return &gt9x_chip_data;
+	return &gt1x_chip_data;
 }
 
 static int goodix_ts_read_input_report(struct goodix_ts_data *ts, u8 *data)
@@ -528,6 +528,7 @@ static int goodix_check_cfg_8(struct goodix_ts_data *ts, const u8 *cfg, int len)
 	if (check_sum != cfg[raw_cfg_len]) {
 		dev_err(&ts->client->dev,
 			"The checksum of the config fw is not correct");
+		printk("Goodix-TS 13-005d: Checksum 8");
 		return -EINVAL;
 	}
 
@@ -565,6 +566,7 @@ static int goodix_check_cfg_16(struct goodix_ts_data *ts, const u8 *cfg,
 	if (check_sum != get_unaligned_be16(&cfg[raw_cfg_len])) {
 		dev_err(&ts->client->dev,
 			"The checksum of the config fw is not correct");
+		printk("Goodix-TS 13-005d: Checksum 16");
 		return -EINVAL;
 	}
 
@@ -603,6 +605,7 @@ static int goodix_check_cfg(struct goodix_ts_data *ts, const u8 *cfg, int len)
 	    len > GOODIX_CONFIG_MAX_LENGTH) {
 		dev_err(&ts->client->dev,
 			"The length of the config fw is not correct");
+		printk("Goodix: len is %d", len);
 		return -EINVAL;
 	}
 
@@ -1078,7 +1081,7 @@ static int goodix_read_version(struct goodix_ts_data *ts)
 	u8 buf[6];
 	char id_str[GOODIX_ID_MAX_LEN + 1];
 
-	error = goodix_i2c_read(ts->client, GOODIX_GT738X_REG_ID, buf, sizeof(buf));
+	error = goodix_i2c_read(ts->client, GOODIX_REG_ID, buf, sizeof(buf));
 	if (error)
 		return error;
 
@@ -1381,7 +1384,7 @@ reset:
 				 "goodix/%s", cfg_name);
 		else
 			snprintf(ts->cfg_name, sizeof(ts->cfg_name),
-				 "goodix_%s_cfg.bin", ts->id);
+				 "goodix_cfg_group.bin", ts->id);
 
 		error = request_firmware_nowait(THIS_MODULE, true, ts->cfg_name,
 						&client->dev, GFP_KERNEL, ts,

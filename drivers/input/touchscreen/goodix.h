@@ -56,7 +56,7 @@
 #define GOODIX_REG_BAK_REF			0x99D0
 
 #define GOODIX_ID_MAX_LEN			4
-#define GOODIX_CONFIG_MAX_LENGTH		240
+#define GOODIX_CONFIG_MAX_LENGTH		583
 #define GOODIX_MAX_KEYS				7
 
 enum goodix_irq_pin_access_method {

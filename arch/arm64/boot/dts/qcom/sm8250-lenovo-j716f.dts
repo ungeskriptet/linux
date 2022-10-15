@@ -477,18 +477,19 @@
 	goodix-gt738x@5d {
 		compatible = "goodix,gt738x";
 		reg = <0x5d>;
+
+		irq-gpios = <&tlmm 39 GPIO_ACTIVE_HIGH>;
 		reset-gpios = <&tlmm 38 GPIO_ACTIVE_HIGH>;
+
 		interrupt-parent = <&tlmm>;
 		interrupts = <39 IRQ_TYPE_LEVEL_LOW>;
+
 		AVDD28-supply = <&vreg_l13a_3p0>;
 		VDD-supply = <&vreg_l1c_1p8>;
 		VDDIO-supply = <&vreg_l14a_1p8>;
+
 		touchscreen-size-x = <2560>;
 		touchscreen-size-y = <1600>;
-		pinctrl-names = "ts_active", "ts_suspend", "ts_release";
-		pinctrl-0 = <&ts_active>;
-		pinctrl-1 = <&ts_suspend &ts_reset_suspend>;
-		pinctrl-2 = <&ts_release>;
 	};
 };
 
