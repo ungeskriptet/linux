@@ -474,8 +474,8 @@
 	status = "okay";
 	clock-frequency = <400000>;
 
-	goodix-gt738x@5d {
-		compatible = "goodix,gt738x";
+	goodix-gt7386@5d {
+		compatible = "goodix,gt7386";
 		reg = <0x5d>;
 
 		irq-gpios = <&tlmm 39 GPIO_ACTIVE_HIGH>;

@@ -245,7 +245,7 @@ static int goodix_ts_read_input_report(struct goodix_ts_data *ts, u8 *data)
 	unsigned long max_timeout;
 	int touch_num;
 	int error;
-	u16 addr = GOODIX_GT738X_READ_COOR_ADDR;
+	u16 addr = GOODIX_GT7386_READ_COOR_ADDR;
 	/*
 	 * We are going to read 1-byte header,
 	 * ts->contact_size * max(1, touch_num) bytes of coordinates
@@ -500,7 +500,7 @@ static irqreturn_t goodix_ts_irq_handler(int irq, void *dev_id)
 	struct goodix_ts_data *ts = dev_id;
 
 	goodix_process_events(ts);
-	goodix_i2c_write_u8(ts->client, GOODIX_GT738X_READ_COOR_ADDR, 0);
+	goodix_i2c_write_u8(ts->client, GOODIX_GT7386_READ_COOR_ADDR, 0);
 
 	return IRQ_HANDLED;
 }
@@ -1082,7 +1082,7 @@ static int goodix_read_version(struct goodix_ts_data *ts)
 	char id_str[GOODIX_ID_MAX_LEN + 1];
 
 	msleep(1000);
-	error = goodix_i2c_read(ts->client, GOODIX_GT738X_REG_ID, buf, sizeof(buf));
+	error = goodix_i2c_read(ts->client, GOODIX_GT7386_REG_ID, buf, sizeof(buf));
 	if (error)
 		return error;
 
@@ -1110,7 +1110,7 @@ static int goodix_i2c_test(struct i2c_client *client)
 	u8 test;
 
 	while (retry++ < 2) {
-		error = goodix_i2c_read(client, GOODIX_GT738X_REG_ID, &test, 1);
+		error = goodix_i2c_read(client, GOODIX_GT7386_REG_ID, &test, 1);
 		if (!error)
 			return 0;
 
@@ -1536,7 +1536,7 @@ static const struct of_device_id goodix_of_match[] = {
 	{ .compatible = "goodix,gt1158" },
 	{ .compatible = "goodix,gt5663" },
 	{ .compatible = "goodix,gt5688" },
-	{ .compatible = "goodix,gt738x" },
+	{ .compatible = "goodix,gt7386" },
 	{ .compatible = "goodix,gt911" },
 	{ .compatible = "goodix,gt9110" },
 	{ .compatible = "goodix,gt912" },
