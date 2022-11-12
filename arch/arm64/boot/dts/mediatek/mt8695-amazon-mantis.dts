@@ -1,0 +1,44 @@
+/dts-v1/;
+
+#include "mt8695.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+/ {
+	model = "Amazon Fire TV Stick 4K";
+	compatible = "amazon,mantis", "mediatek,mt8695";
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		bootargs = "clk_ignore_unused pd_ignore_unused earlycon=mtk8250,0x11003000 console=ttyS0,921600 initrd=0x44000000,0x600000 PMOS_NO_OUTPUT_REDIRECT";
+
+		framebuffer: framebuffer@905c0000 {
+			compatible = "simple-framebuffer";
+			reg = <0 0x905c0000 0 0x1800000>;
+			width = <1920>;
+			height = <1080>;
+			stride = <(1920 * 4)>;
+			format = "a8r8g8b8";
+		};
+
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0 0x40000000 0 0x51dc0000>;
+	};
+
+	reserved-memory {
+		fb_mem: memory@905c0000 {
+			reg = <0 0x905c0000 0 0x1800000>;
+			no-map;
+		};
+	};
+};
+
+&uart1 {
+	status = "okay";
+};
