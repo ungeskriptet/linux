@@ -42,5 +42,5 @@
 };
 
 &tlmm {
-	gpio-reserved-ranges = <0 119>; //FIXME
+	gpio-reserved-ranges = <52 8>;
 };
