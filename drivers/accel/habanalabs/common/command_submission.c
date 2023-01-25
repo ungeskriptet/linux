@@ -47,7 +47,6 @@ struct wait_interrupt_data {
 	u64 cq_offset;
 	u64 target_value;
 	u64 intr_timeout_us;
-	unsigned long flags;
 };
 
 static void job_wq_completion(struct work_struct *work);
@@ -3324,11 +3323,12 @@ static int ts_get_and_handle_kernel_record(struct hl_device *hdev, struct hl_ctx
 		 * on, and we don't wan't to lock two lists while we're doing unregister, so
 		 * unlock the new interrupt wait list here and acquire the lock again after you done
 		 */
-		spin_unlock_irqrestore(&data->interrupt->wait_list_lock, data->flags);
+		spin_unlock(&data->interrupt->wait_list_lock);
 
 		unregister_timestamp_node(hdev, ctx, data->mmg, data->ts_handle,
 				data->ts_offset, req_offset_record->ts_reg_info.interrupt);
-		spin_lock_irqsave(&data->interrupt->wait_list_lock, data->flags);
+
+		spin_lock(&data->interrupt->wait_list_lock);
 	}
 
 	/* Fill up the new registration node info and add it to the list */
@@ -3383,12 +3383,12 @@ static int _hl_interrupt_wait_ioctl(struct hl_device *hdev, struct hl_ctx *ctx,
 			goto put_cq_cb;
 		}
 
-		spin_lock_irqsave(&data->interrupt->wait_list_lock, data->flags);
+		spin_lock(&data->interrupt->wait_list_lock);
 
 		/* get ts buffer record */
 		rc = ts_get_and_handle_kernel_record(hdev, ctx, data, &pend);
 		if (rc) {
-			spin_unlock_irqrestore(&data->interrupt->wait_list_lock, data->flags);
+			spin_unlock(&data->interrupt->wait_list_lock);
 			goto put_ts_buff;
 		}
 	} else {
@@ -3400,14 +3400,14 @@ static int _hl_interrupt_wait_ioctl(struct hl_device *hdev, struct hl_ctx *ctx,
 		hl_fence_init(&pend->fence, ULONG_MAX);
 		pend->cq_kernel_addr = (u64 *) data->cq_cb->kernel_address + data->cq_offset;
 		pend->cq_target_value = data->target_value;
-		spin_lock_irqsave(&data->interrupt->wait_list_lock, data->flags);
+		spin_lock(&data->interrupt->wait_list_lock);
 	}
 
 	/* We check for completion value as interrupt could have been received
 	 * before we add the wait/timestamp node to the wait list.
 	 */
 	if (*pend->cq_kernel_addr >= data->target_value) {
-		spin_unlock_irqrestore(&data->interrupt->wait_list_lock, data->flags);
+		spin_unlock(&data->interrupt->wait_list_lock);
 
 		if (register_ts_record) {
 			dev_dbg(hdev->dev, "Target value already reached release ts record: pend: %p, offset: %llu, interrupt: %u\n",
@@ -3425,7 +3425,7 @@ static int _hl_interrupt_wait_ioctl(struct hl_device *hdev, struct hl_ctx *ctx,
 			goto set_timestamp;
 		}
 	} else if (!data->intr_timeout_us) {
-		spin_unlock_irqrestore(&data->interrupt->wait_list_lock, data->flags);
+		spin_unlock(&data->interrupt->wait_list_lock);
 		*status = HL_WAIT_CS_STATUS_BUSY;
 		pend->fence.timestamp = ktime_get();
 		goto set_timestamp;
@@ -3438,7 +3438,7 @@ static int _hl_interrupt_wait_ioctl(struct hl_device *hdev, struct hl_ctx *ctx,
 	 * same list could have nodes for different cq counter handle.
 	 */
 	list_add_tail(&pend->wait_list_node, &data->interrupt->wait_list_head);
-	spin_unlock_irqrestore(&data->interrupt->wait_list_lock, data->flags);
+	spin_unlock(&data->interrupt->wait_list_lock);
 
 	if (register_ts_record) {
 		rc = *status = HL_WAIT_CS_STATUS_COMPLETED;
@@ -3482,9 +3482,9 @@ static int _hl_interrupt_wait_ioctl(struct hl_device *hdev, struct hl_ctx *ctx,
 	 * for ts record, the node will be deleted in the irq handler after
 	 * we reach the target value.
 	 */
-	spin_lock_irqsave(&data->interrupt->wait_list_lock, data->flags);
+	spin_lock(&data->interrupt->wait_list_lock);
 	list_del(&pend->wait_list_node);
-	spin_unlock_irqrestore(&data->interrupt->wait_list_lock, data->flags);
+	spin_unlock(&data->interrupt->wait_list_lock);
 
 set_timestamp:
 	*timestamp = ktime_to_ns(pend->fence.timestamp);

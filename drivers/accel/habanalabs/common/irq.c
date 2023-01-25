@@ -347,22 +347,6 @@ static void handle_unexpected_user_interrupt(struct hl_device *hdev)
 }
 
 /**
- * hl_irq_handler_user_interrupt - irq handler for user interrupts
- *
- * @irq: irq number
- * @arg: pointer to user interrupt structure
- *
- */
-irqreturn_t hl_irq_handler_user_interrupt(int irq, void *arg)
-{
-	struct hl_user_interrupt *user_int = arg;
-
-	user_int->timestamp = ktime_get();
-
-	return IRQ_WAKE_THREAD;
-}
-
-/**
  * hl_irq_user_interrupt_thread_handler - irq thread handler for user interrupts.
  * This function is invoked by threaded irq mechanism
  *
@@ -375,6 +359,7 @@ irqreturn_t hl_irq_user_interrupt_thread_handler(int irq, void *arg)
 	struct hl_user_interrupt *user_int = arg;
 	struct hl_device *hdev = user_int->hdev;
 
+	user_int->timestamp = ktime_get();
 	switch (user_int->type) {
 	case HL_USR_INTERRUPT_CQ:
 		handle_user_interrupt(hdev, &hdev->common_user_cq_interrupt);
