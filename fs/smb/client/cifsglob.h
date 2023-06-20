@@ -1165,6 +1165,7 @@ struct cifs_tcon {
 	bool nocase:1;
 	bool nohandlecache:1; /* if strange server resource prob can turn off */
 	bool nodelete:1;
+	bool no_qdir_cache:1; /* do not cache mtime and size form querydir */
 	bool seal:1;      /* transport encryption for this mounted share */
 	bool unix_ext:1;  /* if false disable Linux extensions to CIFS protocol
 				for this mount even if server would support */

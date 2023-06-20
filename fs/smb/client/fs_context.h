@@ -107,6 +107,7 @@ enum cifs_param {
 	Opt_multichannel,
 	Opt_compress,
 	Opt_witness,
+	Opt_noqdircache,
 
 	/* Mount options which take numeric value */
 	Opt_backupuid,
@@ -225,6 +226,7 @@ struct smb3_fs_context {
 	bool nostrictsync:1; /* do not force expensive SMBflush on every sync */
 	bool no_lease:1;     /* disable requesting leases */
 	bool no_sparse:1;    /* do not attempt to set files sparse */
+	bool no_qdir_cache:1; /* do not cache mtime and size of entries in query dir results */
 	bool fsc:1;	/* enable fscache */
 	bool mfsymlinks:1; /* use Minshall+French Symlinks */
 	bool multiuser:1;
