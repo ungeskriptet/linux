@@ -110,11 +110,14 @@
 };
 
 &usb_1 {
+	qcom,select-utmi-as-pipe-clk;
 	status = "okay";
 };
 
 &usb_1_dwc3 {
+	maximum-speed = "high-speed";
 	dr_mode = "peripheral";
+	status = "okay";
 };
 
 &usb_1_hsphy {
@@ -307,4 +310,8 @@
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_AUTO>;
 		};
 	};
+};
+
+&tlmm {
+	gpio-reserved-ranges = <0 4>, <34 4>, <59 4>;
 };
