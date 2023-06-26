@@ -68,6 +68,12 @@ enum {
 };
 
 enum {
+	OVL_UUID_OFF,
+	OVL_UUID_NULL,
+	OVL_UUID_ON,
+};
+
+enum {
 	OVL_XINO_OFF,
 	OVL_XINO_AUTO,
 	OVL_XINO_ON,

@@ -242,8 +242,9 @@ static int ovl_sync_fs(struct super_block *sb, int wait)
  */
 static int ovl_statfs(struct dentry *dentry, struct kstatfs *buf)
 {
-	struct ovl_fs *ofs = dentry->d_sb->s_fs_info;
+	struct ovl_fs *ofs = OVL_FS(dentry->d_sb);
 	struct dentry *root_dentry = dentry->d_sb->s_root;
+	uuid_t *uuid = &dentry->d_sb->s_uuid;
 	struct path path;
 	int err;
 
@@ -253,6 +254,8 @@ static int ovl_statfs(struct dentry *dentry, struct kstatfs *buf)
 	if (!err) {
 		buf->f_namelen = ofs->namelen;
 		buf->f_type = OVERLAYFS_SUPER_MAGIC;
+		if (!uuid_is_null(uuid))
+			buf->f_fsid = uuid_to_fsid(uuid->b);
 	}
 
 	return err;
@@ -1422,9 +1425,16 @@ int ovl_fill_super(struct super_block *sb, struct fs_context *fc)
 		sb->s_flags |= SB_RDONLY;
 
 	if (!ofs->config.uuid && ofs->numfs > 1) {
-		pr_warn("The uuid=off requires a single fs for lower and upper, falling back to uuid=on.\n");
-		ofs->config.uuid = true;
+		ofs->config.uuid = ovl_uuid_def();
+		pr_warn("The uuid=off requires a single fs for lower and upper, falling back to uuid=%s.\n",
+			ovl_uuid_mode(&ofs->config));
 	}
+
+	/*
+	 * Use per instance uuid/fsid with uuid=on mount option.
+	 */
+	if (ofs->config.uuid == OVL_UUID_ON)
+		uuid_gen(&sb->s_uuid);
 
 	if (!ovl_force_readonly(ofs) && ofs->config.index) {
 		err = ovl_get_indexdir(sb, ofs, oe, &ctx->upper);

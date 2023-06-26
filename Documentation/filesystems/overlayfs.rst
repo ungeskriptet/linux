@@ -657,6 +657,22 @@ can be useful in case the underlying disk is copied and the UUID of this copy
 is changed. This is only applicable if all lower/upper/work directories are on
 the same filesystem, otherwise it will fallback to normal behaviour.
 
+
+UUID and fsid
+-------------
+
+The UUID of overlayfs instance itself and the fsid reported by statfs(2) are
+controlled by the "uuid" mount option, which supports these values:
+
+- "null": (default)
+    UUID of overlayfs in null, fsid is taken from upper most fs.
+- "off":
+    UUID of overlayfs in null, fsid is taken from upper most fs
+    and UUID of underlying layers not checked.
+- "on":
+    UUID of overlayfs in generated and used to report a unique fsid.
+
+
 Volatile mount
 --------------
 
