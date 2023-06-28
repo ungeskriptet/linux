@@ -5749,11 +5749,25 @@ void btrfs_mapping_tree_free(struct extent_map_tree *tree)
 	}
 }
 
+static int map_num_copies(const struct map_lookup *map)
+{
+	if (map->type & BTRFS_BLOCK_GROUP_RAID5)
+		return 2;
+	if (map->type & BTRFS_BLOCK_GROUP_RAID6)
+		/*
+		 * There could be two corrupted data stripes, we need
+		 * to loop retry in order to rebuild the correct data.
+		 *
+		 * Fail a stripe at a time on every retry except the
+		 * stripe under reconstruction.
+		 */
+		return map->num_stripes;
+	return btrfs_bg_type_to_factor(map->type);
+}
+
 int btrfs_num_copies(struct btrfs_fs_info *fs_info, u64 logical, u64 len)
 {
 	struct extent_map *em;
-	struct map_lookup *map;
-	enum btrfs_raid_types index;
 	int ret = 1;
 
 	em = btrfs_get_chunk_map(fs_info, logical, len);
@@ -5766,23 +5780,7 @@ int btrfs_num_copies(struct btrfs_fs_info *fs_info, u64 logical, u64 len)
 		 */
 		return 1;
 
-	map = em->map_lookup;
-	index = btrfs_bg_flags_to_raid_index(map->type);
-
-	/* Non-RAID56, use their ncopies from btrfs_raid_array. */
-	if (!(map->type & BTRFS_BLOCK_GROUP_RAID56_MASK))
-		ret = btrfs_raid_array[index].ncopies;
-	else if (map->type & BTRFS_BLOCK_GROUP_RAID5)
-		ret = 2;
-	else if (map->type & BTRFS_BLOCK_GROUP_RAID6)
-		/*
-		 * There could be two corrupted data stripes, we need
-		 * to loop retry in order to rebuild the correct data.
-		 *
-		 * Fail a stripe at a time on every retry except the
-		 * stripe under reconstruction.
-		 */
-		ret = map->num_stripes;
+	ret = map_num_copies(em->map_lookup);
 	free_extent_map(em);
 	return ret;
 }
@@ -6276,7 +6274,6 @@ int btrfs_map_block(struct btrfs_fs_info *fs_info, enum btrfs_map_op op,
 	int ret = 0;
 	int mirror_num = (mirror_num_ret ? *mirror_num_ret : 0);
 	int num_stripes;
-	int num_copies;
 	int max_errors = 0;
 	struct btrfs_io_context *bioc = NULL;
 	struct btrfs_dev_replace *dev_replace = &fs_info->dev_replace;
@@ -6287,15 +6284,16 @@ int btrfs_map_block(struct btrfs_fs_info *fs_info, enum btrfs_map_op op,
 
 	ASSERT(bioc_ret);
 
-	num_copies = btrfs_num_copies(fs_info, logical, fs_info->sectorsize);
-	if (mirror_num > num_copies)
-		return -EINVAL;
-
 	em = btrfs_get_chunk_map(fs_info, logical, *length);
 	if (IS_ERR(em))
 		return PTR_ERR(em);
-
 	map = em->map_lookup;
+
+	if (mirror_num > map_num_copies(map)) {
+		ret = -EINVAL;
+		goto out_free_em;
+	}
+
 	data_stripes = nr_data_stripes(map);
 
 	map_offset = logical - em->start;
@@ -6504,6 +6502,7 @@ out:
 		/* Unlock and let waiting writers proceed */
 		up_read(&dev_replace->rwsem);
 	}
+out_free_em:
 	free_extent_map(em);
 	return ret;
 }
