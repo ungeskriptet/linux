@@ -292,6 +292,12 @@ static int cifs_do_create(struct inode *inode, struct dentry *direntry, unsigned
 	 * ACLs
 	 */
 
+	if (oflags & O_SYNC)
+		create_options |= CREATE_WRITE_THROUGH;
+
+	if (oflags & O_DIRECT)
+		create_options |= CREATE_NO_BUFFER;
+
 	if (!server->ops->open) {
 		rc = -ENOSYS;
 		goto out;
