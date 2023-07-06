@@ -2027,6 +2027,9 @@ int vm_insert_page(struct vm_area_struct *vma, unsigned long addr,
 		BUG_ON(vma->vm_flags & VM_PFNMAP);
 		vm_flags_set(vma, VM_MIXEDMAP);
 	}
+	if (track_pfn_remap(vma, &vma->vm_page_prot,
+			page_to_pfn(page), addr, PAGE_SIZE))
+		return -EINVAL;
 	return insert_page(vma, addr, page, vma->vm_page_prot);
 }
 EXPORT_SYMBOL(vm_insert_page);
@@ -3949,6 +3952,13 @@ vm_fault_t do_swap_page(struct vm_fault *vmf)
 			exclusive = false;
 		}
 	}
+
+	/*
+	 * Some architectures may have to restore extra metadata to the page
+	 * when reading from swap. This metadata may be indexed by swap entry
+	 * so this must be called before swap_free().
+	 */
+	arch_swap_restore(entry, folio);
 
 	/*
 	 * Remove the swap entry and conditionally try to free up the swapcache.
