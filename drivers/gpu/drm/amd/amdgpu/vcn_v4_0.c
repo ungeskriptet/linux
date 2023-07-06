@@ -1292,6 +1292,7 @@ static int vcn_v4_0_start_sriov(struct amdgpu_device *adev)
 			cache_size);
 
 		cache_addr = adev->vcn.inst[i].gpu_addr + offset;
+		memset(adev->vcn.inst[i].cpu_addr + offset, 0, AMDGPU_VCN_STACK_SIZE);
 		MMSCH_V4_0_INSERT_DIRECT_WT(SOC15_REG_OFFSET(VCN, i,
 			regUVD_LMI_VCPU_CACHE1_64BIT_BAR_LOW),
 			lower_32_bits(cache_addr));
@@ -1307,6 +1308,8 @@ static int vcn_v4_0_start_sriov(struct amdgpu_device *adev)
 
 		cache_addr = adev->vcn.inst[i].gpu_addr + offset +
 			AMDGPU_VCN_STACK_SIZE;
+		memset(adev->vcn.inst[i].cpu_addr + offset + AMDGPU_VCN_STACK_SIZE, 0,
+			AMDGPU_VCN_STACK_SIZE);
 		MMSCH_V4_0_INSERT_DIRECT_WT(SOC15_REG_OFFSET(VCN, i,
 			regUVD_LMI_VCPU_CACHE2_64BIT_BAR_LOW),
 			lower_32_bits(cache_addr));
@@ -1424,8 +1427,10 @@ static int vcn_v4_0_start_sriov(struct amdgpu_device *adev)
  */
 static void vcn_v4_0_stop_dpg_mode(struct amdgpu_device *adev, int inst_idx)
 {
+	struct dpg_pause_state state = {.fw_based = VCN_DPG_STATE__UNPAUSE};
 	uint32_t tmp;
 
+	vcn_v4_0_pause_dpg_mode(adev, inst_idx, &state);
 	/* Wait for power status to be 1 */
 	SOC15_WAIT_ON_RREG(VCN, inst_idx, regUVD_POWER_STATUS, 1,
 		UVD_POWER_STATUS__UVD_POWER_STATUS_MASK);
