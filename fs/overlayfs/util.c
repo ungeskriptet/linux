@@ -701,6 +701,30 @@ bool ovl_init_uuid_xattr(struct super_block *sb, struct ovl_fs *ofs,
 			goto out;
 	}
 
+	/*
+	 * With uuid=auto, if uuid xattr not found, set persistent uuid for new
+	 * overlays on first mount where upper root dir is not marked as impure.
+	 * An upper dir is marked as impure on copy up or lookup of its subdirs.
+	 */
+	if (ofs->config.uuid == OVL_UUID_AUTO) {
+		if (ofs->noxattr)
+			return true;
+
+		res = ovl_path_getxattr(ofs, upperpath, OVL_XATTR_IMPURE,
+					NULL, 0);
+		if (res > 0) {
+			/* Any mount of old overlay - downgrade to uuid=null */
+			ofs->config.uuid = OVL_UUID_NULL;
+			return true;
+		} else if (res == -ENODATA) {
+			/* First mount of new overlay - upgrade to uuid=on */
+			ofs->config.uuid = OVL_UUID_ON;
+		} else if (res < 0) {
+			goto out;
+		}
+
+	}
+
 	/* Generate overlay instance uuid */
 	uuid_gen(&sb->s_uuid);
 	if (ofs->noxattr)

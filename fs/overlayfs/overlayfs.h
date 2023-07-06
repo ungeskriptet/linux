@@ -71,6 +71,7 @@ enum {
 enum {
 	OVL_UUID_OFF,
 	OVL_UUID_NULL,
+	OVL_UUID_AUTO,
 	OVL_UUID_ON,
 };
 

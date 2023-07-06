@@ -664,7 +664,7 @@ UUID and fsid
 The UUID of overlayfs instance itself and the fsid reported by statfs(2) are
 controlled by the "uuid" mount option, which supports these values:
 
-- "null": (default)
+- "null":
     UUID of overlayfs in null, fsid is taken from upper most fs.
 - "off":
     UUID of overlayfs in null, fsid is taken from upper most fs
@@ -673,6 +673,10 @@ controlled by the "uuid" mount option, which supports these values:
     UUID of overlayfs in generated on first mount used to report a unique fsid.
     If upper filesystem supports xattrs, the UUID is stored in xattr
     "trusted.overlay.uuid", making the fsid unique and persistent.
+- "auto": (default)
+    Upgrade to "uuid=on" on first time mount of new overlay filesystem.
+    Downgrade to "uuid=null" for existing overlay filesystems that were never
+    mounted with "uuid=on".
 
 
 Volatile mount
