@@ -1431,10 +1431,10 @@ int ovl_fill_super(struct super_block *sb, struct fs_context *fc)
 	}
 
 	/*
-	 * Use per instance uuid/fsid with uuid=on mount option.
+	 * Use per instance persistent uuid/fsid that is initialized on the
+	 * first uuid=on mount.
 	 */
-	if (ofs->config.uuid == OVL_UUID_ON)
-		uuid_gen(&sb->s_uuid);
+	ovl_init_uuid_xattr(sb, ofs, &ctx->upper);
 
 	if (!ovl_force_readonly(ofs) && ofs->config.index) {
 		err = ovl_get_indexdir(sb, ofs, oe, &ctx->upper);
