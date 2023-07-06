@@ -127,6 +127,7 @@ const struct fs_parameter_spec smb3_fs_parameters[] = {
 	fsparam_flag("rootfs", Opt_rootfs),
 	fsparam_flag("compress", Opt_compress),
 	fsparam_flag("witness", Opt_witness),
+	fsparam_flag("noquerydircaching", Opt_noqdircache),
 
 	/* Mount options which take numeric value */
 	fsparam_u32("backupuid", Opt_backupuid),
@@ -1002,6 +1003,9 @@ static int smb3_fs_context_parse_param(struct fs_context *fc,
 		break;
 	case Opt_nodelete:
 		ctx->nodelete = 1;
+		break;
+	case Opt_noqdircache:
+		ctx->no_qdir_cache = 1;
 		break;
 	case Opt_multichannel:
 		if (result.negated) {
