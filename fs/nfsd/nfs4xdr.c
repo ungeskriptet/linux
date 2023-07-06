@@ -2984,6 +2984,11 @@ nfsd4_encode_fattr(struct xdr_stream *xdr, struct svc_fh *fhp,
 		if (status)
 			goto out;
 	}
+	if (bmval0 & (FATTR4_WORD0_CHANGE | FATTR4_WORD0_SIZE)) {
+		status = nfsd4_deleg_getattr_conflict(rqstp, d_inode(dentry));
+		if (status)
+			goto out;
+	}
 
 	err = vfs_getattr(&path, &stat,
 			  STATX_BASIC_STATS | STATX_BTIME | STATX_CHANGE_COOKIE,
@@ -4139,6 +4144,7 @@ nfsd4_encode_read(struct nfsd4_compoundres *resp, __be32 nfserr,
 	struct file *file;
 	int starting_len = xdr->buf->len;
 	__be32 *p;
+	fmode_t o_fmode = 0;
 
 	if (nfserr)
 		return nfserr;
@@ -4158,10 +4164,17 @@ nfsd4_encode_read(struct nfsd4_compoundres *resp, __be32 nfserr,
 	maxcount = min_t(unsigned long, read->rd_length,
 			 (xdr->buf->buflen - xdr->buf->len));
 
+	if (read->rd_wd_stid) {
+		o_fmode = file->f_mode;
+		file->f_mode |= FMODE_READ;
+	}
 	if (file->f_op->splice_read && splice_ok)
 		nfserr = nfsd4_encode_splice_read(resp, read, file, maxcount);
 	else
 		nfserr = nfsd4_encode_readv(resp, read, file, maxcount);
+	if (o_fmode)
+		file->f_mode = o_fmode;
+
 	if (nfserr) {
 		xdr_truncate_encode(xdr, starting_len);
 		return nfserr;
