@@ -43,10 +43,21 @@ struct scrub_ctx;
 /*
  * The following value only influences the performance.
  *
- * This determines the batch size for stripe submitted in one go.
+ * This detemines how many stripes would be submitted in one go,
+ * this would 512KiB (BTRFS_STRIPE_LEN * SCRUB_STRIPES_PER_GROUP).
  */
-#define SCRUB_STRIPES_PER_SCTX	8	/* That would be 8 64K stripe per-device. */
+#define SCRUB_STRIPES_PER_GROUP		8
 
+/*
+ * How many groups we have for each sctx.
+ *
+ * This would be 8M per device, the same value as the old scrub in-flight bios
+ * size limit.
+ */
+#define SCRUB_STRIPE_GROUPS_PER_SCTX	16
+
+#define SCRUB_STRIPES_PER_SCTX		(SCRUB_STRIPES_PER_GROUP * \
+					 SCRUB_STRIPE_GROUPS_PER_SCTX)
 /*
  * The following value times PAGE_SIZE needs to be large enough to match the
  * largest node/leaf/sector size that shall be supported.
@@ -77,6 +88,9 @@ struct scrub_sector_verification {
 enum scrub_stripe_flags {
 	/* Set when @mirror_num, @dev, @physical and @logical are set. */
 	SCRUB_STRIPE_FLAG_INITIALIZED,
+
+	/* Set when the initial read has been submitted. */
+	SCRUB_STRIPE_FLAG_READ_SUBMITTED,
 
 	/* Set when the read-repair is finished. */
 	SCRUB_STRIPE_FLAG_REPAIR_DONE,
@@ -1604,6 +1618,9 @@ static void scrub_submit_initial_read(struct scrub_ctx *sctx,
 	ASSERT(stripe->mirror_num > 0);
 	ASSERT(test_bit(SCRUB_STRIPE_FLAG_INITIALIZED, &stripe->state));
 
+	if (test_and_set_bit(SCRUB_STRIPE_FLAG_READ_SUBMITTED, &stripe->state))
+		return;
+
 	bbio = btrfs_bio_alloc(SCRUB_STRIPE_PAGES, REQ_OP_READ, fs_info,
 			       scrub_read_endio, stripe);
 
@@ -1657,6 +1674,7 @@ static int flush_scrub_stripes(struct scrub_ctx *sctx)
 	struct btrfs_fs_info *fs_info = sctx->fs_info;
 	struct scrub_stripe *stripe;
 	const int nr_stripes = sctx->cur_stripe;
+	struct blk_plug plug;
 	int ret = 0;
 
 	if (!nr_stripes)
@@ -1664,12 +1682,17 @@ static int flush_scrub_stripes(struct scrub_ctx *sctx)
 
 	ASSERT(test_bit(SCRUB_STRIPE_FLAG_INITIALIZED, &sctx->stripes[0].state));
 
+	/* We should only have at most one group to submit. */
 	scrub_throttle_dev_io(sctx, sctx->stripes[0].dev,
-			      btrfs_stripe_nr_to_offset(nr_stripes));
+			      btrfs_stripe_nr_to_offset(
+				      nr_stripes % SCRUB_STRIPES_PER_GROUP ?:
+				      SCRUB_STRIPES_PER_GROUP));
+	blk_start_plug(&plug);
 	for (int i = 0; i < nr_stripes; i++) {
 		stripe = &sctx->stripes[i];
 		scrub_submit_initial_read(sctx, stripe);
 	}
+	blk_finish_plug(&plug);
 
 	for (int i = 0; i < nr_stripes; i++) {
 		stripe = &sctx->stripes[i];
@@ -1748,28 +1771,47 @@ static void raid56_scrub_wait_endio(struct bio *bio)
 
 static int queue_scrub_stripe(struct scrub_ctx *sctx, struct btrfs_block_group *bg,
 			      struct btrfs_device *dev, int mirror_num,
-			      u64 logical, u32 length, u64 physical)
+			      u64 logical, u32 length, u64 physical,
+			      u64 *found_stripe_start_ret)
 {
 	struct scrub_stripe *stripe;
 	int ret;
 
-	/* No available slot, submit all stripes and wait for them. */
-	if (sctx->cur_stripe >= SCRUB_STRIPES_PER_SCTX) {
-		ret = flush_scrub_stripes(sctx);
-		if (ret < 0)
-			return ret;
-	}
-
+	/*
+	 * We should always have at least one slot, when full the last one who
+	 * queued a slot should handle the flush.
+	 */
+	ASSERT(sctx->cur_stripe < SCRUB_STRIPES_PER_SCTX);
 	stripe = &sctx->stripes[sctx->cur_stripe];
-
-	/* We can queue one stripe using the remaining slot. */
 	scrub_reset_stripe(stripe);
 	ret = scrub_find_fill_first_stripe(bg, dev, physical, mirror_num,
 					   logical, length, stripe);
 	/* Either >0 as no more extents or <0 for error. */
 	if (ret)
 		return ret;
+	*found_stripe_start_ret = stripe->logical;
+
 	sctx->cur_stripe++;
+
+	/* Last slot used, flush them all. */
+	if (sctx->cur_stripe == SCRUB_STRIPES_PER_SCTX)
+		return flush_scrub_stripes(sctx);
+
+	/* We have filled one group, submit them now. */
+	if (sctx->cur_stripe % SCRUB_STRIPES_PER_GROUP == 0) {
+		struct blk_plug plug;
+
+		scrub_throttle_dev_io(sctx, sctx->stripes[0].dev,
+			      btrfs_stripe_nr_to_offset(SCRUB_STRIPES_PER_GROUP));
+
+		blk_start_plug(&plug);
+		for (int i = sctx->cur_stripe - SCRUB_STRIPES_PER_GROUP;
+		     i < sctx->cur_stripe; i++) {
+			stripe = &sctx->stripes[i];
+			scrub_submit_initial_read(sctx, stripe);
+		}
+		blk_finish_plug(&plug);
+	}
 	return 0;
 }
 
@@ -1965,6 +2007,7 @@ static int scrub_simple_mirror(struct scrub_ctx *sctx,
 	/* Go through each extent items inside the logical range */
 	while (cur_logical < logical_end) {
 		u64 cur_physical = physical + cur_logical - logical_start;
+		u64 found_logical;
 
 		/* Canceled? */
 		if (atomic_read(&fs_info->scrub_cancel_req) ||
@@ -1988,7 +2031,7 @@ static int scrub_simple_mirror(struct scrub_ctx *sctx,
 
 		ret = queue_scrub_stripe(sctx, bg, device, mirror_num,
 					 cur_logical, logical_end - cur_logical,
-					 cur_physical);
+					 cur_physical, &found_logical);
 		if (ret > 0) {
 			/* No more extent, just update the accounting */
 			sctx->stat.last_physical = physical + logical_length;
@@ -1998,9 +2041,7 @@ static int scrub_simple_mirror(struct scrub_ctx *sctx,
 		if (ret < 0)
 			break;
 
-		ASSERT(sctx->cur_stripe > 0);
-		cur_logical = sctx->stripes[sctx->cur_stripe - 1].logical
-			      + BTRFS_STRIPE_LEN;
+		cur_logical = found_logical + BTRFS_STRIPE_LEN;
 
 		/* Don't hold CPU for too long time */
 		cond_resched();
