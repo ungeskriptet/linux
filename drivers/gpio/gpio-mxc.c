@@ -622,7 +622,7 @@ static int mxc_gpio_runtime_resume(struct device *dev)
 	return 0;
 }
 
-static int __maybe_unused mxc_gpio_noirq_suspend(struct device *dev)
+static int mxc_gpio_noirq_suspend(struct device *dev)
 {
 	struct platform_device *pdev = to_platform_device(dev);
 	struct mxc_gpio_port *port = platform_get_drvdata(pdev);
@@ -633,7 +633,7 @@ static int __maybe_unused mxc_gpio_noirq_suspend(struct device *dev)
 	return 0;
 }
 
-static int __maybe_unused mxc_gpio_noirq_resume(struct device *dev)
+static int mxc_gpio_noirq_resume(struct device *dev)
 {
 	struct platform_device *pdev = to_platform_device(dev);
 	struct mxc_gpio_port *port = platform_get_drvdata(pdev);
@@ -646,8 +646,8 @@ static int __maybe_unused mxc_gpio_noirq_resume(struct device *dev)
 }
 
 static const struct dev_pm_ops mxc_gpio_dev_pm_ops = {
-	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(mxc_gpio_noirq_suspend, mxc_gpio_noirq_resume)
-	SET_RUNTIME_PM_OPS(mxc_gpio_runtime_suspend, mxc_gpio_runtime_resume, NULL)
+	NOIRQ_SYSTEM_SLEEP_PM_OPS(mxc_gpio_noirq_suspend, mxc_gpio_noirq_resume)
+	RUNTIME_PM_OPS(mxc_gpio_runtime_suspend, mxc_gpio_runtime_resume, NULL)
 };
 
 static int mxc_gpio_syscore_suspend(void)
