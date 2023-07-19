@@ -441,7 +441,8 @@ struct posix_ace_state_array {
  * calculated so far: */
 
 struct posix_acl_state {
-	int empty;
+	bool empty;
+	unsigned char valid;
 	struct posix_ace_state owner;
 	struct posix_ace_state group;
 	struct posix_ace_state other;
@@ -457,7 +458,7 @@ init_state(struct posix_acl_state *state, int cnt)
 	int alloc;
 
 	memset(state, 0, sizeof(struct posix_acl_state));
-	state->empty = 1;
+	state->empty = true;
 	/*
 	 * In the worst case, each individual acl could be for a distinct
 	 * named user or group, but we don't know which, so we allocate
@@ -624,7 +625,7 @@ static void process_one_v4_ace(struct posix_acl_state *state,
 	u32 mask = ace->access_mask;
 	int i;
 
-	state->empty = 0;
+	state->empty = false;
 
 	switch (ace2type(ace)) {
 	case ACL_USER_OBJ:
@@ -633,6 +634,7 @@ static void process_one_v4_ace(struct posix_acl_state *state,
 		} else {
 			deny_bits(&state->owner, mask);
 		}
+		state->valid |= ACL_USER_OBJ;
 		break;
 	case ACL_USER:
 		i = find_uid(state, ace->who_uid);
@@ -655,6 +657,7 @@ static void process_one_v4_ace(struct posix_acl_state *state,
 			deny_bits_array(state->users, mask);
 			deny_bits_array(state->groups, mask);
 		}
+		state->valid |= ACL_GROUP_OBJ;
 		break;
 	case ACL_GROUP:
 		i = find_gid(state, ace->who_gid);
@@ -686,6 +689,7 @@ static void process_one_v4_ace(struct posix_acl_state *state,
 			deny_bits_array(state->users, mask);
 			deny_bits_array(state->groups, mask);
 		}
+		state->valid |= ACL_OTHER;
 	}
 }
 
@@ -726,6 +730,28 @@ static int nfs4_acl_nfsv4_to_posix(struct nfs4_acl *acl,
 		if (!(ace->flag & NFS4_ACE_INHERIT_ONLY_ACE))
 			process_one_v4_ace(&effective_acl_state, ace);
 	}
+
+	/*
+	 * At this point, the default ACL may have zeroed-out entries for owner,
+	 * group and other. That usually results in a non-sensical resulting ACL
+	 * that denies all access except to any ACE that was explicitly added.
+	 *
+	 * The setfacl command solves a similar problem with this logic:
+	 *
+	 * "If  a  Default  ACL  entry is created, and the Default ACL contains
+	 *  no owner, owning group, or others entry,  a  copy of  the  ACL
+	 *  owner, owning group, or others entry is added to the Default ACL."
+	 *
+	 * If none of the requisite ACEs were set, and some explicit user or group
+	 * ACEs were, copy the requisite entries from the effective set.
+	 */
+	if (!default_acl_state.valid &&
+	    (default_acl_state.users->n || default_acl_state.groups->n)) {
+		default_acl_state.owner = effective_acl_state.owner;
+		default_acl_state.group = effective_acl_state.group;
+		default_acl_state.other = effective_acl_state.other;
+	}
+
 	*pacl = posix_state_to_acl(&effective_acl_state, flags);
 	if (IS_ERR(*pacl)) {
 		ret = PTR_ERR(*pacl);
