@@ -7457,6 +7457,24 @@ sub process {
 			}
 		}
 
+# Complain about RCU Tasks Trace used outside of BPF (and of course, RCU).
+		if ($line =~ /\brcu_read_lock_trace\s*\(/ ||
+		    $line =~ /\brcu_read_lock_trace_held\s*\(/ ||
+		    $line =~ /\brcu_read_unlock_trace\s*\(/ ||
+		    $line =~ /\bcall_rcu_tasks_trace\s*\(/ ||
+		    $line =~ /\bsynchronize_rcu_tasks_trace\s*\(/ ||
+		    $line =~ /\brcu_barrier_tasks_trace\s*\(/ ||
+		    $line =~ /\brcu_request_urgent_qs_task\s*\(/) {
+			if ($realfile !~ m@^kernel/bpf@ &&
+			    $realfile !~ m@^include/linux/bpf@ &&
+			    $realfile !~ m@^net/bpf@ &&
+			    $realfile !~ m@^kernel/rcu@ &&
+			    $realfile !~ m@^include/linux/rcu@) {
+				WARN("RCU_TASKS_TRACE",
+				     "use of RCU tasks trace is incorrect outside BPF or core RCU code\n" . $herecurr);
+			}
+		}
+
 # check for lockdep_set_novalidate_class
 		if ($line =~ /^.\s*lockdep_set_novalidate_class\s*\(/ ||
 		    $line =~ /__lockdep_no_validate__\s*\)/ ) {
