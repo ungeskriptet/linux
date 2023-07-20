@@ -36,7 +36,7 @@
 		pinctrl-0 = <&hall_int_active_state>;
 		pinctrl-names = "default";
 
-		lid {
+		lid-switch {
 			gpios = <&tlmm 121 GPIO_ACTIVE_LOW>;
 			linux,input-type = <EV_SW>;
 			linux,code = <SW_LID>;
@@ -298,11 +298,9 @@
 
 			backlight = <&backlight>;
 
-			ports {
-				port {
-					auo_b140han06_in: endpoint {
-						remote-endpoint = <&mdss_edp_out>;
-					};
+			port {
+				auo_b140han06_in: endpoint {
+					remote-endpoint = <&mdss_edp_out>;
 				};
 			};
 		};
@@ -497,7 +495,6 @@
 		pins = "gpio121";
 		function = "gpio";
 
-		input-enable;
 		bias-disable;
 	};
 
@@ -513,7 +510,6 @@
 		pins = "gpio122";
 		function = "gpio";
 
-		input-enable;
 		bias-pull-up;
 		drive-strength = <2>;
 	};
@@ -530,7 +526,6 @@
 		pins = "gpio37", "gpio24";
 		function = "gpio";
 
-		input-enable;
 		bias-pull-up;
 		drive-strength = <2>;
 	};

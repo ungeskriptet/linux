@@ -377,11 +377,9 @@
 
 			backlight = <&backlight>;
 
-			ports {
-				port {
-					auo_b133han05_in: endpoint {
-						remote-endpoint = <&mdss_edp_out>;
-					};
+			port {
+				auo_b133han05_in: endpoint {
+					remote-endpoint = <&mdss_edp_out>;
 				};
 			};
 		};
@@ -582,7 +580,6 @@
 		pins = "gpio121";
 		function = "gpio";
 
-		input-enable;
 		bias-disable;
 	};
 
@@ -592,7 +589,6 @@
 			function = "gpio";
 
 			bias-pull-up;
-			intput-enable;
 		};
 
 		kp-disable-pins {
@@ -641,7 +637,6 @@
 			function = "gpio";
 
 			bias-disable;
-			input-enable;
 		};
 
 		tp-close-n-pins {
@@ -649,7 +644,6 @@
 			function = "gpio";
 
 			bias-disable;
-			input-enable;
 		};
 	};
 
@@ -658,7 +652,6 @@
 			pins = "gpio122";
 			function = "gpio";
 
-			input-enable;
 			bias-disable;
 		};
 
