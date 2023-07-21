@@ -1159,7 +1159,8 @@ int amdgpu_ras_error_inject(struct amdgpu_device *adev,
 	}
 
 	/* Calculate XGMI relative offset */
-	if (adev->gmc.xgmi.num_physical_nodes > 1) {
+	if (adev->gmc.xgmi.num_physical_nodes > 1 &&
+	    info->head.block != AMDGPU_RAS_BLOCK__GFX) {
 		block_info.address =
 			amdgpu_xgmi_get_relative_phy_addr(adev,
 							  block_info.address);
@@ -2414,6 +2415,7 @@ static bool amdgpu_ras_asic_supported(struct amdgpu_device *adev)
 	if (adev->asic_type == CHIP_IP_DISCOVERY) {
 		switch (adev->ip_versions[MP0_HWIP][0]) {
 		case IP_VERSION(13, 0, 0):
+		case IP_VERSION(13, 0, 6):
 		case IP_VERSION(13, 0, 10):
 			return true;
 		default:
@@ -2515,8 +2517,17 @@ static void amdgpu_ras_check_supported(struct amdgpu_device *adev)
 	/* hw_supported needs to be aligned with RAS block mask. */
 	adev->ras_hw_enabled &= AMDGPU_RAS_BLOCK_MASK;
 
-	adev->ras_enabled = amdgpu_ras_enable == 0 ? 0 :
-		adev->ras_hw_enabled & amdgpu_ras_mask;
+
+	/*
+	 * Disable ras feature for aqua vanjaram
+	 * by default on apu platform.
+	 */
+	if (adev->ip_versions[MP0_HWIP][0] == IP_VERSION(13, 0, 6))
+		adev->ras_enabled = amdgpu_ras_enable != 1 ? 0 :
+			adev->ras_hw_enabled & amdgpu_ras_mask;
+	else
+		adev->ras_enabled = amdgpu_ras_enable == 0 ? 0 :
+			adev->ras_hw_enabled & amdgpu_ras_mask;
 }
 
 static void amdgpu_ras_counte_dw(struct work_struct *work)

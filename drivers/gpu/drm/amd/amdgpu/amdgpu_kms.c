@@ -1102,6 +1102,9 @@ int amdgpu_info_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
 		struct drm_amdgpu_info_video_caps *caps;
 		int r;
 
+		if (!adev->asic_funcs->query_video_codecs)
+			return -EINVAL;
+
 		switch (info->video_cap.type) {
 		case AMDGPU_INFO_VIDEO_CAPS_DECODE:
 			r = amdgpu_asic_query_video_codecs(adev, false, &codecs);
@@ -1229,13 +1232,13 @@ int amdgpu_driver_open_kms(struct drm_device *dev, struct drm_file *file_priv)
 		pasid = 0;
 	}
 
-	r = amdgpu_vm_init(adev, &fpriv->vm);
+	r = amdgpu_xcp_open_device(adev, fpriv, file_priv);
 	if (r)
 		goto error_pasid;
 
-	r = amdgpu_xcp_open_device(adev, fpriv, file_priv);
+	r = amdgpu_vm_init(adev, &fpriv->vm, fpriv->xcp_id);
 	if (r)
-		goto error_vm;
+		goto error_pasid;
 
 	r = amdgpu_vm_set_pasid(adev, &fpriv->vm, pasid);
 	if (r)

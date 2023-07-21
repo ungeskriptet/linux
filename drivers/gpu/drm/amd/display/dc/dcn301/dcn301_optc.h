@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Advanced Micro Devices, Inc.
+ * Copyright 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,30 +23,14 @@
  *
  */
 
-#ifndef __DMUB_ABM_LCD_H__
-#define __DMUB_ABM_LCD_H__
+#ifndef __DC_OPTC_DCN301_H__
+#define __DC_OPTC_DCN301_H__
 
-#include "abm.h"
+#include "dcn20/dcn20_optc.h"
+#include "dcn30/dcn30_optc.h"
 
-struct abm_save_restore;
+void dcn301_timing_generator_init(struct optc *optc1);
+void optc301_setup_manual_trigger(struct timing_generator *optc);
+void optc301_set_drr(struct timing_generator *optc, const struct drr_params *params);
 
-void dmub_abm_init(struct abm *abm, uint32_t backlight);
-bool dmub_abm_set_level(struct abm *abm, uint32_t level, uint8_t panel_mask);
-unsigned int dmub_abm_get_current_backlight(struct abm *abm);
-unsigned int dmub_abm_get_target_backlight(struct abm *abm);
-void dmub_abm_init_config(struct abm *abm,
-	const char *src,
-	unsigned int bytes,
-	unsigned int inst);
-
-bool dmub_abm_set_pause(struct abm *abm, bool pause, unsigned int panel_inst, unsigned int stream_inst);
-bool dmub_abm_save_restore(
-		struct dc_context *dc,
-		unsigned int panel_inst,
-		struct abm_save_restore *pData);
-bool dmub_abm_set_pipe(struct abm *abm, uint32_t otg_inst, uint32_t option, uint32_t panel_inst);
-bool dmub_abm_set_backlight_level(struct abm *abm,
-		unsigned int backlight_pwm_u16_16,
-		unsigned int frame_ramp,
-		unsigned int panel_inst);
-#endif
+#endif /* __DC_OPTC_DCN301_H__ */
