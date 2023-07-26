@@ -4,6 +4,7 @@
 #include <dt-bindings/input/linux-event-codes.h>
 
 / {
+	pxa,rev-id = <3928 2>;
 	model = "Samsung Galaxy Core Prime VE LTE";
 	compatible = "samsung,coreprimevelte", "marvell,pxa1908";
 
