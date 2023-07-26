@@ -622,9 +622,10 @@ bool dpu_encoder_use_dsc_merge(struct drm_encoder *drm_enc)
 		if (dpu_enc->phys_encs[i])
 			intf_count++;
 
-	/* See dpu_encoder_get_topology, we only support 2:2:1 and 2:2:2 topology */
 	if (dpu_enc->dsc)
-		num_dsc = 2;
+		for (i = 0; i < MAX_CHANNELS_PER_ENC; i++)
+			if (dpu_enc->hw_dsc[i])
+				num_dsc++;
 
 	return (num_dsc > 0) && (num_dsc > intf_count);
 }
@@ -664,7 +665,7 @@ static struct msm_display_topology dpu_encoder_get_topology(
 	/* Datapath topology selection
 	 *
 	 * Dual display
-	 * 2 LM, 2 INTF ( Split display using 2 interfaces)
+	 * 2 LM, 2 INTF (split display using 2 interfaces)
 	 *
 	 * Single display
 	 * 1 LM, 1 INTF
@@ -686,15 +687,27 @@ static struct msm_display_topology dpu_encoder_get_topology(
 
 	if (dsc) {
 		/*
-		 * Use 2 DSC encoders, 2 layer mixers, and 1 or 2 interfaces
-		 * when Display Stream Compression (DSC) is enabled.
+		 * Use 2 DSC encoders and 2 layer mixers per single interface
+		 * when Display Stream Compression (DSC) is enabled,
+		 * and when enough DSC blocks are available.
 		 * This is power-optimal and can drive up to (including) 4k
 		 * screens.
 		 */
-		topology.num_dsc = 2;
-		topology.num_lm = 2;
 		WARN(topology.num_intf > 2,
 		     "DSC topology cannot support more than 2 interfaces\n");
+		/*
+		 * TODO: This does not take into account already-allocated blocks,
+		 * nor triggers a needed reallocation when multiple virtual encoders
+		 * want to use DSC block(s).
+		 */
+		// TODO: This would break 2:2:2 when 4 DSC encoders are available:
+		if (intf_count == 1 && dpu_kms->catalog->dsc_count >= intf_count * 2) {
+			topology.num_dsc = intf_count * 2;
+			topology.num_lm = intf_count * 2;
+		} else {
+			topology.num_dsc = intf_count;
+			topology.num_lm = intf_count;
+		}
 	}
 
 	return topology;
@@ -2032,25 +2045,29 @@ static void dpu_encoder_prep_dsc(struct dpu_encoder_virt *dpu_enc,
 	struct dpu_hw_pingpong *hw_pp[MAX_CHANNELS_PER_ENC];
 	int this_frame_slices;
 	int intf_ip_w, enc_ip_w;
-	int dsc_common_mode;
+	int dsc_common_mode = 0;
 	int pic_width;
 	u32 initial_lines;
 	int i;
+	int num_dsc = 0;
 
 	for (i = 0; i < MAX_CHANNELS_PER_ENC; i++) {
 		hw_pp[i] = dpu_enc->hw_pp[i];
 		hw_dsc[i] = dpu_enc->hw_dsc[i];
 
 		if (!hw_pp[i] || !hw_dsc[i]) {
-			DPU_ERROR_ENC(dpu_enc, "invalid params for DSC\n");
-			return;
+			// DPU_ERROR_ENC(dpu_enc, "invalid params for DSC\n");
+			// return;
+			break;
 		}
+		num_dsc++;
 	}
 
 	dsc_common_mode = 0;
 	pic_width = dsc->pic_width;
 
-	dsc_common_mode = DSC_MODE_SPLIT_PANEL;
+	if (num_dsc > 1)
+		dsc_common_mode |= DSC_MODE_SPLIT_PANEL;
 	if (dpu_encoder_use_dsc_merge(enc_master->parent))
 		dsc_common_mode |= DSC_MODE_MULTIPLEX;
 	if (enc_master->intf_mode == INTF_MODE_VIDEO)
@@ -2059,14 +2076,10 @@ static void dpu_encoder_prep_dsc(struct dpu_encoder_virt *dpu_enc,
 	this_frame_slices = pic_width / dsc->slice_width;
 	intf_ip_w = this_frame_slices * dsc->slice_width;
 
-	/*
-	 * dsc merge case: when using 2 encoders for the same stream,
-	 * no. of slices need to be same on both the encoders.
-	 */
-	enc_ip_w = intf_ip_w / 2;
+	enc_ip_w = intf_ip_w / num_dsc;
 	initial_lines = dpu_encoder_dsc_initial_line_calc(dsc, enc_ip_w);
 
-	for (i = 0; i < MAX_CHANNELS_PER_ENC; i++)
+	for (i = 0; i < num_dsc; i++)
 		dpu_encoder_dsc_pipe_cfg(ctl, hw_dsc[i], hw_pp[i],
 					 dsc, dsc_common_mode, initial_lines);
 }
