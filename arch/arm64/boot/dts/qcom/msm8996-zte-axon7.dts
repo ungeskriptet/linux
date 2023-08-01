@@ -45,8 +45,54 @@
 	vdda-phy-dpdm-supply = <&vreg_l24a>;
 };
 
+&mdp {
+    status = "okay";
+};
+
+&mdss {
+    status = "okay";
+};
+
 &mdss_dsi0 {
-	vddio-supply
+	status = "okay";
+
+	panel: panel@0 {
+		compatible = "samsung,s6e3ha3";
+		reg = <0>;
+
+		vdda-supply = <&vreg_l2a>;
+		vcca-supply = <&vreg_l28a>;
+		vddio-supply = <&vreg_l14a>;
+
+		reset-gpios = <&tlmm 8 GPIO_ACTIVE_LOW>;
+
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&mdss_dsi_active &mdss_te_active>;
+		pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				panel0_in: endpoint {
+					remote-endpoint = <&mdss_dsi0_out>;
+				};
+			};
+		};
+	};
+};
+
+&mdss_dsi0_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel0_in>;
+};
+
+&mdss_dsi0_phy {
+	vcca-supply = <&vreg_l28a>;
+	status = "okay";
+};
 
 &rpm_requests {
 	regulators-0 {

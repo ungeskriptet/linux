@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-// Copyright (c) 2023 FIXME
-// Generated with linux-mdss-dsi-panel-driver-generator from vendor device tree:
-//   Copyright (c) 2013, The Linux Foundation. All rights reserved. (FIXME)
+// Copyright (c) 2023 David Wronek <davidwronek@gmail.com>
 
 #include <linux/backlight.h>
 #include <linux/delay.h>
@@ -19,7 +17,7 @@
 struct s6e3ha3 {
 	struct drm_panel panel;
 	struct mipi_dsi_device *dsi;
-	struct regulator *supply;
+	struct regulator_bulk_data supplies[3];
 	struct gpio_desc *reset_gpio;
 	bool prepared;
 };
@@ -125,9 +123,9 @@ static int s6e3ha3_prepare(struct drm_panel *panel)
 	if (ctx->prepared)
 		return 0;
 
-	ret = regulator_enable(ctx->supply);
+	ret = regulator_bulk_enable(ARRAY_SIZE(ctx->supplies), ctx->supplies);
 	if (ret < 0) {
-		dev_err(dev, "Failed to enable regulator: %d\n", ret);
+		dev_err(dev, "Failed to enable regulators: %d\n", ret);
 		return ret;
 	}
 
@@ -137,7 +135,7 @@ static int s6e3ha3_prepare(struct drm_panel *panel)
 	if (ret < 0) {
 		dev_err(dev, "Failed to initialize panel: %d\n", ret);
 		gpiod_set_value_cansleep(ctx->reset_gpio, 1);
-		regulator_disable(ctx->supply);
+		regulator_bulk_disable(ARRAY_SIZE(ctx->supplies), ctx->supplies);
 		return ret;
 	}
 
@@ -159,7 +157,7 @@ static int s6e3ha3_unprepare(struct drm_panel *panel)
 		dev_err(dev, "Failed to un-initialize panel: %d\n", ret);
 
 	gpiod_set_value_cansleep(ctx->reset_gpio, 1);
-	regulator_disable(ctx->supply);
+	regulator_bulk_disable(ARRAY_SIZE(ctx->supplies), ctx->supplies);
 
 	ctx->prepared = false;
 	return 0;
@@ -269,10 +267,13 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 	if (!ctx)
 		return -ENOMEM;
 
-	ctx->supply = devm_regulator_get(dev, "vddio");
-	if (IS_ERR(ctx->supply))
-		return dev_err_probe(dev, PTR_ERR(ctx->supply),
-				     "Failed to get vddio regulator\n");
+	ctx->supplies[0].supply = "vddio";
+	ctx->supplies[1].supply = "vdda";
+	ctx->supplies[2].supply = "vcca";
+	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(ctx->supplies),
+				      ctx->supplies);
+	if (ret < 0)
+		return dev_err_probe(dev, ret, "Failed to get regulators\n");
 
 	ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->reset_gpio))
@@ -286,6 +287,8 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 	dsi->format = MIPI_DSI_FMT_RGB888;
 	dsi->mode_flags = MIPI_DSI_MODE_NO_EOT_PACKET |
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS;
+
+	ctx->panel.prepare_prev_first = true;
 
 	drm_panel_init(&ctx->panel, dev, &s6e3ha3_panel_funcs,
 		       DRM_MODE_CONNECTOR_DSI);
@@ -335,6 +338,6 @@ static struct mipi_dsi_driver s6e3ha3_driver = {
 };
 module_mipi_dsi_driver(s6e3ha3_driver);
 
-MODULE_AUTHOR("David Wronek <davidwronek@gmail.com>");
-MODULE_DESCRIPTION("DRM driver for Samsung S6E3HA3 AMOLED panel");
+MODULE_AUTHOR("David Wronek <davidwronek@gmail.com>"); // FIXME
+MODULE_DESCRIPTION("DRM driver for Samsung S6E3HA3 cmd mode panel");
 MODULE_LICENSE("GPL");
