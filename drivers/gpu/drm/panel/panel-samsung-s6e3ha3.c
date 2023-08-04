@@ -354,19 +354,17 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 	if (!pinfo)
 		return -ENOMEM;
 
-	pinfo->panel.prepare_prev_first = true;
-
-	pinfo->vddio = devm_regulator_get(dev, "vdda");
-	if (IS_ERR(pinfo->vddio))
-		return dev_err_probe(dev, PTR_ERR(pinfo->vddio), "failed to get vddio regulator\n");
+	pinfo->vdda = devm_regulator_get(dev, "vdda");
+	if (IS_ERR(pinfo->vdda))
+		return dev_err_probe(dev, PTR_ERR(pinfo->vdda), "failed to get vdda regulator\n");
 
 	pinfo->vddio = devm_regulator_get(dev, "vddio");
 	if (IS_ERR(pinfo->vddio))
 		return dev_err_probe(dev, PTR_ERR(pinfo->vddio), "failed to get vddio regulator\n");
 
-	pinfo->vddio = devm_regulator_get(dev, "vcca");
-	if (IS_ERR(pinfo->vddio))
-		return dev_err_probe(dev, PTR_ERR(pinfo->vddio), "failed to get vddio regulator\n");
+	pinfo->vcca = devm_regulator_get(dev, "vcca");
+	if (IS_ERR(pinfo->vcca))
+		return dev_err_probe(dev, PTR_ERR(pinfo->vcca), "failed to get vcca regulator\n");
 
 	pinfo->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
 	if (IS_ERR(pinfo->reset_gpio))
@@ -375,6 +373,8 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 	pinfo->desc = of_device_get_match_data(dev);
 	if (!pinfo->desc)
 		return -ENODEV;
+
+	pinfo->panel.prepare_prev_first = true;
 
 	/* If the panel is dual dsi, register DSI1 */
 	if (pinfo->desc->is_dual_dsi) {
