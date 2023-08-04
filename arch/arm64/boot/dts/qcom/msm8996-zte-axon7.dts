@@ -61,11 +61,10 @@
 	qcom,sync-dual-dsi;
 	qcom,master-dsi;
 #endif
-	status = "okay";
-
 	vdda-supply = <&vreg_l2a>;
 	vcca-supply = <&vreg_l28a>;
 	vddio-supply = <&vreg_l14a>;
+	status = "okay";
 
 	panel: panel@0 {
 		compatible = "samsung,s6e3ha3";
