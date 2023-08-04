@@ -11,6 +11,8 @@
 #include "pmi8994.dtsi"
 #include "pmi8996.dtsi"
 
+#define DUAL 1
+
 / {
 	model = "ZTE Axon 7";
 	compatible = "zte,axon7", "qcom,msm8996";
@@ -54,10 +56,11 @@
 };
 
 &mdss_dsi0 {
-	vddio-supply = <&vreg_l14a>;
+#if DUAL
 	qcom,dual-dsi-mode;
 	qcom,sync-dual-dsi;
 	qcom,master-dsi;
+#endif
 	status = "okay";
 
 	vdda-supply = <&vreg_l2a>;
@@ -89,12 +92,14 @@
 				};
 			};
 
+#if DUAL
 			port@1 {
 				reg = <1>;
 				panel1_in: endpoint {
 					remote-endpoint = <&mdss_dsi1_out>;
 				};
 			};
+#endif
 		};
 	};
 };
@@ -109,6 +114,7 @@
 	status = "okay";
 };
 
+#if DUAL
 &mdss_dsi1 {
 	vdda-supply = <&vreg_l2a>;
 	vcca-supply = <&vreg_l28a>;
@@ -129,6 +135,7 @@
 	vcca-supply = <&vreg_l28a>;
 	status = "okay";
 };
+#endif
 
 &rpm_requests {
 	regulators-0 {
