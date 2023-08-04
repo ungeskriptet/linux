@@ -54,7 +54,15 @@
 };
 
 &mdss_dsi0 {
+	vddio-supply = <&vreg_l14a>;
+	qcom,dual-dsi-mode;
+	qcom,sync-dual-dsi;
+	qcom,master-dsi;
 	status = "okay";
+
+	vdda-supply = <&vreg_l2a>;
+	vcca-supply = <&vreg_l28a>;
+	vddio-supply = <&vreg_l14a>;
 
 	panel: panel@0 {
 		compatible = "samsung,s6e3ha3";
@@ -80,6 +88,13 @@
 					remote-endpoint = <&mdss_dsi0_out>;
 				};
 			};
+
+			port@1 {
+				reg = <1>;
+				panel1_in: endpoint {
+					remote-endpoint = <&mdss_dsi1_out>;
+				};
+			};
 		};
 	};
 };
@@ -90,6 +105,27 @@
 };
 
 &mdss_dsi0_phy {
+	vcca-supply = <&vreg_l28a>;
+	status = "okay";
+};
+
+&mdss_dsi1 {
+	vdda-supply = <&vreg_l2a>;
+	vcca-supply = <&vreg_l28a>;
+	vddio-supply = <&vreg_l14a>;
+	qcom,dual-dsi-mode;
+	qcom,sync-dual-dsi;
+	/* DSI1 is slave, so use DSI0 clocks */
+	assigned-clock-parents = <&mdss_dsi0_phy 0>, <&mdss_dsi0_phy 1>;
+	status = "okay";
+};
+
+&mdss_dsi1_out {
+	data-lanes = <0 1 2 3>;
+	remote-endpoint = <&panel1_in>;
+};
+
+&mdss_dsi1_phy {
 	vcca-supply = <&vreg_l28a>;
 	status = "okay";
 };
