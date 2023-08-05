@@ -56,9 +56,6 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 	struct mipi_dsi_device *dsi0 = ctx->dsi[0];
 	struct mipi_dsi_device *dsi1 = ctx->dsi[1];
 
-	ctx->dsi[0]->mode_flags |= MIPI_DSI_MODE_LPM;
-	ctx->dsi[1]->mode_flags |= MIPI_DSI_MODE_LPM;
-
 	mipi_dsi_dual_dcs_write_seq(dsi0, dsi1, 0x11);
 	usleep_range(5000, 6000);
 	mipi_dsi_dual_dcs_write_seq(dsi0, dsi1, 0xf0, 0x5a, 0x5a);
