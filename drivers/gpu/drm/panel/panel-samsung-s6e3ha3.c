@@ -23,6 +23,8 @@
 
 #define DSI_NUM_MIN 1
 
+#define RESET 0
+
 #define mipi_dsi_dual_dcs_write_seq(dsi0, dsi1, cmd, seq...)        \
 		do {                                                 \
 			mipi_dsi_dcs_write_seq(dsi0, cmd, seq);      \
@@ -34,8 +36,9 @@ struct panel_info {
 	struct mipi_dsi_device *dsi[2];
 	const struct panel_desc *desc;
 	enum drm_panel_orientation orientation;
-
+#if RESET
 	struct gpio_desc *reset_gpio;
+#endif
 	struct backlight_device *backlight;
 	struct regulator *vdda, *vcca, *vddio;
 
@@ -127,6 +130,7 @@ static const struct panel_desc zte_s6e3ha3_desc = {
 	.is_dual_dsi = true,
 };
 
+#if RESET
 static void s6e3ha3_reset(struct panel_info *pinfo)
 {
 	gpiod_set_value_cansleep(pinfo->reset_gpio, 0);
@@ -136,6 +140,7 @@ static void s6e3ha3_reset(struct panel_info *pinfo)
 	gpiod_set_value_cansleep(pinfo->reset_gpio, 0);
 	usleep_range(5000, 6000);
 }
+#endif
 
 static int s6e3ha3_prepare(struct drm_panel *panel)
 {
@@ -162,8 +167,9 @@ static int s6e3ha3_prepare(struct drm_panel *panel)
 		dev_err(panel->dev, "failed to enable vddio regulator: %d\n", ret);
 		return ret;
 	}
-
+#if RESET
 	s6e3ha3_reset(pinfo);
+#endif
 
 	ret = pinfo->desc->init_sequence(pinfo);
 	if (ret < 0) {
@@ -212,7 +218,9 @@ static int s6e3ha3_unprepare(struct drm_panel *panel)
 	if (!pinfo->prepared)
 		return 0;
 
+#if RESET
 	gpiod_set_value_cansleep(pinfo->reset_gpio, 1);
+#endif
 	regulator_disable(pinfo->vdda);
 	regulator_disable(pinfo->vddio);
 	regulator_disable(pinfo->vcca);
@@ -366,9 +374,11 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 	if (IS_ERR(pinfo->vcca))
 		return dev_err_probe(dev, PTR_ERR(pinfo->vcca), "failed to get vcca regulator\n");
 
+#if RESET
 	pinfo->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
 	if (IS_ERR(pinfo->reset_gpio))
 		return dev_err_probe(dev, PTR_ERR(pinfo->reset_gpio), "failed to get reset gpio\n");
+#endif
 
 	pinfo->desc = of_device_get_match_data(dev);
 	if (!pinfo->desc)

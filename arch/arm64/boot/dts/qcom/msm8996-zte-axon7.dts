@@ -115,9 +115,9 @@
 
 #if DUAL
 &mdss_dsi1 {
-	vdda-supply = <&vreg_l2a>;
-	vcca-supply = <&vreg_l28a>;
-	vddio-supply = <&vreg_l14a>;
+	//vdda-supply = <&vreg_l2a>;
+	//vcca-supply = <&vreg_l28a>;
+	//vddio-supply = <&vreg_l14a>;
 	qcom,dual-dsi-mode;
 	qcom,sync-dual-dsi;
 	/* DSI1 is slave, so use DSI0 clocks */
