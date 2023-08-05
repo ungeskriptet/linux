@@ -111,6 +111,7 @@
 	vcca-supply = <&vreg_l28a>;
 	vddio-supply = <&vreg_l14a>;
 	qcom,dual-dsi-mode;
+	vdda-supply = <&vreg_l2a>;
 	/* DSI1 is slave, so use DSI0 clocks */
 	assigned-clock-parents = <&mdss_dsi0_phy 0>, <&mdss_dsi0_phy 1>;
 	status = "okay";

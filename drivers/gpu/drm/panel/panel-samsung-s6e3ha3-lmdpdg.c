@@ -78,7 +78,7 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 	mipi_dsi_dual_dcs_write_seq(dsi0, dsi1, 0x29);
 	usleep_range(16000, 17000);
 
-	mipi_dsi_dcs_write_seq(dsi0, 0x51, 0x1);
+	mipi_dsi_dual_dcs_write_seq(dsi0, dsi1, 0x51, 0x1);
 
 	return 0;
 }
@@ -145,17 +145,17 @@ static int s6e3ha3_unprepare(struct drm_panel *panel)
 }
 
 static const struct drm_display_mode s6e3ha3_mode = {
-	.clock = (1440 + 280 + 32 + 132) * (2560 + 16 + 16 + 8) * 60 / 1000,
-	.hdisplay = 1440,
-	.hsync_start = 1440 + 280,
-	.hsync_end = 1440 + 280 + 32,
-	.htotal = 1440 + 280 + 32 + 132,
-	.vdisplay = 2560,
-	.vsync_start = 2560 + 16,
-	.vsync_end = 2560 + 16 + 16,
-	.vtotal = 2560 + 16 + 16 + 8,
-	.width_mm = 68,
-	.height_mm = 121,
+    .clock = (1440 + 140 + 16 + 66) * (2560 + 16 + 16 + 8) * 60 / 1000,
+    .hdisplay = 1440,
+    .hsync_start = 1440 + 140,
+    .hsync_end = 1440 + 140 + 16,
+    .htotal = 1440 + 140 + 16 + 66,
+    .vdisplay = 2560,
+    .vsync_start = 2560 + 16,
+    .vsync_end = 2560 + 16 + 16,
+    .vtotal = 2560 + 16 + 16 + 8,
+    .width_mm = 68,
+    .height_mm = 121,
 };
 
 static int s6e3ha3_get_modes(struct drm_panel *panel,
