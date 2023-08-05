@@ -11,8 +11,6 @@
 #include "pmi8994.dtsi"
 #include "pmi8996.dtsi"
 
-#define DUAL 1
-
 / {
 	model = "ZTE Axon 7";
 	compatible = "zte,axon7", "qcom,msm8996";
@@ -56,19 +54,16 @@
 };
 
 &mdss_dsi0 {
-#if DUAL
 	qcom,dual-dsi-mode;
-	qcom,sync-dual-dsi;
 	qcom,master-dsi;
-#endif
 	vdda-supply = <&vreg_l2a>;
 	vcca-supply = <&vreg_l28a>;
 	vddio-supply = <&vreg_l14a>;
 	status = "okay";
 
 	panel: panel@0 {
-		compatible = "samsung,s6e3ha3";
 		reg = <0>;
+		compatible = "samsung,s6e3ha3";
 
 		vdda-supply = <&vreg_l2a>;
 		vcca-supply = <&vreg_l28a>;
@@ -86,26 +81,24 @@
 
 			port@0 {
 				reg = <0>;
-				panel0_in: endpoint {
+				panel_in_0: endpoint {
 					remote-endpoint = <&mdss_dsi0_out>;
 				};
 			};
 
-#if DUAL
 			port@1 {
 				reg = <1>;
-				panel1_in: endpoint {
+				panel_in_1: endpoint {
 					remote-endpoint = <&mdss_dsi1_out>;
 				};
 			};
-#endif
 		};
 	};
 };
 
 &mdss_dsi0_out {
 	data-lanes = <0 1 2 3>;
-	remote-endpoint = <&panel0_in>;
+	remote-endpoint = <&panel_in_0>;
 };
 
 &mdss_dsi0_phy {
@@ -113,13 +106,11 @@
 	status = "okay";
 };
 
-#if DUAL
 &mdss_dsi1 {
-	//vdda-supply = <&vreg_l2a>;
-	//vcca-supply = <&vreg_l28a>;
-	//vddio-supply = <&vreg_l14a>;
+	vdda-supply = <&vreg_l2a>;
+	vcca-supply = <&vreg_l28a>;
+	vddio-supply = <&vreg_l14a>;
 	qcom,dual-dsi-mode;
-	qcom,sync-dual-dsi;
 	/* DSI1 is slave, so use DSI0 clocks */
 	assigned-clock-parents = <&mdss_dsi0_phy 0>, <&mdss_dsi0_phy 1>;
 	status = "okay";
@@ -127,14 +118,13 @@
 
 &mdss_dsi1_out {
 	data-lanes = <0 1 2 3>;
-	remote-endpoint = <&panel1_in>;
+	remote-endpoint = <&panel_in_1>;
 };
 
 &mdss_dsi1_phy {
 	vcca-supply = <&vreg_l28a>;
 	status = "okay";
 };
-#endif
 
 &rpm_requests {
 	regulators-0 {
