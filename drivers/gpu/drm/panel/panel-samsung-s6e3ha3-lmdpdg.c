@@ -73,7 +73,6 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 	mipi_dsi_dcs_write_seq(dsi, 0x29);
 	usleep_range(16000, 17000);
 
-#if 0
 	printk("%s: Sending commands to %s now...", __func__, dsi1->name);
 	mipi_dsi_dcs_write_seq(dsi1, 0x11);
 	usleep_range(5000, 6000);
@@ -96,7 +95,6 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 	mipi_dsi_dcs_write_seq(dsi1, 0x53, 0x20);
 	mipi_dsi_dcs_write_seq(dsi1, 0x29);
 	usleep_range(16000, 17000);
-#endif
 
 	/* According to downstream, backlight commands need to be sent
 	 * twice due to some "defect" in the s6e3ha3 driver IC */
@@ -294,8 +292,7 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 					     "Cannot get secondary DSI host\n");
 		}
 
-		ctx->dsi[1] =
-			mipi_dsi_device_register_full(dsi_sec_host, &info);
+		ctx->dsi[1] = mipi_dsi_device_register_full(dsi_sec_host, &info);
 		if (IS_ERR(ctx->dsi[1])) {
 			return dev_err_probe(dev, PTR_ERR(ctx->dsi[1]),
 					     "Cannot get secondary DSI node\n");
@@ -329,8 +326,7 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 
 		ctx->dsi[i]->lanes = 4;
 		ctx->dsi[i]->format = MIPI_DSI_FMT_RGB888;
-		ctx->dsi[i]->mode_flags = MIPI_DSI_MODE_NO_EOT_PACKET |
-						MIPI_DSI_CLOCK_NON_CONTINUOUS;
+		ctx->dsi[i]->mode_flags = MIPI_DSI_MODE_NO_EOT_PACKET | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 
 		ret = mipi_dsi_attach(ctx->dsi[i]);
 		if (ret < 0) {
