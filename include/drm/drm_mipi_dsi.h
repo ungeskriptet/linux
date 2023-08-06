@@ -328,6 +328,13 @@ int mipi_dsi_dcs_get_display_brightness_large(struct mipi_dsi_device *dsi,
 		struct device *dev = &dsi->dev;                            \
 		int ret;                                                   \
 		ret = mipi_dsi_dcs_write_buffer(dsi, d, ARRAY_SIZE(d));    \
+		        char seq_str[ARRAY_SIZE(d) * 4 + 1] = {0};                 \
+        for (int i = 0; i < ARRAY_SIZE(d); i++) {                   \
+            snprintf(seq_str + strlen(seq_str),                    \
+                     sizeof(seq_str) - strlen(seq_str),            \
+                     " %02x", d[i]);                                \
+        }                                                          \
+        printk("%s: cmd: %02x, seq:%s\n", dev_name(dev), cmd, seq_str); \
 		if (ret < 0) {                                             \
 			dev_err_ratelimited(                               \
 				dev, "sending command %#02x failed: %d\n", \
