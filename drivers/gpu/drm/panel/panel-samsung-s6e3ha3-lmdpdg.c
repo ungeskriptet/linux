@@ -16,7 +16,7 @@
 #include <drm/drm_panel.h>
 #include <drm/drm_probe_helper.h>
 
-#define RESET 1
+#define RESET 0
 
 struct s6e3ha3 {
 	struct drm_panel panel;
@@ -50,6 +50,7 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 	struct mipi_dsi_device *dsi = ctx->dsi[0];
 	struct mipi_dsi_device *dsi1 = ctx->dsi[1];
 
+	printk("%s: Sending commands to %s now...", __func__, dsi->name);
 	mipi_dsi_dcs_write_seq(dsi, 0x11);
 	usleep_range(5000, 6000);
 	mipi_dsi_dcs_write_seq(dsi, 0xf0, 0x5a, 0x5a);
@@ -72,7 +73,33 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 	mipi_dsi_dcs_write_seq(dsi, 0x29);
 	usleep_range(16000, 17000);
 
-	mipi_dsi_dcs_write_seq(dsi1, 0x51, 0x1);
+#if 0
+	printk("%s: Sending commands to %s now...", __func__, dsi1->name);
+	mipi_dsi_dcs_write_seq(dsi1, 0x11);
+	usleep_range(5000, 6000);
+	mipi_dsi_dcs_write_seq(dsi1, 0xf0, 0x5a, 0x5a);
+	mipi_dsi_dcs_write_seq(dsi1, 0xc4, 0x03);
+	mipi_dsi_dcs_write_seq(dsi1, 0xf9, 0x03);
+	mipi_dsi_dcs_write_seq(dsi1, 0xc2,
+			       0x00, 0x08, 0xd8, 0xd8, 0x00, 0x80, 0x2b, 0x05,
+			       0x08, 0x0e, 0x07, 0x0b, 0x05, 0x0d, 0x0a, 0x15,
+			       0x13, 0x20, 0x1e);
+	mipi_dsi_dcs_write_seq(dsi1, 0xed, 0x45);
+	mipi_dsi_dcs_write_seq(dsi1, 0xf6,
+			       0x42, 0x57, 0x37, 0x00, 0xaa, 0xcc, 0xd0, 0x00,
+			       0x00);
+	mipi_dsi_dcs_write_seq(dsi1, 0xf0, 0xa5, 0xa5);
+	msleep(120);
+	mipi_dsi_dcs_write_seq(dsi1, 0x12);
+	usleep_range(1000, 2000);
+	mipi_dsi_dcs_write_seq(dsi1, 0x35, 0x00);
+	mipi_dsi_dcs_write_seq(dsi1, 0x53, 0x20);
+	mipi_dsi_dcs_write_seq(dsi1, 0x29);
+	usleep_range(16000, 17000);
+#endif
+
+	/* According to downstream, backlight commands need to be sent
+	 * twice due to some "defect" in the s6e3ha3 driver IC */
 
 	return 0;
 }
@@ -80,7 +107,6 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 static int s6e3ha3_off(struct s6e3ha3 *ctx)
 {
 	struct mipi_dsi_device *dsi = ctx->dsi[0];
-	struct mipi_dsi_device *dsi1 = ctx->dsi[1];
 
 	mipi_dsi_dcs_write_seq(dsi, 0x51, 0x0);
 	mipi_dsi_dcs_write_seq(dsi, 0x28);
@@ -139,11 +165,11 @@ static int s6e3ha3_unprepare(struct drm_panel *panel)
 }
 
 static const struct drm_display_mode s6e3ha3_mode = {
-    .clock = (1440 + 140 + 16 + 66) * (2560 + 16 + 16 + 8) * 60 / 1000,
+    .clock = (1440 + 280 + 32 + 132) * (2560 + 16 + 16 + 8) * 60 / 1000,
     .hdisplay = 1440,
-    .hsync_start = 1440 + 140,
-    .hsync_end = 1440 + 140 + 16,
-    .htotal = 1440 + 140 + 16 + 66,
+    .hsync_start = 1440 + 280,
+    .hsync_end = 1440 + 280 + 32,
+    .htotal = 1440 + 280 + 32 + 132,
     .vdisplay = 2560,
     .vsync_start = 2560 + 16,
     .vsync_end = 2560 + 16 + 16,
@@ -224,7 +250,7 @@ s6e3ha3_create_backlight(struct mipi_dsi_device *dsi)
 	struct device *dev = &dsi->dev;
 	const struct backlight_properties props = {
 		.type = BACKLIGHT_RAW,
-		.brightness = 255,
+		.brightness = 50,
 		.max_brightness = 255,
 	};
 
@@ -256,7 +282,7 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 	if (dsi_sec) {
 		dev_notice(dev, "Using Dual-DSI\n");
 
-		const struct mipi_dsi_device_info info = { "S6E3HA3", 0,
+		const struct mipi_dsi_device_info info = { "s6e3ha3-dsi1", 0,
 							   dsi_sec };
 
 		dev_notice(dev, "Found second DSI `%s`\n", dsi_sec->name);
@@ -276,7 +302,7 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 		}
 
 		dev_notice(dev, "Second DSI name `%s`\n", ctx->dsi[1]->name);
-		mipi_dsi_set_drvdata(ctx->dsi[1], ctx);
+		//mipi_dsi_set_drvdata(ctx->dsi[1], ctx);
 	} else {
 		dev_notice(dev, "Using Single-DSI\n");
 	}
