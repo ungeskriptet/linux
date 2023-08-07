@@ -50,6 +50,10 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 	struct mipi_dsi_device *dsi = ctx->dsi[0];
 	struct mipi_dsi_device *dsi1 = ctx->dsi[1];
 
+	ctx->dsi[0]->mode_flags |= MIPI_DSI_MODE_LPM;
+	if (ctx->dsi[1])
+		ctx->dsi[1]->mode_flags |= MIPI_DSI_MODE_LPM;
+
 	printk("%s: Sending commands to %s now...", __func__, dsi->name);
 	mipi_dsi_dcs_write_seq(dsi, 0x11);
 	usleep_range(5000, 6000);
@@ -291,14 +295,14 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 			return dev_err_probe(dev, -EPROBE_DEFER,
 					     "Cannot get secondary DSI host\n");
 		}
-
+	
 		ctx->dsi[1] = mipi_dsi_device_register_full(dsi_sec_host, &info);
 		if (IS_ERR(ctx->dsi[1])) {
 			return dev_err_probe(dev, PTR_ERR(ctx->dsi[1]),
 					     "Cannot get secondary DSI node\n");
 		}
 
-		dev_notice(dev, "Second DSI name `%s`\n", ctx->dsi[1]->name);
+		dev_notice(dev, "Second DSI name `%s`, address 0x%pOF\n", ctx->dsi[1]->name, ctx->dsi[1]->dev.of_node);
 		//mipi_dsi_set_drvdata(ctx->dsi[1], ctx);
 	} else {
 		dev_notice(dev, "Using Single-DSI\n");
