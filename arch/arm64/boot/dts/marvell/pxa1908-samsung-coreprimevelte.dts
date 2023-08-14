@@ -2,6 +2,8 @@
 #include "pxa1908.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/linux-event-codes.h>
+// FIXME
+#define IRQF_TRIGGER_HIGH 0x00000004
 
 / {
 	pxa,rev-id = <3928 2>;
@@ -305,6 +307,41 @@
 
 &twsi2 {
 	status = "okay";
+	pmic0: 88pm886@30 {
+		compatible = "marvell,88pm886";
+		reg = <0x30>;
+		interrupts = <0 4 IRQF_TRIGGER_HIGH>;
+		interrupt-parent = <&gic>;
+		interrupt-controller;
+		#interrupt-cells = <1>;
+
+		marvell,88pm88x-irq-write-clear;
+
+		onkey {
+			marvell,pm88x-onkey-gpio-number = <0>;
+		};
+
+		vbus {
+			gpadc-number = <1>;
+		};
+
+		battery {
+			bat-software-battery-detection;
+			/* bat-ntc-support; */
+			bat-ntc-support;
+			gpadc-det-no = <2>;
+			gpadc-temp-no = <3>;
+		};
+	};
+	pmic2: 88pm860@38 {
+		compatible = "marvell,88pm860";
+		reg = <0x38>;
+		marvell,pmic-type = <1>;
+		pm860_codec: pm860_codec {
+			compatible = "marvell,88pm860-codec";
+			#dailink-cells = <1>;
+		};
+	};
 };
 
 &twsi3 {
@@ -332,3 +369,5 @@
 	bus-width = <4>;
 	wp-inverted;
 };
+#include "88pm886.dtsi"
+#include "88pm88x.dtsi"
