@@ -22,8 +22,7 @@
 #include <linux/mfd/88pm880.h>
 #include <linux/mfd/88pm88x.h>
 
-static int pm88x_i2c_probe(struct i2c_client *client,
-		       const struct i2c_device_id *id)
+static int pm88x_i2c_probe(struct i2c_client *client)
 {
 	struct pm88x_chip *chip;
 	struct device_node *node = client->dev.of_node;
@@ -104,11 +103,10 @@ err:
 	return ret;
 }
 
-static int pm88x_i2c_remove(struct i2c_client *i2c)
+static void pm88x_i2c_remove(struct i2c_client *i2c)
 {
 	struct pm88x_chip *chip = dev_get_drvdata(&i2c->dev);
 	pm88x_dev_exit(chip);
-	return 0;
 }
 
 static const struct i2c_device_id pm88x_i2c_id[] = {

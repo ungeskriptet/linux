@@ -92,32 +92,32 @@ struct pmic_cell_info pm886_cell_info = {
 	.cell_nr = ARRAY_SIZE(pm886_cell_devs),
 };
 
-static const struct reg_default pm886_base_patch[] = {
-	{PM88X_WDOG, 0x1},	 /* disable watchdog */
-	{PM88X_GPIO_CTRL1, 0x40}, /* gpio1: dvc    , gpio0: input   */
-	{PM88X_GPIO_CTRL2, 0x00}, /*               , gpio2: input   */
-	{PM88X_GPIO_CTRL3, 0x44}, /* dvc2          , dvc1           */
-	{PM88X_GPIO_CTRL4, 0x00}, /* gpio5v_1:input, gpio5v_2: input*/
-	{PM88X_AON_CTRL2, 0x2a},  /* output 32kHZ from XO */
-	{PM88X_BK_OSC_CTRL1, 0x0f}, /* OSC_FREERUN = 1, to lock FLL */
-	{PM88X_LOWPOWER2, 0x20}, /* XO_LJ = 1, enable low jitter for 32kHZ */
+static const struct reg_sequence pm886_base_patch[] = {
+	REG_SEQ0(PM88X_WDOG, 0x1),	 /* disable watchdog */
+	REG_SEQ0(PM88X_GPIO_CTRL1, 0x40), /* gpio1: dvc    , gpio0: input   */
+	REG_SEQ0(PM88X_GPIO_CTRL2, 0x00), /*               , gpio2: input   */
+	REG_SEQ0(PM88X_GPIO_CTRL3, 0x44), /* dvc2          , dvc1           */
+	REG_SEQ0(PM88X_GPIO_CTRL4, 0x00), /* gpio5v_1:input, gpio5v_2: input*/
+	REG_SEQ0(PM88X_AON_CTRL2, 0x2a),  /* output 32kHZ from XO */
+	REG_SEQ0(PM88X_BK_OSC_CTRL1, 0x0f), /* OSC_FREERUN = 1, to lock FLL */
+	REG_SEQ0(PM88X_LOWPOWER2, 0x20), /* XO_LJ = 1, enable low jitter for 32kHZ */
 	/* enable LPM for internal reference group in sleep */
-	{PM88X_LOWPOWER4, 0xc0},
-	{PM88X_BK_OSC_CTRL3, 0xc0}, /* set the duty cycle of charger DC/DC to max */
+	REG_SEQ0(PM88X_LOWPOWER4, 0xc0),
+	REG_SEQ0(PM88X_BK_OSC_CTRL3, 0xc0), /* set the duty cycle of charger DC/DC to max */
 };
 
-static const struct reg_default pm886_power_patch[] = {
+static const struct reg_sequence pm886_power_patch[] = {
 };
 
-static const struct reg_default pm886_gpadc_patch[] = {
-	{PM88X_GPADC_CONFIG6, 0x03}, /* enable non-stop mode */
+static const struct reg_sequence pm886_gpadc_patch[] = {
+	REG_SEQ0(PM88X_GPADC_CONFIG6, 0x03), /* enable non-stop mode */
 };
 
-static const struct reg_default pm886_battery_patch[] = {
-	{PM88X_CHGBK_CONFIG6, 0xe1},
+static const struct reg_sequence pm886_battery_patch[] = {
+	REG_SEQ0(PM88X_CHGBK_CONFIG6, 0xe1),
 };
 
-static const struct reg_default pm886_test_patch[] = {
+static const struct reg_sequence pm886_test_patch[] = {
 };
 
 /* 88pm886 chip itself related */

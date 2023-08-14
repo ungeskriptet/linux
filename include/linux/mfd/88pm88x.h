@@ -20,6 +20,7 @@
 #include <linux/regmap.h>
 #include <linux/atomic.h>
 #include <linux/reboot.h>
+#include <linux/mod_devicetable.h>
 #include "88pm88x-reg.h"
 #include "88pm886-reg.h"
 

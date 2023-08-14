@@ -342,7 +342,7 @@ int pm88x_init_pages(struct pm88x_chip *chip)
 	}
 
 	/* power page */
-	chip->power_page = i2c_new_dummy(client->adapter, chip->power_page_addr);
+	chip->power_page = i2c_new_dummy_device(client->adapter, chip->power_page_addr);
 	if (!chip->power_page) {
 		dev_err(chip->dev, "Failed to new power_page: %d\n", ret);
 		ret = -ENODEV;
@@ -357,7 +357,7 @@ int pm88x_init_pages(struct pm88x_chip *chip)
 	}
 
 	/* gpadc page */
-	chip->gpadc_page = i2c_new_dummy(client->adapter, chip->gpadc_page_addr);
+	chip->gpadc_page = i2c_new_dummy_device(client->adapter, chip->gpadc_page_addr);
 	if (!chip->gpadc_page) {
 		dev_err(chip->dev, "Failed to new gpadc_page: %d\n", ret);
 		ret = -ENODEV;
@@ -372,7 +372,7 @@ int pm88x_init_pages(struct pm88x_chip *chip)
 	}
 
 	/* battery page */
-	chip->battery_page = i2c_new_dummy(client->adapter, chip->battery_page_addr);
+	chip->battery_page = i2c_new_dummy_device(client->adapter, chip->battery_page_addr);
 	if (!chip->battery_page) {
 		dev_err(chip->dev, "Failed to new gpadc_page: %d\n", ret);
 		ret = -ENODEV;
@@ -387,7 +387,7 @@ int pm88x_init_pages(struct pm88x_chip *chip)
 	}
 
 	/* test page */
-	chip->test_page = i2c_new_dummy(client->adapter, chip->test_page_addr);
+	chip->test_page = i2c_new_dummy_device(client->adapter, chip->test_page_addr);
 	if (!chip->test_page) {
 		dev_err(chip->dev, "Failed to new test_page: %d\n", ret);
 		ret = -ENODEV;
@@ -416,7 +416,7 @@ int pm88x_init_pages(struct pm88x_chip *chip)
 		chip->ldo_regmap = chip->power_regmap;
 
 		/* buck page */
-		chip->buck_page = i2c_new_dummy(client->adapter,
+		chip->buck_page = i2c_new_dummy_device(client->adapter,
 						chip->buck_page_addr);
 		if (!chip->buck_page) {
 			dev_err(chip->dev, "Failed to new buck_page: %d\n", ret);

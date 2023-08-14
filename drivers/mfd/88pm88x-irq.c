@@ -131,9 +131,8 @@ struct regmap_irq_chip pm88x_irq_chip = {
 
 	.num_regs = 4,
 	.status_base = PM88X_INT_STATUS1,
-	.mask_base = PM88X_INT_ENA_1,
+	.unmask_base = PM88X_INT_ENA_1,
 	.ack_base = PM88X_INT_STATUS1,
-	.mask_invert = 1,
 };
 
 int pm88x_irq_init(struct pm88x_chip *chip)
