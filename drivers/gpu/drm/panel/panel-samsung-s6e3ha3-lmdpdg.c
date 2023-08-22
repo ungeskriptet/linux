@@ -17,6 +17,7 @@
 #include <drm/drm_probe_helper.h>
 
 #define RESET 0
+#define SEND_CMDS_TWICE 1
 
 struct s6e3ha3 {
 	struct drm_panel panel;
@@ -47,36 +48,39 @@ static void s6e3ha3_reset(struct s6e3ha3 *ctx)
 
 static int s6e3ha3_on(struct s6e3ha3 *ctx)
 {
-	struct mipi_dsi_device *dsi = ctx->dsi[0];
+	struct mipi_dsi_device *dsi0 = ctx->dsi[0];
 	struct mipi_dsi_device *dsi1 = ctx->dsi[1];
 
 	ctx->dsi[0]->mode_flags |= MIPI_DSI_MODE_LPM;
 	if (ctx->dsi[1])
 		ctx->dsi[1]->mode_flags |= MIPI_DSI_MODE_LPM;
 
-	printk("%s: Sending commands to %s now...", __func__, dsi->name);
-	mipi_dsi_dcs_write_seq(dsi, 0x11);
+#if 0
+	printk("%s: Sending commands to %s now...", __func__, dsi0->name);
+	mipi_dsi_dcs_write_seq(dsi0, 0x11);
 	usleep_range(5000, 6000);
-	mipi_dsi_dcs_write_seq(dsi, 0xf0, 0x5a, 0x5a);
-	mipi_dsi_dcs_write_seq(dsi, 0xc4, 0x03);
-	mipi_dsi_dcs_write_seq(dsi, 0xf9, 0x03);
-	mipi_dsi_dcs_write_seq(dsi, 0xc2,
+	mipi_dsi_dcs_write_seq(dsi0, 0xf0, 0x5a, 0x5a);
+	mipi_dsi_dcs_write_seq(dsi0, 0xc4, 0x03);
+	mipi_dsi_dcs_write_seq(dsi0, 0xf9, 0x03);
+	mipi_dsi_dcs_write_seq(dsi0, 0xc2,
 			       0x00, 0x08, 0xd8, 0xd8, 0x00, 0x80, 0x2b, 0x05,
 			       0x08, 0x0e, 0x07, 0x0b, 0x05, 0x0d, 0x0a, 0x15,
 			       0x13, 0x20, 0x1e);
-	mipi_dsi_dcs_write_seq(dsi, 0xed, 0x45);
-	mipi_dsi_dcs_write_seq(dsi, 0xf6,
+	mipi_dsi_dcs_write_seq(dsi0, 0xed, 0x45);
+	mipi_dsi_dcs_write_seq(dsi0, 0xf6,
 			       0x42, 0x57, 0x37, 0x00, 0xaa, 0xcc, 0xd0, 0x00,
 			       0x00);
-	mipi_dsi_dcs_write_seq(dsi, 0xf0, 0xa5, 0xa5);
+	mipi_dsi_dcs_write_seq(dsi0, 0xf0, 0xa5, 0xa5);
 	msleep(120);
-	mipi_dsi_dcs_write_seq(dsi, 0x12);
+	mipi_dsi_dcs_write_seq(dsi0, 0x12);
 	usleep_range(1000, 2000);
-	mipi_dsi_dcs_write_seq(dsi, 0x35, 0x00);
-	mipi_dsi_dcs_write_seq(dsi, 0x53, 0x20);
-	mipi_dsi_dcs_write_seq(dsi, 0x29);
+	mipi_dsi_dcs_write_seq(dsi0, 0x35, 0x00);
+	mipi_dsi_dcs_write_seq(dsi0, 0x53, 0x20);
+	mipi_dsi_dcs_write_seq(dsi0, 0x29);
 	usleep_range(16000, 17000);
+#endif
 
+#if SEND_CMDS_TWICE
 	printk("%s: Sending commands to %s now...", __func__, dsi1->name);
 	mipi_dsi_dcs_write_seq(dsi1, 0x11);
 	usleep_range(5000, 6000);
@@ -99,21 +103,23 @@ static int s6e3ha3_on(struct s6e3ha3 *ctx)
 	mipi_dsi_dcs_write_seq(dsi1, 0x53, 0x20);
 	mipi_dsi_dcs_write_seq(dsi1, 0x29);
 	usleep_range(16000, 17000);
+#endif
 
-	/* According to downstream, backlight commands need to be sent
-	 * twice due to some "defect" in the s6e3ha3 driver IC */
-
+	mipi_dsi_dcs_write_seq(dsi1, 0x51, 0x0);
+	mipi_dsi_dcs_write_seq(dsi1, 0x51, 0x0);
+	mipi_dsi_dcs_write_seq(dsi1, 0x51, 0x0);
+	mipi_dsi_dcs_write_seq(dsi1, 0x53, 0x20);
 	return 0;
 }
 
 static int s6e3ha3_off(struct s6e3ha3 *ctx)
 {
-	struct mipi_dsi_device *dsi = ctx->dsi[0];
+	struct mipi_dsi_device *dsi0 = ctx->dsi[0];
 
-	mipi_dsi_dcs_write_seq(dsi, 0x51, 0x0);
-	mipi_dsi_dcs_write_seq(dsi, 0x28);
+	mipi_dsi_dcs_write_seq(dsi0, 0x51, 0x0);
+	mipi_dsi_dcs_write_seq(dsi0, 0x28);
 	msleep(50);
-	mipi_dsi_dcs_write_seq(dsi, 0x10);
+	mipi_dsi_dcs_write_seq(dsi0, 0x10);
 	msleep(120);
 
 	return 0;
@@ -295,7 +301,7 @@ static int s6e3ha3_probe(struct mipi_dsi_device *dsi)
 			return dev_err_probe(dev, -EPROBE_DEFER,
 					     "Cannot get secondary DSI host\n");
 		}
-	
+
 		ctx->dsi[1] = mipi_dsi_device_register_full(dsi_sec_host, &info);
 		if (IS_ERR(ctx->dsi[1])) {
 			return dev_err_probe(dev, PTR_ERR(ctx->dsi[1]),

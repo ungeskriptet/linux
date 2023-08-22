@@ -48,6 +48,8 @@ static int dsi_mgr_parse_of(struct device_node *np, int id)
 {
 	struct msm_dsi_manager *msm_dsim = &msm_dsim_glb;
 
+	printk("%s: Parsing node at address: %pOF", __func__, np);
+
 	/* We assume 2 dsi nodes have the same information of bonded dsi and
 	 * sync-mode, and only one node specifies master in case of bonded mode.
 	 */
@@ -55,6 +57,7 @@ static int dsi_mgr_parse_of(struct device_node *np, int id)
 		msm_dsim->is_bonded_dsi = of_property_read_bool(np, "qcom,dual-dsi-mode");
 
 	if (msm_dsim->is_bonded_dsi) {
+		printk("%s: We have bonded DSI!", __func__);
 		if (of_property_read_bool(np, "qcom,master-dsi"))
 			msm_dsim->master_dsi_link_id = id;
 		if (!msm_dsim->is_sync_needed)
