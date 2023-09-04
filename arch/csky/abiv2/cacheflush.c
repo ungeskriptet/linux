@@ -24,6 +24,7 @@ void update_mmu_cache_range(struct vm_fault *vmf, struct vm_area_struct *vma,
 	if (test_and_set_bit(PG_dcache_clean, &folio->flags))
 		return;
 
+	icache_inv_range(address, address + nr*PAGE_SIZE);
 	for (i = 0; i < folio_nr_pages(folio); i++) {
 		unsigned long addr = (unsigned long) kmap_local_folio(folio,
 								i * PAGE_SIZE);

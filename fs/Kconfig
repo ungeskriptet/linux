@@ -18,8 +18,12 @@ config VALIDATE_FS_PARSER
 config FS_IOMAP
 	bool
 
+config BUFFER_HEAD
+	bool
+
 # old blockdev_direct_IO implementation.  Use iomap for new code instead
 config LEGACY_DIRECT_IO
+	depends on BUFFER_HEAD
 	bool
 
 if BLOCK
@@ -206,8 +210,8 @@ config TMPFS_XATTR
 	  Extended attributes are name:value pairs associated with inodes by
 	  the kernel or by users (see the attr(5) manual page for details).
 
-	  Currently this enables support for the trusted.* and
-	  security.* namespaces.
+	  This enables support for the trusted.*, security.* and user.*
+	  namespaces.
 
 	  You need this for POSIX ACL support on tmpfs.
 
@@ -231,6 +235,18 @@ config TMPFS_INODE64
 
 	  To override this configured default, use the inode32 or inode64
 	  option when mounting.
+
+	  If unsure, say N.
+
+config TMPFS_QUOTA
+	bool "Tmpfs quota support"
+	depends on TMPFS
+	select QUOTA
+	help
+	  Quota support allows to set per user and group limits for tmpfs
+	  usage.  Say Y to enable quota support. Once enabled you can control
+	  user and group quota enforcement with quota, usrquota and grpquota
+	  mount options.
 
 	  If unsure, say N.
 
