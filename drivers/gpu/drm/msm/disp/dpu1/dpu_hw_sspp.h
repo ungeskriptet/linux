@@ -26,9 +26,7 @@ struct dpu_hw_sspp;
  */
 #define DPU_SSPP_SCALER (BIT(DPU_SSPP_SCALER_RGB) | \
 			 BIT(DPU_SSPP_SCALER_QSEED2) | \
-			 BIT(DPU_SSPP_SCALER_QSEED3) | \
-			 BIT(DPU_SSPP_SCALER_QSEED3LITE) | \
-			 BIT(DPU_SSPP_SCALER_QSEED4))
+			 BIT(DPU_SSPP_SCALER_QSEED3))
 
 /*
  * Define all CSC feature bits in catalog
