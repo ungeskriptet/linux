@@ -222,6 +222,36 @@ static void msm_mdss_setup_ubwc_dec_40(struct msm_mdss *msm_mdss)
 	}
 }
 
+static struct msm_mdss_data *msm_mdss_generate_mdp5_mdss_data(struct msm_mdss *mdss)
+{
+	struct msm_mdss_data *data;
+	u32 hw_rev;
+
+	data = devm_kzalloc(mdss->dev, sizeof(*data), GFP_KERNEL);
+	if (!data)
+		return NULL;
+
+	hw_rev = readl_relaxed(mdss->mmio + HW_REV) >> 16;
+
+	if (hw_rev == 0x1007 || /* msm8996 */
+	    hw_rev == 0x100e || /* msm8937 */
+	    hw_rev == 0x1010 || /* msm8953 */
+	    hw_rev == 0x3000 || /* msm8998 */
+	    hw_rev == 0x3002 || /* sdm660 */
+	    hw_rev == 0x3003) { /* sdm630 */
+		data->ubwc_dec_version = UBWC_1_0;
+		data->ubwc_enc_version = UBWC_1_0;
+	}
+
+	if (hw_rev == 0x1007 || /* msm8996 */
+	    hw_rev == 0x3000) /* msm8998 */
+		data->highest_bank_bit = 2;
+	else
+		data->highest_bank_bit = 1;
+
+	return data;
+}
+
 const struct msm_mdss_data *msm_mdss_get_mdss_data(struct device *dev)
 {
 	struct msm_mdss *mdss;
@@ -230,6 +260,13 @@ const struct msm_mdss_data *msm_mdss_get_mdss_data(struct device *dev)
 		return ERR_PTR(-EINVAL);
 
 	mdss = dev_get_drvdata(dev);
+
+	/*
+	 * We could not do it at the probe time, since hw revision register was
+	 * not readable. Fill data structure now for the MDP5 platforms.
+	 */
+	if (!mdss->mdss_data && mdss->is_mdp5)
+		mdss->mdss_data = msm_mdss_generate_mdp5_mdss_data(mdss);
 
 	return mdss->mdss_data;
 }
