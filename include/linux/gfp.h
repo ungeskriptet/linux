@@ -196,6 +196,15 @@ alloc_pages_bulk_list(gfp_t gfp, unsigned long nr_pages, struct list_head *list)
 }
 
 static inline unsigned long
+alloc_pages_bulk_list_node(gfp_t gfp, int nid, unsigned long nr_pages, struct list_head *list)
+{
+	if (nid == NUMA_NO_NODE)
+		nid = numa_mem_id();
+
+	return __alloc_pages_bulk(gfp, nid, NULL, nr_pages, list, NULL);
+}
+
+static inline unsigned long
 alloc_pages_bulk_array(gfp_t gfp, unsigned long nr_pages, struct page **page_array)
 {
 	return __alloc_pages_bulk(gfp, numa_mem_id(), NULL, nr_pages, NULL, page_array);
