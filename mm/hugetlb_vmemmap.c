@@ -13,6 +13,7 @@
 #include <linux/pgtable.h>
 #include <linux/moduleparam.h>
 #include <linux/bootmem_info.h>
+#include <linux/mmdebug.h>
 #include <asm/pgalloc.h>
 #include <asm/tlbflush.h>
 #include "hugetlb_vmemmap.h"
@@ -380,11 +381,17 @@ static int vmemmap_remap_free(unsigned long start, unsigned long end,
 static int alloc_vmemmap_page_list(unsigned long start, unsigned long end,
 				   struct list_head *list)
 {
-	gfp_t gfp_mask = GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_THISNODE;
+	gfp_t gfp_mask = GFP_KERNEL | __GFP_RETRY_MAYFAIL;
 	unsigned long nr_pages = (end - start) >> PAGE_SHIFT;
 	int nid = page_to_nid((struct page *)start);
 	struct page *page, *next;
+	unsigned long nr_allocated;
 
+	nr_allocated = alloc_pages_bulk_list_node(gfp_mask, nid, nr_pages, list);
+	if (!nr_allocated)
+		return -ENOMEM;
+
+	nr_pages -= nr_allocated;
 	while (nr_pages--) {
 		page = alloc_pages_node(nid, gfp_mask, 0);
 		if (!page)
@@ -456,6 +463,7 @@ int hugetlb_vmemmap_restore(const struct hstate *h, struct page *head)
 	unsigned long vmemmap_start = (unsigned long)head, vmemmap_end;
 	unsigned long vmemmap_reuse;
 
+	VM_WARN_ON_ONCE(!PageHuge(head));
 	if (!HPageVmemmapOptimized(head))
 		return 0;
 
@@ -550,6 +558,7 @@ void hugetlb_vmemmap_optimize(const struct hstate *h, struct page *head)
 	unsigned long vmemmap_start = (unsigned long)head, vmemmap_end;
 	unsigned long vmemmap_reuse;
 
+	VM_WARN_ON_ONCE(!PageHuge(head));
 	if (!vmemmap_should_optimize(h, head))
 		return;
 
