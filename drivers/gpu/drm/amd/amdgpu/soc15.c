@@ -325,7 +325,8 @@ static u32 soc15_get_xclk(struct amdgpu_device *adev)
 	u32 reference_clock = adev->clock.spll.reference_freq;
 
 	if (adev->ip_versions[MP1_HWIP][0] == IP_VERSION(12, 0, 0) ||
-	    adev->ip_versions[MP1_HWIP][0] == IP_VERSION(12, 0, 1))
+	    adev->ip_versions[MP1_HWIP][0] == IP_VERSION(12, 0, 1) ||
+	    adev->ip_versions[MP1_HWIP][0] == IP_VERSION(13, 0, 6))
 		return 10000;
 	if (adev->ip_versions[MP1_HWIP][0] == IP_VERSION(10, 0, 0) ||
 	    adev->ip_versions[MP1_HWIP][0] == IP_VERSION(10, 0, 1))
@@ -559,8 +560,10 @@ soc15_asic_reset_method(struct amdgpu_device *adev)
 		 */
 		if (amdgpu_gpu_recovery == 4 || amdgpu_gpu_recovery == 5)
 			return AMD_RESET_METHOD_MODE2;
+		else if (!(adev->flags & AMD_IS_APU))
+			return AMD_RESET_METHOD_MODE1;
 		else
-			return AMD_RESET_METHOD_NONE;
+			return AMD_RESET_METHOD_MODE2;
 	default:
 		break;
 	}
@@ -919,6 +922,8 @@ static int soc15_common_early_init(void *handle)
 	adev->pcie_wreg_ext = &amdgpu_device_indirect_wreg_ext;
 	adev->pcie_rreg64 = &amdgpu_device_indirect_rreg64;
 	adev->pcie_wreg64 = &amdgpu_device_indirect_wreg64;
+	adev->pcie_rreg64_ext = &amdgpu_device_indirect_rreg64_ext;
+	adev->pcie_wreg64_ext = &amdgpu_device_indirect_wreg64_ext;
 	adev->uvd_ctx_rreg = &soc15_uvd_ctx_rreg;
 	adev->uvd_ctx_wreg = &soc15_uvd_ctx_wreg;
 	adev->didt_rreg = &soc15_didt_rreg;

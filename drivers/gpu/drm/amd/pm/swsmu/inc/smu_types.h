@@ -84,6 +84,7 @@
        __SMU_DUMMY_MAP(SetTjMax),                     \
        __SMU_DUMMY_MAP(SetFanTemperatureTarget),      \
        __SMU_DUMMY_MAP(PrepareMp1ForUnload),          \
+       __SMU_DUMMY_MAP(GetCTFLimit),                  \
        __SMU_DUMMY_MAP(DramLogSetDramAddrHigh),       \
        __SMU_DUMMY_MAP(DramLogSetDramAddrLow),        \
        __SMU_DUMMY_MAP(DramLogSetDramSize),           \
@@ -245,7 +246,8 @@
 	__SMU_DUMMY_MAP(AllowGpo),	\
 	__SMU_DUMMY_MAP(Mode2Reset),	\
 	__SMU_DUMMY_MAP(RequestI2cTransaction), \
-	__SMU_DUMMY_MAP(GetMetricsTable),
+	__SMU_DUMMY_MAP(GetMetricsTable), \
+	__SMU_DUMMY_MAP(DALNotPresent),
 
 #undef __SMU_DUMMY_MAP
 #define __SMU_DUMMY_MAP(type)	SMU_MSG_##type
@@ -278,6 +280,11 @@ enum smu_clk_type {
 	SMU_OD_VDDC_CURVE,
 	SMU_OD_RANGE,
 	SMU_OD_VDDGFX_OFFSET,
+	SMU_OD_FAN_CURVE,
+	SMU_OD_ACOUSTIC_LIMIT,
+	SMU_OD_ACOUSTIC_TARGET,
+	SMU_OD_FAN_TARGET_TEMPERATURE,
+	SMU_OD_FAN_MINIMUM_PWM,
 	SMU_CLK_COUNT,
 };
 

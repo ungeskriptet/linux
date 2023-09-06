@@ -2078,6 +2078,17 @@ int psp_securedisplay_invoke(struct psp_context *psp, uint32_t ta_cmd_id)
 }
 /* SECUREDISPLAY end */
 
+int amdgpu_psp_wait_for_bootloader(struct amdgpu_device *adev)
+{
+	struct psp_context *psp = &adev->psp;
+	int ret = 0;
+
+	if (!amdgpu_sriov_vf(adev) && psp->funcs && psp->funcs->wait_for_bootloader != NULL)
+		ret = psp->funcs->wait_for_bootloader(psp);
+
+	return ret;
+}
+
 static int psp_hw_start(struct psp_context *psp)
 {
 	struct amdgpu_device *adev = psp->adev;
@@ -2378,6 +2389,24 @@ static int psp_get_fw_type(struct amdgpu_firmware_info *ucode,
 		break;
 	case AMDGPU_UCODE_ID_CP_RS64_MEC_P3_STACK:
 		*type = GFX_FW_TYPE_RS64_MEC_P3_STACK;
+		break;
+	case AMDGPU_UCODE_ID_VPE_CTX:
+		*type = GFX_FW_TYPE_VPEC_FW1;
+		break;
+	case AMDGPU_UCODE_ID_VPE_CTL:
+		*type = GFX_FW_TYPE_VPEC_FW2;
+		break;
+	case AMDGPU_UCODE_ID_VPE:
+		*type = GFX_FW_TYPE_VPE;
+		break;
+	case AMDGPU_UCODE_ID_UMSCH_MM_UCODE:
+		*type = GFX_FW_TYPE_UMSCH_UCODE;
+		break;
+	case AMDGPU_UCODE_ID_UMSCH_MM_DATA:
+		*type = GFX_FW_TYPE_UMSCH_DATA;
+		break;
+	case AMDGPU_UCODE_ID_UMSCH_MM_CMD_BUFFER:
+		*type = GFX_FW_TYPE_UMSCH_CMD_BUFFER;
 		break;
 	case AMDGPU_UCODE_ID_MAXIMUM:
 	default:
