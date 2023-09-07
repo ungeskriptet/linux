@@ -19,7 +19,7 @@
 	qcom,board-id = <100 0>;
 
 	chosen {
-		bootargs = "clk_ignore_unused pd_ignore_unused";
+		bootargs = "clk_ignore_unused pd_ignore_unused msm.prefer_mdp5=false";
 	};
 
 	reserved-memory {
@@ -55,7 +55,7 @@
 
 &mdss_dsi0 {
 	qcom,dual-dsi-mode;
-	//qcom,sync-dual-dsi;
+	qcom,sync-dual-dsi;
 	qcom,master-dsi;
 	vdda-supply = <&vreg_l2a>;
 	vcca-supply = <&vreg_l28a>;
@@ -108,7 +108,7 @@
 	vcca-supply = <&vreg_l28a>;
 	vddio-supply = <&vreg_l14a>;
 	qcom,dual-dsi-mode;
-	//qcom,sync-dual-dsi;
+	qcom,sync-dual-dsi;
 	/* DSI0 is slave, so use DSI1 clocks */
 	assigned-clock-parents = <&mdss_dsi0_phy 0>, <&mdss_dsi0_phy 1>;
 	status = "okay";
