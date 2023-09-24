@@ -11,6 +11,7 @@
 &pmic0 {
 	compatible = "marvell,88pm886";
 	/* ---buck--- */
+	/*
 	vccmain: regulator-buck1 {
 		compatible = "marvell,88pm886-buck1";
 		regulator-min-microvolt = <600000>;
@@ -18,13 +19,15 @@
 		regulator-always-on;
 		regulator-boot-on;
 	};
+	*/
 	buck2: regulator-buck2 {
 		compatible = "marvell,88pm886-buck2";
-		regulator-min-microvolt = <600000>;
-		regulator-max-microvolt = <3300000>;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
 		regulator-always-on;
 		regulator-boot-on;
 	};
+	/*
 	vddr: regulator-buck3 {
 		compatible = "marvell,88pm886-buck3";
 		regulator-min-microvolt = <600000>;
@@ -46,6 +49,7 @@
 		regulator-always-on;
 		regulator-boot-on;
 	};
+	*/
 
 	/* ---ldo--- */
 	/*
@@ -121,11 +125,13 @@
 		regulator-min-microvolt = <1200000>;
 		regulator-max-microvolt = <3300000>;
 	};
+	*/
 	ldo15: regulator-ldo15 {
 		compatible = "marvell,88pm886-ldo15";
-		regulator-min-microvolt = <1200000>;
+		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 	};
+	/*
 	ldo16: regulator-ldo16 {
 		compatible = "marvell,88pm886-ldo16";
 		regulator-min-microvolt = <1700000>;
