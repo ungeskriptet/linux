@@ -128,12 +128,12 @@
 #define PM880_BUCK_AUDIO_OF_MATCH(comp, label) \
 	PM88X_BUCK_AUDIO_OF_MATCH(pm880, PM880_ID, comp, label)
 
-static const struct regulator_linear_range buck_slp_volt_range1[] = {
+static const struct linear_range buck_slp_volt_range1[] = {
 	REGULATOR_LINEAR_RANGE(600000, 0, 0x4f, 12500),
 	REGULATOR_LINEAR_RANGE(1600000, 0x50, 0x54, 50000),
 };
 
-static const struct regulator_linear_range buck_audio_volt_range1[] = {
+static const struct linear_range buck_audio_volt_range1[] = {
 	REGULATOR_LINEAR_RANGE(600000, 0, 0x54, 12500),
 };
 
@@ -364,9 +364,9 @@ static int of_get_legacy_init_data(struct device *dev,
  * to a real voltage value (in uV) according to the voltage table.
  */
 static int pm88x_get_vvr_vol(unsigned int val, unsigned int n_linear_ranges,
-			     const struct regulator_linear_range *ranges)
+			     const struct linear_range *ranges)
 {
-	const struct regulator_linear_range *range;
+	const struct linear_range *range;
 	int i, volt = -EINVAL;
 
 	/* get the voltage via the register value */
@@ -376,7 +376,7 @@ static int pm88x_get_vvr_vol(unsigned int val, unsigned int n_linear_ranges,
 			return -EINVAL;
 
 		if (val >= range->min_sel && val <= range->max_sel) {
-			volt = (val - range->min_sel) * range->uV_step + range->min_uV;
+			volt = (val - range->min_sel) * range->step + range->min;
 			break;
 		}
 	}
@@ -584,7 +584,7 @@ static int pm88x_virtual_regulator_probe(struct platform_device *pdev)
 	if (match) {
 		const_info = match->data;
 		init_data = of_get_regulator_init_data(&pdev->dev,
-						       pdev->dev.of_node);
+						       pdev->dev.of_node, &const_info->desc);
 		ret = of_get_legacy_init_data(&pdev->dev, &init_data);
 		if (ret < 0)
 			return ret;

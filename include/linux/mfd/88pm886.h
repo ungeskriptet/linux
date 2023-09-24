@@ -52,4 +52,8 @@ enum {
 	PM886_ID_LDO_MAX = 16,
 };
 
+enum {
+	PM886_ID_BUCK1_SLP = 0,
+};
+
 #endif /* __LINUX_MFD_88PM886_H */

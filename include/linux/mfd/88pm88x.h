@@ -32,12 +32,25 @@
 #define PM88X_VBUS_NAME		"88pm88x-vbus"
 #define PM88X_CFD_NAME		"88pm88x-leds"
 #define PM88X_RGB_NAME		"88pm88x-rgb"
+#define PM88X_DEBUGFS_NAME	"88pm88x-debugfs"
 #define PM88X_GPADC_NAME	"88pm88x-gpadc"
+#define PM88X_HWMON_NAME	"88pm88x-hwmon"
 #define PM88X_DVC_NAME		"88pm88x-dvc"
+#define PM88X_VIRTUAL_REGULATOR_NAME "88pm88x-vr"
 
 enum pm88x_type {
 	PM886 = 1,
 	PM880 = 2,
+};
+
+enum {
+	PM88X_ID_VOTG = 0,
+};
+
+enum {
+	PM88X_RGB_LED0,
+	PM88X_RGB_LED1,
+	PM88X_RGB_LED2,
 };
 
 enum pm88x_pages {
@@ -93,13 +106,6 @@ enum pm88x_irq_number {
 	PM88X_IRQ_CC,		/* EN4b7 *//* 27 */
 
 	PM88X_MAX_IRQ,			   /* 28 */
-};
-
-/* 3 rgb led indicators */
-enum {
-	PM88X_RGB_LED0,
-	PM88X_RGB_LED1,
-	PM88X_RGB_LED2,
 };
 
 /* camera flash/torch */

@@ -34,6 +34,16 @@ enum {
 };
 
 enum {
+	PM880_ID_BUCK1A_SLP = 0,
+	PM880_ID_BUCK1B_SLP,
+};
+
+enum {
+	PM880_ID_BUCK1A_AUDIO = 0,
+	PM880_ID_BUCK1B_AUDIO,
+};
+
+enum {
 	PM880_ID_LDO1 = 0,
 	PM880_ID_LDO2,
 	PM880_ID_LDO3,

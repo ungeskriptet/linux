@@ -119,7 +119,7 @@
  * from 0x00 to 0x4F: step is 12.5mV, range is from 0.6V to 1.6V
  * from 0x50 to 0x3F step is 50mV, range is from 1.6V to 1.8V
  */
-static const struct regulator_linear_range buck_volt_range1[] = {
+static const struct linear_range buck_volt_range1[] = {
 	REGULATOR_LINEAR_RANGE(600000, 0, 0x4f, 12500),
 	REGULATOR_LINEAR_RANGE(1600000, 0x50, 0x54, 50000),
 };
@@ -129,7 +129,7 @@ static const struct regulator_linear_range buck_volt_range1[] = {
  * from 0x00 to 0x4F VOUT step is 12.5mV, range is from 0.6V to 1.6V
  * from 0x50 to 0x72 step is 50mV, range is from 1.6V to  3.3V
  */
-static const struct regulator_linear_range buck_volt_range2[] = {
+static const struct linear_range buck_volt_range2[] = {
 	REGULATOR_LINEAR_RANGE(600000, 0, 0x4f, 12500),
 	REGULATOR_LINEAR_RANGE(1600000, 0x50, 0x72, 50000),
 };
@@ -394,7 +394,7 @@ static const struct of_device_id pm88x_bucks_of_match[] = {
  */
 static int pm88x_get_vbuck_vol(unsigned int val, struct pm88x_buck_info *info)
 {
-	const struct regulator_linear_range *range;
+	const struct linear_range *range;
 	int i, volt = -EINVAL;
 
 	/* get the voltage via the register value */
@@ -404,7 +404,7 @@ static int pm88x_get_vbuck_vol(unsigned int val, struct pm88x_buck_info *info)
 			return -EINVAL;
 
 		if (val >= range->min_sel && val <= range->max_sel) {
-			volt = (val - range->min_sel) * range->uV_step + range->min_uV;
+			volt = (val - range->min_sel) * range->step + range->min;
 			break;
 		}
 	}
@@ -634,7 +634,7 @@ static int pm88x_buck_probe(struct platform_device *pdev)
 	if (match) {
 		const_info = match->data;
 		init_data = of_get_regulator_init_data(&pdev->dev,
-						       pdev->dev.of_node);
+						       pdev->dev.of_node, &const_info->desc);
 	} else {
 		dev_err(&pdev->dev, "parse dts fails!\n");
 		return -EINVAL;

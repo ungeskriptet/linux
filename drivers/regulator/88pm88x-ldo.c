@@ -646,7 +646,7 @@ static int pm88x_ldo_probe(struct platform_device *pdev)
 	if (match) {
 		const_info = match->data;
 		init_data = of_get_regulator_init_data(&pdev->dev,
-						       pdev->dev.of_node);
+						       pdev->dev.of_node, &const_info->desc);
 	} else {
 		dev_err(&pdev->dev, "parse dts fails!\n");
 		return -EINVAL;
