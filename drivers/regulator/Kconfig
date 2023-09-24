@@ -1673,4 +1673,14 @@ config REGULATOR_QCOM_LABIBB
 	  boost regulator and IBB can be used as a negative boost regulator
 	  for LCD display panel.
 
+config REGULATOR_88PM88X
+	tristate "Marvell 88PM88X Power regulators"
+	depends on MFD_88PM88X
+	depends on I2C
+	help
+	  This driver supports Marvell 88PM88X voltage regulator chips.
+	  It delivers digitally programmable output, the voltage is
+	  programmed via I2C interface.
+	  It has 5 bucks and 16 ldos. Buck1 has DVC feature
+
 endif
