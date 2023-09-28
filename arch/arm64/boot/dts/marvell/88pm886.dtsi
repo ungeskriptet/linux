@@ -57,7 +57,7 @@
 	*/
 	ldo2: regulator-ldo2 {
 		compatible = "marvell,88pm886-ldo2";
-		regulator-min-microvolt = <1700000>;
+		regulator-min-microvolt = <3100000>;
 		regulator-max-microvolt = <3300000>;
 	};
 	/*
