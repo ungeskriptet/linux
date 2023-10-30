@@ -86,10 +86,12 @@ static int pm88x_i2c_probe(struct i2c_client *client)
 		goto err_apply_patch;
 	}
 
-	pm_power_off = pm88x_power_off;
-
-	chip->reboot_notifier.notifier_call = pm88x_reboot_notifier_callback;
-	register_reboot_notifier(&(chip->reboot_notifier));
+	ret = devm_register_power_off_handler(chip->dev,
+					pm88x_power_off_handler, chip);
+	if (ret) {
+		dev_err(chip->dev, "failed to register power-off handler: %d\n", ret);
+		return ret;
+	}
 
 	return 0;
 

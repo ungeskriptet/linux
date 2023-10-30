@@ -554,31 +554,14 @@ void pm88x_dev_exit(struct pm88x_chip *chip)
 	pm88x_irq_exit(chip);
 }
 
-void pm88x_power_off(void)
+static int pm88x_power_off(struct pm88x_chip *chip)
 {
-	pr_info("powers off the system.");
-	/* TODO: implement later */
-
-	for (;;)
-		cpu_relax();
+	return regmap_update_bits(chip->base_regmap,
+		PM88X_MISC_CONFIG1, PM88X_SW_PDOWN, PM88X_SW_PDOWN);
 }
 
-int pm88x_reboot_notifier_callback(struct notifier_block *this,
-				   unsigned long code, void *unused)
+int pm88x_power_off_handler(struct sys_off_data *data)
 {
-	struct pm88x_chip *chip =
-		container_of(this, struct pm88x_chip, reboot_notifier);
-
-	switch (code) {
-	case SYS_HALT:
-	case SYS_POWER_OFF:
-		dev_info(chip->dev, "system is down.\n");
-		break;
-	case SYS_RESTART:
-	default:
-		dev_info(chip->dev, "system will reboot.\n");
-		break;
-	}
-
-	return 0;
+	pm88x_power_off(data->cb_data);
+	return NOTIFY_DONE;
 }

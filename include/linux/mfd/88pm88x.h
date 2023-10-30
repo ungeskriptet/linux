@@ -200,10 +200,6 @@ int pm88x_apply_patch(struct pm88x_chip *chip);
 int pm88x_stepping_fixup(struct pm88x_chip *chip);
 int pm88x_apply_board_fixup(struct pm88x_chip *chip, struct device_node *np);
 
-struct pm88x_chip *pm88x_get_chip(void);
-void pm88x_set_chip(struct pm88x_chip *chip);
-void pm88x_power_off(void);
-int pm88x_reboot_notifier_callback(struct notifier_block *nb,
-				   unsigned long code, void *unused);
+int pm88x_power_off_handler(struct sys_off_data *data);
 
 #endif /* __LINUX_MFD_88PM88X_H */
