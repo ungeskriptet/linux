@@ -41,6 +41,7 @@ static struct memory_type_mapping mem_type_mapping_tbl[] = {
 };
 
 static const struct of_device_id btmrvl_sdio_of_match_table[] __maybe_unused = {
+	{ .compatible = "marvell,sd8777-bt" },
 	{ .compatible = "marvell,sd8897-bt" },
 	{ .compatible = "marvell,sd8997-bt" },
 	{ }
@@ -234,6 +235,15 @@ static const struct btmrvl_sdio_device btmrvl_sdio_sd8688 = {
 	.supports_fw_dump = false,
 };
 
+static const struct btmrvl_sdio_device btmrvl_sdio_sd8777 = {
+	.helper		= NULL,
+	.firmware	= "mrvl/sd8777_uapsta.bin",
+	.reg		= &btmrvl_reg_87xx,
+	.support_pscan_win_report = false,
+	.sd_blksz_fw_dl	= 256,
+	.supports_fw_dump = false,
+};
+
 static const struct btmrvl_sdio_device btmrvl_sdio_sd8787 = {
 	.helper		= NULL,
 	.firmware	= "mrvl/sd8787_uapsta.bin",
@@ -301,6 +311,9 @@ static const struct sdio_device_id btmrvl_sdio_ids[] = {
 	/* Marvell SD8688 Bluetooth device */
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_MARVELL, SDIO_DEVICE_ID_MARVELL_8688_BT),
 			.driver_data = (unsigned long)&btmrvl_sdio_sd8688 },
+	/* Marvell SD8777 Bluetooth device */
+	{ SDIO_DEVICE(SDIO_VENDOR_ID_MARVELL, SDIO_DEVICE_ID_MARVELL_8777_BT),
+			.driver_data = (unsigned long)&btmrvl_sdio_sd8777 },
 	/* Marvell SD8787 Bluetooth device */
 	{ SDIO_DEVICE(SDIO_VENDOR_ID_MARVELL, SDIO_DEVICE_ID_MARVELL_8787_BT),
 			.driver_data = (unsigned long)&btmrvl_sdio_sd8787 },
@@ -1772,6 +1785,7 @@ MODULE_VERSION(VERSION);
 MODULE_LICENSE("GPL v2");
 MODULE_FIRMWARE("mrvl/sd8688_helper.bin");
 MODULE_FIRMWARE("mrvl/sd8688.bin");
+MODULE_FIRMWARE("mrvl/sd8777_uapsta.bin");
 MODULE_FIRMWARE("mrvl/sd8787_uapsta.bin");
 MODULE_FIRMWARE("mrvl/sd8797_uapsta.bin");
 MODULE_FIRMWARE("mrvl/sd8887_uapsta.bin");
