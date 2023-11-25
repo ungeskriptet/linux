@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (c) 2023, David Wronek <davidwronek@gmail.com>
+ */
+/dts-v1/;
+#include <dt-bindings/input/input.h>
+#include "omap443x.dtsi"
+
+/ {
+	model = "Samsung Galaxy S II (GT-I9100G)";
+	compatible = "samsung,t1", "ti,omap4430", "ti,omap4";
+
+	chosen {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		bootargs = "PMOS_NO_OUTPUT_REDIRECT console=tty0 clk_ignore_unused";
+
+		framebuffer@bef00000 {
+			compatible = "simple-framebuffer";
+			reg = <0xbef00000 (480 * 800 * 4)>;
+			width = <480>;
+			height = <800>;
+			stride = <(480 * 4)>;
+			format = "a8r8g8b8";
+		};
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		framebuffer@bef00000 {
+			reg = <0xbef00000 (480 * 800 * 4)>;
+			no-map;
+		};
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x80000000 0x31a00000>; /* 749 MB */
+	};
+};
+
+&omap4_pmx_core {
+	i2c1_pins: pinmux_i2c1_pins {
+		pinctrl-single,pins = <
+			OMAP4_IOPAD(0x122, PIN_INPUT_PULLUP | MUX_MODE0)	/* i2c1_scl */
+			OMAP4_IOPAD(0x124, PIN_INPUT_PULLUP | MUX_MODE0)	/* i2c1_sda */
+		>;
+	};
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins>;
+
+	clock-frequency = <400000>;
+
+	twl: twl@48 {
+		reg = <0x48>;
+		/* IRQ# = 7 */
+		interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>; /* IRQ_SYS_1N cascaded to gic */
+	};
+};
+
+#include "twl6030.dtsi"
+#include "twl6030_omap4.dtsi"
+
+&twl_usb_comparator {
+	usb-supply = <&vusb>;
+};
