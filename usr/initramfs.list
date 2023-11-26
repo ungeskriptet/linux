@@ -1,0 +1,8 @@
+dir /dev 755 0 0
+nod /dev/console 600 0 0 c 5 1
+dir /bin 755 0 0
+dir /proc 755 0 0
+dir /sys 755 0 0
+file /bin/busybox source/usr/busybox.static 755 0 0
+file /init source/usr/init 755 0 0
+file /dmesg.sh source/usr/dmesg.sh 755 0 0
