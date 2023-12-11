@@ -369,12 +369,12 @@ static struct svc_xprt *svc_rdma_create(struct svc_serv *serv,
  */
 static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt)
 {
+	unsigned int ctxts, rq_depth, sq_depth;
 	struct svcxprt_rdma *listen_rdma;
 	struct svcxprt_rdma *newxprt = NULL;
 	struct rdma_conn_param conn_param;
 	struct rpcrdma_connect_private pmsg;
 	struct ib_qp_init_attr qp_attr;
-	unsigned int ctxts, rq_depth;
 	struct ib_device *dev;
 	int ret = 0;
 	RPC_IFDEBUG(struct sockaddr *sap);
@@ -421,24 +421,32 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt)
 		newxprt->sc_max_requests = rq_depth - 2;
 		newxprt->sc_max_bc_requests = 2;
 	}
+
 	ctxts = rdma_rw_mr_factor(dev, newxprt->sc_port_num, RPCSVC_MAXPAGES);
 	ctxts *= newxprt->sc_max_requests;
-	newxprt->sc_sq_depth = rq_depth + ctxts;
-	if (newxprt->sc_sq_depth > dev->attrs.max_qp_wr)
-		newxprt->sc_sq_depth = dev->attrs.max_qp_wr;
-	atomic_set(&newxprt->sc_sq_avail, newxprt->sc_sq_depth);
+
+	sq_depth = newxprt->sc_max_requests + newxprt->sc_max_bc_requests + 1;
+	if (sq_depth > dev->attrs.max_qp_wr)
+		sq_depth = dev->attrs.max_qp_wr;
 
 	newxprt->sc_pd = ib_alloc_pd(dev, 0);
 	if (IS_ERR(newxprt->sc_pd)) {
 		trace_svcrdma_pd_err(newxprt, PTR_ERR(newxprt->sc_pd));
 		goto errout;
 	}
-	newxprt->sc_sq_cq = ib_alloc_cq_any(dev, newxprt, newxprt->sc_sq_depth,
+
+	/* The Completion Queue depth is the maximum number of signaled
+	 * WRs expected to be in flight. Every Send WR is signaled, and
+	 * each rw_ctx has a chain of WRs, but only one WR in each chain
+	 * is signaled.
+	 */
+	newxprt->sc_sq_cq = ib_alloc_cq_any(dev, newxprt, sq_depth + ctxts,
 					    IB_POLL_WORKQUEUE);
 	if (IS_ERR(newxprt->sc_sq_cq))
 		goto errout;
-	newxprt->sc_rq_cq =
-		ib_alloc_cq_any(dev, newxprt, rq_depth, IB_POLL_WORKQUEUE);
+	/* Every Receive WR is signaled. */
+	newxprt->sc_rq_cq = ib_alloc_cq_any(dev, newxprt, rq_depth,
+					    IB_POLL_WORKQUEUE);
 	if (IS_ERR(newxprt->sc_rq_cq))
 		goto errout;
 
@@ -447,7 +455,7 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt)
 	qp_attr.qp_context = &newxprt->sc_xprt;
 	qp_attr.port_num = newxprt->sc_port_num;
 	qp_attr.cap.max_rdma_ctxs = ctxts;
-	qp_attr.cap.max_send_wr = newxprt->sc_sq_depth - ctxts;
+	qp_attr.cap.max_send_wr = sq_depth;
 	qp_attr.cap.max_recv_wr = rq_depth;
 	qp_attr.cap.max_send_sge = newxprt->sc_max_send_sges;
 	qp_attr.cap.max_recv_sge = 1;
@@ -455,17 +463,20 @@ static struct svc_xprt *svc_rdma_accept(struct svc_xprt *xprt)
 	qp_attr.qp_type = IB_QPT_RC;
 	qp_attr.send_cq = newxprt->sc_sq_cq;
 	qp_attr.recv_cq = newxprt->sc_rq_cq;
-	dprintk("    cap.max_send_wr = %d, cap.max_recv_wr = %d\n",
-		qp_attr.cap.max_send_wr, qp_attr.cap.max_recv_wr);
-	dprintk("    cap.max_send_sge = %d, cap.max_recv_sge = %d\n",
-		qp_attr.cap.max_send_sge, qp_attr.cap.max_recv_sge);
-
 	ret = rdma_create_qp(newxprt->sc_cm_id, newxprt->sc_pd, &qp_attr);
 	if (ret) {
 		trace_svcrdma_qp_err(newxprt, ret);
 		goto errout;
 	}
+	dprintk("svcrdma: cap.max_send_wr = %d, cap.max_recv_wr = %d\n",
+		qp_attr.cap.max_send_wr, qp_attr.cap.max_recv_wr);
+	dprintk("    cap.max_send_sge = %d, cap.max_recv_sge = %d\n",
+		qp_attr.cap.max_send_sge, qp_attr.cap.max_recv_sge);
+	dprintk("    send CQ depth = %d, recv CQ depth = %d\n",
+		sq_depth, rq_depth);
 	newxprt->sc_qp = newxprt->sc_cm_id->qp;
+	newxprt->sc_sq_depth = qp_attr.cap.max_send_wr;
+	atomic_set(&newxprt->sc_sq_avail, qp_attr.cap.max_send_wr);
 
 	if (!(dev->attrs.device_cap_flags & IB_DEVICE_MEM_MGT_EXTENSIONS))
 		newxprt->sc_snd_w_inv = false;
