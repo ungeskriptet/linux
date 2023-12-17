@@ -40,7 +40,7 @@
  * @ping_idx:	index for direct access to ping register;
  * @reset_idx:	index for direct access to reset cause register;
  * @regmap_val_sz: size of value in register map;
- * @wd_type:	watchdog HW type;
+ * @wdt_type:	watchdog HW type;
  */
 struct mlxreg_wdt {
 	struct watchdog_device wdd;
