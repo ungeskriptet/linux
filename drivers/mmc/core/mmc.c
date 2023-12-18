@@ -215,6 +215,7 @@ static void mmc_select_card_type(struct mmc_card *card)
 	    card_type & EXT_CSD_CARD_TYPE_DDR_1_8V) {
 		hs_max_dtr = MMC_HIGH_DDR_MAX_DTR;
 		avail_type |= EXT_CSD_CARD_TYPE_DDR_1_8V;
+		goto out;
 	}
 
 	if (caps & MMC_CAP_1_2V_DDR &&
@@ -251,7 +252,7 @@ static void mmc_select_card_type(struct mmc_card *card)
 	    card->ext_csd.strobe_support &&
 	    (avail_type & EXT_CSD_CARD_TYPE_HS400))
 		avail_type |= EXT_CSD_CARD_TYPE_HS400ES;
-
+out:
 	card->ext_csd.hs_max_dtr = hs_max_dtr;
 	card->ext_csd.hs200_max_dtr = hs200_max_dtr;
 	card->mmc_avail_type = avail_type;
