@@ -2076,8 +2076,9 @@ static void mmc_detect(struct mmc_host *host)
 
 static bool _mmc_cache_enabled(struct mmc_host *host)
 {
-	return host->card->ext_csd.cache_size > 0 &&
-	       host->card->ext_csd.cache_ctrl & 1;
+	return false;
+	/*return host->card->ext_csd.cache_size > 0 &&
+	       host->card->ext_csd.cache_ctrl & 1;*/
 }
 
 /*
