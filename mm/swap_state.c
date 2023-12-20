@@ -885,6 +885,9 @@ struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
 		swap_vma_readahead(entry, gfp_mask, mpol, ilx, vmf) :
 		swap_cluster_readahead(entry, gfp_mask, mpol, ilx);
 	mpol_cond_put(mpol);
+
+	if (!folio)
+		return NULL;
 	return folio_file_page(folio, swp_offset(entry));
 }
 
