@@ -334,8 +334,6 @@ CATEGORY="ksm_numa" run_test ./ksm_tests -N -m 0
 
 CATEGORY="ksm" run_test ./ksm_functional_tests
 
-run_test ./ksm_functional_tests
-
 # protection_keys tests
 if [ -x ./protection_keys_32 ]
 then
@@ -358,6 +356,8 @@ CATEGORY="pagemap" run_test ./pagemap_ioctl
 CATEGORY="cow" run_test ./cow
 
 CATEGORY="thp" run_test ./khugepaged
+
+CATEGORY="thp" run_test ./khugepaged -s 2
 
 CATEGORY="thp" run_test ./transhuge-stress -d 20
 
