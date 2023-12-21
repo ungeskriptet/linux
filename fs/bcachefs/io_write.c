@@ -316,8 +316,8 @@ int bch2_extent_update(struct btree_trans *trans,
 						  i_sectors_delta) ?:
 		bch2_trans_update(trans, iter, k, 0) ?:
 		bch2_trans_commit(trans, disk_res, NULL,
-				BTREE_INSERT_NOCHECK_RW|
-				BTREE_INSERT_NOFAIL);
+				BCH_TRANS_COMMIT_no_check_rw|
+				BCH_TRANS_COMMIT_no_enospc);
 	if (unlikely(ret))
 		return ret;
 
@@ -403,8 +403,7 @@ void bch2_submit_wbio_replicas(struct bch_write_bio *wbio, struct bch_fs *c,
 	BUG_ON(c->opts.nochanges);
 
 	bkey_for_each_ptr(ptrs, ptr) {
-		BUG_ON(ptr->dev >= BCH_SB_MEMBERS_MAX ||
-		       !c->devs[ptr->dev]);
+		BUG_ON(!bch2_dev_exists2(c, ptr->dev));
 
 		ca = bch_dev_bkey_exists(c, ptr->dev);
 
@@ -1167,16 +1166,14 @@ static void bch2_nocow_write_convert_unwritten(struct bch_write_op *op)
 {
 	struct bch_fs *c = op->c;
 	struct btree_trans *trans = bch2_trans_get(c);
-	struct btree_iter iter;
 	struct bkey_i *orig;
-	struct bkey_s_c k;
 	int ret;
 
 	for_each_keylist_key(&op->insert_keys, orig) {
 		ret = for_each_btree_key_upto_commit(trans, iter, BTREE_ID_extents,
 				     bkey_start_pos(&orig->k), orig->k.p,
 				     BTREE_ITER_INTENT, k,
-				     NULL, NULL, BTREE_INSERT_NOFAIL, ({
+				     NULL, NULL, BCH_TRANS_COMMIT_no_enospc, ({
 			bch2_nocow_write_convert_one_unwritten(trans, &iter, orig, k, op->new_i_size);
 		}));
 
@@ -1464,6 +1461,10 @@ err:
 			op->flags |= BCH_WRITE_DONE;
 
 			if (ret < 0) {
+				bch_err_inum_offset_ratelimited(c,
+					op->pos.inode,
+					op->pos.offset << 9,
+					"%s(): error: %s", __func__, bch2_err_str(ret));
 				op->error = ret;
 				break;
 			}

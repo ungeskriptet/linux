@@ -100,8 +100,6 @@ static int bch2_sb_field_validate(struct bch_sb *, struct bch_sb_field *,
 struct bch_sb_field *bch2_sb_field_get_id(struct bch_sb *sb,
 				      enum bch_sb_field_type type)
 {
-	struct bch_sb_field *f;
-
 	/* XXX: need locking around superblock to access optional fields */
 
 	vstruct_for_each(sb, f)
@@ -240,14 +238,12 @@ struct bch_sb_field *bch2_sb_field_resize_id(struct bch_sb_handle *sb,
 
 	if (sb->fs_sb) {
 		struct bch_fs *c = container_of(sb, struct bch_fs, disk_sb);
-		struct bch_dev *ca;
-		unsigned i;
 
 		lockdep_assert_held(&c->sb_lock);
 
 		/* XXX: we're not checking that offline device have enough space */
 
-		for_each_online_member(ca, c, i) {
+		for_each_online_member(c, ca) {
 			struct bch_sb_handle *dev_sb = &ca->disk_sb;
 
 			if (bch2_sb_realloc(dev_sb, le32_to_cpu(dev_sb->sb->u64s) + d)) {
@@ -356,7 +352,6 @@ static int bch2_sb_validate(struct bch_sb_handle *disk_sb, struct printbuf *out,
 			    int rw)
 {
 	struct bch_sb *sb = disk_sb->sb;
-	struct bch_sb_field *f;
 	struct bch_sb_field_members_v1 *mi;
 	enum bch_opt_id opt_id;
 	u16 block_size;
@@ -487,8 +482,6 @@ static int bch2_sb_validate(struct bch_sb_handle *disk_sb, struct printbuf *out,
 static void bch2_sb_update(struct bch_fs *c)
 {
 	struct bch_sb *src = c->disk_sb.sb;
-	struct bch_dev *ca;
-	unsigned i;
 
 	lockdep_assert_held(&c->sb_lock);
 
@@ -512,8 +505,8 @@ static void bch2_sb_update(struct bch_fs *c)
 	c->sb.features		= le64_to_cpu(src->features[0]);
 	c->sb.compat		= le64_to_cpu(src->compat[0]);
 
-	for_each_member_device(ca, c, i) {
-		struct bch_member m = bch2_sb_member_get(src, i);
+	for_each_member_device(c, ca) {
+		struct bch_member m = bch2_sb_member_get(src, ca->dev_idx);
 		ca->mi = bch2_mi_to_cpu(&m);
 	}
 }
@@ -658,12 +651,13 @@ reread:
 	return 0;
 }
 
-int bch2_read_super(const char *path, struct bch_opts *opts,
-		    struct bch_sb_handle *sb)
+static int __bch2_read_super(const char *path, struct bch_opts *opts,
+		    struct bch_sb_handle *sb, bool ignore_notbchfs_msg)
 {
 	u64 offset = opt_get(*opts, sb);
 	struct bch_sb_layout layout;
 	struct printbuf err = PRINTBUF;
+	struct printbuf err2 = PRINTBUF;
 	__le64 *i;
 	int ret;
 #ifndef __KERNEL__
@@ -726,8 +720,14 @@ retry:
 	if (opt_defined(*opts, sb))
 		goto err;
 
-	printk(KERN_ERR "bcachefs (%s): error reading default superblock: %s\n",
+	prt_printf(&err2, "bcachefs (%s): error reading default superblock: %s\n",
 	       path, err.buf);
+	if (ret == -BCH_ERR_invalid_sb_magic && ignore_notbchfs_msg)
+		printk(KERN_INFO "%s", err2.buf);
+	else
+		printk(KERN_ERR "%s", err2.buf);
+
+	printbuf_exit(&err2);
 	printbuf_reset(&err);
 
 	/*
@@ -803,6 +803,20 @@ err_no_print:
 	goto out;
 }
 
+int bch2_read_super(const char *path, struct bch_opts *opts,
+		    struct bch_sb_handle *sb)
+{
+	return __bch2_read_super(path, opts, sb, false);
+}
+
+/* provide a silenced version for mount.bcachefs */
+
+int bch2_read_super_silent(const char *path, struct bch_opts *opts,
+		    struct bch_sb_handle *sb)
+{
+	return __bch2_read_super(path, opts, sb, true);
+}
+
 /* write superblock: */
 
 static void write_super_endio(struct bio *bio)
@@ -871,9 +885,8 @@ static void write_one_super(struct bch_fs *c, struct bch_dev *ca, unsigned idx)
 int bch2_write_super(struct bch_fs *c)
 {
 	struct closure *cl = &c->sb_write;
-	struct bch_dev *ca;
 	struct printbuf err = PRINTBUF;
-	unsigned i, sb = 0, nr_wrote;
+	unsigned sb = 0, nr_wrote;
 	struct bch_devs_mask sb_written;
 	bool wrote, can_mount_without_written, can_mount_with_written;
 	unsigned degraded_flags = BCH_FORCE_IF_DEGRADED;
@@ -895,9 +908,9 @@ int bch2_write_super(struct bch_fs *c)
 
 	le64_add_cpu(&c->disk_sb.sb->seq, 1);
 
-	if (test_bit(BCH_FS_ERROR, &c->flags))
+	if (test_bit(BCH_FS_error, &c->flags))
 		SET_BCH_SB_HAS_ERRORS(c->disk_sb.sb, 1);
-	if (test_bit(BCH_FS_TOPOLOGY_ERROR, &c->flags))
+	if (test_bit(BCH_FS_topology_error, &c->flags))
 		SET_BCH_SB_HAS_TOPOLOGY_ERRORS(c->disk_sb.sb, 1);
 
 	SET_BCH_SB_BIG_ENDIAN(c->disk_sb.sb, CPU_BIG_ENDIAN);
@@ -907,10 +920,10 @@ int bch2_write_super(struct bch_fs *c)
 	bch2_sb_members_cpy_v2_v1(&c->disk_sb);
 	bch2_sb_errors_from_cpu(c);
 
-	for_each_online_member(ca, c, i)
+	for_each_online_member(c, ca)
 		bch2_sb_from_fs(c, ca);
 
-	for_each_online_member(ca, c, i) {
+	for_each_online_member(c, ca) {
 		printbuf_reset(&err);
 
 		ret = bch2_sb_validate(&ca->disk_sb, &err, WRITE);
@@ -931,16 +944,16 @@ int bch2_write_super(struct bch_fs *c)
 	if (!BCH_SB_INITIALIZED(c->disk_sb.sb))
 		goto out;
 
-	for_each_online_member(ca, c, i) {
+	for_each_online_member(c, ca) {
 		__set_bit(ca->dev_idx, sb_written.d);
 		ca->sb_write_error = 0;
 	}
 
-	for_each_online_member(ca, c, i)
+	for_each_online_member(c, ca)
 		read_back_super(c, ca);
 	closure_sync(cl);
 
-	for_each_online_member(ca, c, i) {
+	for_each_online_member(c, ca) {
 		if (ca->sb_write_error)
 			continue;
 
@@ -967,7 +980,7 @@ int bch2_write_super(struct bch_fs *c)
 
 	do {
 		wrote = false;
-		for_each_online_member(ca, c, i)
+		for_each_online_member(c, ca)
 			if (!ca->sb_write_error &&
 			    sb < ca->disk_sb.sb->layout.nr_superblocks) {
 				write_one_super(c, ca, sb);
@@ -977,7 +990,7 @@ int bch2_write_super(struct bch_fs *c)
 		sb++;
 	} while (wrote);
 
-	for_each_online_member(ca, c, i) {
+	for_each_online_member(c, ca) {
 		if (ca->sb_write_error)
 			__clear_bit(ca->dev_idx, sb_written.d);
 		else
@@ -989,7 +1002,7 @@ int bch2_write_super(struct bch_fs *c)
 	can_mount_with_written =
 		bch2_have_enough_devs(c, sb_written, degraded_flags, false);
 
-	for (i = 0; i < ARRAY_SIZE(sb_written.d); i++)
+	for (unsigned i = 0; i < ARRAY_SIZE(sb_written.d); i++)
 		sb_written.d[i] = ~sb_written.d[i];
 
 	can_mount_without_written =
@@ -1140,7 +1153,6 @@ void bch2_sb_layout_to_text(struct printbuf *out, struct bch_sb_layout *l)
 void bch2_sb_to_text(struct printbuf *out, struct bch_sb *sb,
 		     bool print_layout, unsigned fields)
 {
-	struct bch_sb_field *f;
 	u64 fields_have = 0;
 	unsigned nr_devices = 0;
 
