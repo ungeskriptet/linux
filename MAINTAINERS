@@ -699,6 +699,15 @@ S:	Maintained
 F:	Documentation/devicetree/bindings/media/allegro,al5e.yaml
 F:	drivers/media/platform/allegro-dvt/
 
+ALLIED VISION ALVIUM CAMERA DRIVER
+M:	Tommaso Merciai <tomm.merciai@gmail.com>
+M:	Martin Hecht <martin.hecht@avnet.eu>
+L:	linux-media@vger.kernel.org
+S:	Maintained
+F:	Documentation/devicetree/bindings/media/i2c/alliedvision,alvium-csi2.yaml
+F:	drivers/media/i2c/alvium-csi2.c
+F:	drivers/media/i2c/alvium-csi2.h
+
 ALLWINNER A10 CSI DRIVER
 M:	Maxime Ripard <mripard@kernel.org>
 L:	linux-media@vger.kernel.org
@@ -8729,6 +8738,13 @@ F:	kernel/futex/*
 F:	tools/perf/bench/futex*
 F:	tools/testing/selftests/futex/
 
+GALAXYCORE GC0308 CAMERA SENSOR DRIVER
+M:	Sebastian Reichel <sre@kernel.org>
+L:	linux-media@vger.kernel.org
+S:	Maintained
+F:	Documentation/devicetree/bindings/media/i2c/galaxycore,gc0308.yaml
+F:	drivers/media/i2c/gc0308.c
+
 GALAXYCORE GC2145 SENSOR DRIVER
 M:	Alain Volmat <alain.volmat@foss.st.com>
 L:	linux-media@vger.kernel.org
@@ -13007,6 +13023,7 @@ MAX96712 QUAD GMSL2 DESERIALIZER DRIVER
 M:	Niklas Söderlund <niklas.soderlund@ragnatech.se>
 L:	linux-media@vger.kernel.org
 S:	Maintained
+F:	Documentation/devicetree/bindings/media/i2c/maxim,max96712.yaml
 F:	drivers/staging/media/max96712/max96712.c
 
 MAX9860 MONO AUDIO VOICE CODEC DRIVER
@@ -16008,6 +16025,14 @@ L:	linux-media@vger.kernel.org
 S:	Maintained
 T:	git git://linuxtv.org/media_tree.git
 F:	drivers/media/i2c/ov5695.c
+
+OMNIVISION OV64A40 SENSOR DRIVER
+M:	Jacopo Mondi <jacopo.mondi@ideasonboard.com>
+L:	linux-media@vger.kernel.org
+S:	Maintained
+T:	git git://linuxtv.org/media_tree.git
+F:	Documentation/devicetree/bindings/media/i2c/ovti,ov64a40.yaml
+F:	drivers/media/i2c/ov64a40.c
 
 OMNIVISION OV7670 SENSOR DRIVER
 L:	linux-media@vger.kernel.org
@@ -21320,6 +21345,12 @@ L:	linux-media@vger.kernel.org
 S:	Maintained
 F:	drivers/media/rc/ttusbir.c
 
+TECHWELL TW9900 VIDEO DECODER
+M:	Mehdi Djait <mehdi.djait@bootlin.com>
+L:	linux-media@vger.kernel.org
+S:	Maintained
+F:	drivers/media/i2c/tw9900.c
+
 TECHWELL TW9910 VIDEO DECODER
 L:	linux-media@vger.kernel.org
 S:	Orphan
@@ -22794,6 +22825,7 @@ S:	Maintained
 F:	Documentation/driver-api/media/camera-sensor.rst
 F:	Documentation/driver-api/media/tx-rx.rst
 F:	drivers/media/i2c/ar*
+F:	drivers/media/i2c/gc*
 F:	drivers/media/i2c/hi*
 F:	drivers/media/i2c/imx*
 F:	drivers/media/i2c/mt*
@@ -23442,7 +23474,7 @@ M:	Nas Chung <nas.chung@chipsnmedia.com>
 M:	Jackson Lee <jackson.lee@chipsnmedia.com>
 L:	linux-media@vger.kernel.org
 S:	Maintained
-F:	Documentation/devicetree/bindings/media/cnm,wave5.yaml
+F:	Documentation/devicetree/bindings/media/cnm,wave521c.yaml
 F:	drivers/media/platform/chips-media/wave5/
 
 WHISKEYCOVE PMIC GPIO DRIVER

@@ -511,7 +511,8 @@ static int capture_legacy_g_parm(struct file *file, void *fh,
 	if (a->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
 		return -EINVAL;
 
-	ret = v4l2_subdev_call(priv->src_sd, video, g_frame_interval, &fi);
+	ret = v4l2_subdev_call_state_active(priv->src_sd, pad,
+					    get_frame_interval, &fi);
 	if (ret < 0)
 		return ret;
 
@@ -534,7 +535,8 @@ static int capture_legacy_s_parm(struct file *file, void *fh,
 		return -EINVAL;
 
 	fi.interval = a->parm.capture.timeperframe;
-	ret = v4l2_subdev_call(priv->src_sd, video, s_frame_interval, &fi);
+	ret = v4l2_subdev_call_state_active(priv->src_sd, pad,
+					    set_frame_interval, &fi);
 	if (ret < 0)
 		return ret;
 
@@ -1022,7 +1024,7 @@ imx_media_capture_device_init(struct device *dev, struct v4l2_subdev *src_sd,
 	vq->mem_ops = &vb2_dma_contig_memops;
 	vq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
 	vq->lock = &priv->mutex;
-	vq->min_buffers_needed = 2;
+	vq->min_queued_buffers = 2;
 	vq->dev = priv->dev;
 
 	ret = vb2_queue_init(vq);

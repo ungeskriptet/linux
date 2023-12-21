@@ -1386,9 +1386,17 @@ err_power_down:
 }
 
 static int ov7251_get_frame_interval(struct v4l2_subdev *subdev,
+				     struct v4l2_subdev_state *sd_state,
 				     struct v4l2_subdev_frame_interval *fi)
 {
 	struct ov7251 *ov7251 = to_ov7251(subdev);
+
+	/*
+	 * FIXME: Implement support for V4L2_SUBDEV_FORMAT_TRY, using the V4L2
+	 * subdev active state API.
+	 */
+	if (fi->which != V4L2_SUBDEV_FORMAT_ACTIVE)
+		return -EINVAL;
 
 	mutex_lock(&ov7251->lock);
 	fi->interval = ov7251->current_mode->timeperframe;
@@ -1398,11 +1406,19 @@ static int ov7251_get_frame_interval(struct v4l2_subdev *subdev,
 }
 
 static int ov7251_set_frame_interval(struct v4l2_subdev *subdev,
+				     struct v4l2_subdev_state *sd_state,
 				     struct v4l2_subdev_frame_interval *fi)
 {
 	struct ov7251 *ov7251 = to_ov7251(subdev);
 	const struct ov7251_mode_info *new_mode;
 	int ret = 0;
+
+	/*
+	 * FIXME: Implement support for V4L2_SUBDEV_FORMAT_TRY, using the V4L2
+	 * subdev active state API.
+	 */
+	if (fi->which != V4L2_SUBDEV_FORMAT_ACTIVE)
+		return -EINVAL;
 
 	mutex_lock(&ov7251->lock);
 	new_mode = ov7251_find_mode_by_ival(ov7251, &fi->interval);
@@ -1436,8 +1452,6 @@ exit:
 
 static const struct v4l2_subdev_video_ops ov7251_video_ops = {
 	.s_stream = ov7251_s_stream,
-	.g_frame_interval = ov7251_get_frame_interval,
-	.s_frame_interval = ov7251_set_frame_interval,
 };
 
 static const struct v4l2_subdev_pad_ops ov7251_subdev_pad_ops = {
@@ -1447,6 +1461,8 @@ static const struct v4l2_subdev_pad_ops ov7251_subdev_pad_ops = {
 	.get_fmt = ov7251_get_format,
 	.set_fmt = ov7251_set_format,
 	.get_selection = ov7251_get_selection,
+	.get_frame_interval = ov7251_get_frame_interval,
+	.set_frame_interval = ov7251_set_frame_interval,
 };
 
 static const struct v4l2_subdev_ops ov7251_subdev_ops = {

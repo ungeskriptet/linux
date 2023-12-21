@@ -780,10 +780,18 @@ static int vdic_link_validate(struct v4l2_subdev *sd,
 	return ret;
 }
 
-static int vdic_g_frame_interval(struct v4l2_subdev *sd,
-				struct v4l2_subdev_frame_interval *fi)
+static int vdic_get_frame_interval(struct v4l2_subdev *sd,
+				   struct v4l2_subdev_state *sd_state,
+				   struct v4l2_subdev_frame_interval *fi)
 {
 	struct vdic_priv *priv = v4l2_get_subdevdata(sd);
+
+	/*
+	 * FIXME: Implement support for V4L2_SUBDEV_FORMAT_TRY, using the V4L2
+	 * subdev active state API.
+	 */
+	if (fi->which != V4L2_SUBDEV_FORMAT_ACTIVE)
+		return -EINVAL;
 
 	if (fi->pad >= VDIC_NUM_PADS)
 		return -EINVAL;
@@ -797,12 +805,20 @@ static int vdic_g_frame_interval(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int vdic_s_frame_interval(struct v4l2_subdev *sd,
-				struct v4l2_subdev_frame_interval *fi)
+static int vdic_set_frame_interval(struct v4l2_subdev *sd,
+				   struct v4l2_subdev_state *sd_state,
+				   struct v4l2_subdev_frame_interval *fi)
 {
 	struct vdic_priv *priv = v4l2_get_subdevdata(sd);
 	struct v4l2_fract *input_fi, *output_fi;
 	int ret = 0;
+
+	/*
+	 * FIXME: Implement support for V4L2_SUBDEV_FORMAT_TRY, using the V4L2
+	 * subdev active state API.
+	 */
+	if (fi->which != V4L2_SUBDEV_FORMAT_ACTIVE)
+		return -EINVAL;
 
 	mutex_lock(&priv->lock);
 
@@ -885,12 +901,12 @@ static const struct v4l2_subdev_pad_ops vdic_pad_ops = {
 	.enum_mbus_code = vdic_enum_mbus_code,
 	.get_fmt = vdic_get_fmt,
 	.set_fmt = vdic_set_fmt,
+	.get_frame_interval = vdic_get_frame_interval,
+	.set_frame_interval = vdic_set_frame_interval,
 	.link_validate = vdic_link_validate,
 };
 
 static const struct v4l2_subdev_video_ops vdic_video_ops = {
-	.g_frame_interval = vdic_g_frame_interval,
-	.s_frame_interval = vdic_s_frame_interval,
 	.s_stream = vdic_s_stream,
 };
 
