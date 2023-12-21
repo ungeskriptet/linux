@@ -3,6 +3,58 @@ soc/arm
 soc/dt
 	renesas/dt
 		git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel tags/renesas-dts-for-v6.8-tag1
+	hisi/dt
+		https://github.com/hisilicon/linux-hisi tags/hisi-arm64-dt-for-6.8
+	omap/dt
+		git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap tags/omap-for-v6.8/dt-signed
+	patch
+		ARM: dts: ste: minor whitespace cleanup around '='
+	samsung/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux tags/samsung-dt64-6.8
+	samsung/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux tags/samsung-dt-6.8
+	mediatek/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/mediatek/linux tags/mtk-dts64-for-v6.8
+	rockchip/dt64
+		git://git.kernel.org/pub/scm/linux/kernel/git/mmind/linux-rockchip tags/v6.8-rockchip-dts64-1
+	rockchip/dt32
+		git://git.kernel.org/pub/scm/linux/kernel/git/mmind/linux-rockchip tags/v6.8-rockchip-dts32-1
+	juno/dt
+		git://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux tags/juno-update-6.8
+	at91/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/at91/linux tags/at91-dt-6.8
+	sunxi/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/sunxi/linux tags/sunxi-dt-for-6.8-1
+	stm32/dt
+		git://git.kernel.org/pub/scm/linux/kernel/git/atorgue/stm32 tags/stm32-dt-for-v6.8-1
+	renesas/dt-2
+		git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel tags/renesas-dts-for-v6.8-tag2
+	ux500/dt
+		git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-integrator tags/ux500-dts-soc-for-v6.8
+	imx/dt-bindings
+		git://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux tags/imx-bindgins-6.8
+	imx/dt
+		git://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux tags/imx-dt-6.8
+	imx/dt64
+		git://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux tags/imx-dt64-6.8
+	zynqmp/dt
+		https://github.com/Xilinx/linux-xlnx tags/zynqmp-dt-for-6.8
+	keystone/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/ti/linux tags/ti-keystone-dt-for-v6.8
+	k3/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/ti/linux tags/ti-k3-dt-for-v6.8
+	qcom/dt32
+		https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux tags/qcom-arm32-for-6.8
+	samsung/dt64-2
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux tags/samsung-dt64-6.8-2
+	mvebu/dt
+		git://git.kernel.org/pub/scm/linux/kernel/git/gclement/mvebu tags/mvebu-dt-6.8-1
+	mvebu/dt64
+		git://git.kernel.org/pub/scm/linux/kernel/git/gclement/mvebu tags/mvebu-dt64-6.8-1
+	amlogic/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/amlogic/linux tags/amlogic-arm64-dt-for-v6.8
+	riscv/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux tags/riscv-dt-for-v6.8
 
 soc/drivers
 	asahi/soc
@@ -19,20 +71,6 @@ soc/defconfig
 soc/late
 
 arm/fixes
-	<no branch> (7269cba53d906cf257c139d3b3a53ad272176bca)
-		git://git.linaro.org:/people/jens.wiklander/linux-tee tags/optee-supplicant-fix-for-v6.7
-	<no branch> (5943b8f7449df9881b273db07bdde1e7120dccf0)
-		git://git.kernel.org/pub/scm/linux/kernel/git/mediatek/linux tags/mtk-dts64-fixes-for-6.7
-	<no branch> (79997eda0d31bc68203c95ecb978773ee6ce7a1f)
-		https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux tags/riscv-dt-fixes-for-v6.7-rc4
-	<no branch> (77f5032e94f244ba08db51e17ca8f37bd7ff9acb)
-		git://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux tags/scmi-fixes-6.7
-	<no branch> (dc761f11af2e39119d3a7942e3d10615f3d900e7)
-		https://github.com/Broadcom/stblinux tags/arm-soc/for-6.7/devicetree-fixes
-	patch
-		MAINTAINERS: change the S32G2 maintainer's email address.
-	<no branch> (f1ed48ef97e2d12dee21e42db4a6ebb895ed3a79)
-		git://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux tags/ffa-fixes-6.7
 
 soc/dt-late
 	qcom/dt-2
