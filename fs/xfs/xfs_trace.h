@@ -2549,22 +2549,25 @@ DECLARE_EVENT_CLASS(xfs_defer_pending_class,
 	TP_ARGS(mp, dfp),
 	TP_STRUCT__entry(
 		__field(dev_t, dev)
-		__field(int, type)
+		__string(name, dfp->dfp_ops->name)
 		__field(void *, intent)
+		__field(unsigned int, flags)
 		__field(char, committed)
 		__field(int, nr)
 	),
 	TP_fast_assign(
 		__entry->dev = mp ? mp->m_super->s_dev : 0;
-		__entry->type = dfp->dfp_type;
+		__assign_str(name, dfp->dfp_ops->name);
 		__entry->intent = dfp->dfp_intent;
+		__entry->flags = dfp->dfp_flags;
 		__entry->committed = dfp->dfp_done != NULL;
 		__entry->nr = dfp->dfp_count;
 	),
-	TP_printk("dev %d:%d optype %d intent %p committed %d nr %d",
+	TP_printk("dev %d:%d optype %s intent %p flags %s committed %d nr %d",
 		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->type,
+		  __get_str(name),
 		  __entry->intent,
+		  __print_flags(__entry->flags, "|", XFS_DEFER_PENDING_STRINGS),
 		  __entry->committed,
 		  __entry->nr)
 )
@@ -2675,6 +2678,9 @@ DEFINE_DEFER_PENDING_EVENT(xfs_defer_cancel_list);
 DEFINE_DEFER_PENDING_EVENT(xfs_defer_pending_finish);
 DEFINE_DEFER_PENDING_EVENT(xfs_defer_pending_abort);
 DEFINE_DEFER_PENDING_EVENT(xfs_defer_relog_intent);
+DEFINE_DEFER_PENDING_EVENT(xfs_defer_isolate_paused);
+DEFINE_DEFER_PENDING_EVENT(xfs_defer_item_pause);
+DEFINE_DEFER_PENDING_EVENT(xfs_defer_item_unpause);
 
 #define DEFINE_BMAP_FREE_DEFERRED_EVENT DEFINE_PHYS_EXTENT_DEFERRED_EVENT
 DEFINE_BMAP_FREE_DEFERRED_EVENT(xfs_bmap_free_defer);
@@ -2688,25 +2694,28 @@ DECLARE_EVENT_CLASS(xfs_defer_pending_item_class,
 	TP_ARGS(mp, dfp, item),
 	TP_STRUCT__entry(
 		__field(dev_t, dev)
-		__field(int, type)
+		__string(name, dfp->dfp_ops->name)
 		__field(void *, intent)
 		__field(void *, item)
 		__field(char, committed)
+		__field(unsigned int, flags)
 		__field(int, nr)
 	),
 	TP_fast_assign(
 		__entry->dev = mp ? mp->m_super->s_dev : 0;
-		__entry->type = dfp->dfp_type;
+		__assign_str(name, dfp->dfp_ops->name);
 		__entry->intent = dfp->dfp_intent;
 		__entry->item = item;
 		__entry->committed = dfp->dfp_done != NULL;
+		__entry->flags = dfp->dfp_flags;
 		__entry->nr = dfp->dfp_count;
 	),
-	TP_printk("dev %d:%d optype %d intent %p item %p committed %d nr %d",
+	TP_printk("dev %d:%d optype %s intent %p item %p flags %s committed %d nr %d",
 		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->type,
+		  __get_str(name),
 		  __entry->intent,
 		  __entry->item,
+		  __print_flags(__entry->flags, "|", XFS_DEFER_PENDING_STRINGS),
 		  __entry->committed,
 		  __entry->nr)
 )
@@ -4399,8 +4408,6 @@ DEFINE_DAS_STATE_EVENT(xfs_attr_remove_iter_return);
 DEFINE_DAS_STATE_EVENT(xfs_attr_rmtval_alloc);
 DEFINE_DAS_STATE_EVENT(xfs_attr_rmtval_remove_return);
 DEFINE_DAS_STATE_EVENT(xfs_attr_defer_add);
-DEFINE_DAS_STATE_EVENT(xfs_attr_defer_replace);
-DEFINE_DAS_STATE_EVENT(xfs_attr_defer_remove);
 
 
 TRACE_EVENT(xfs_force_shutdown,
