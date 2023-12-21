@@ -23,6 +23,9 @@
 #include <linux/nls.h>
 #include "../../nls/nls_ucs2_utils.h"
 
+/* Unicode encoding of backslash character */
+#define UCS2_SLASH 0x005C
+
 /*
  * Macs use an older "SFM" mapping of the symbols above. Fortunately it does
  * not conflict (although almost does) with the mapping above.
