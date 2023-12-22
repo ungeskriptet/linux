@@ -62,7 +62,7 @@ struct msi_device_data;
  */
 struct subsys_interface {
 	const char *name;
-	struct bus_type *subsys;
+	const struct bus_type *subsys;
 	struct list_head node;
 	int (*add_dev)(struct device *dev, struct subsys_interface *sif);
 	void (*remove_dev)(struct device *dev, struct subsys_interface *sif);
@@ -71,9 +71,9 @@ struct subsys_interface {
 int subsys_interface_register(struct subsys_interface *sif);
 void subsys_interface_unregister(struct subsys_interface *sif);
 
-int subsys_system_register(struct bus_type *subsys,
+int subsys_system_register(const struct bus_type *subsys,
 			   const struct attribute_group **groups);
-int subsys_virtual_register(struct bus_type *subsys,
+int subsys_virtual_register(const struct bus_type *subsys,
 			    const struct attribute_group **groups);
 
 /*
@@ -1072,7 +1072,6 @@ int device_rename(struct device *dev, const char *new_name);
 int device_move(struct device *dev, struct device *new_parent,
 		enum dpm_order dpm_order);
 int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid);
-int device_is_dependent(struct device *dev, void *target);
 
 static inline bool device_supports_offline(struct device *dev)
 {
