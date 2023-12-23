@@ -4,6 +4,8 @@
  */
 
 /dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/linux-event-codes.h>
 #include "pxa1908.dtsi"
 
 / {
@@ -75,7 +77,7 @@
 			interrupts = <0 IRQ_TYPE_EDGE_FALLING>;
 		};
 	};
-}
+};
 
 &twsi0 {
 	status = "okay";
