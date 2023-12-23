@@ -30,3 +30,4 @@ dtb-$(CONFIG_ARCH_MVEBU) += ac5-98dx35xx-rd.dtb
 
 # MMP SoC Family
 dtb-$(CONFIG_ARCH_MMP) += pxa1908-samsung-coreprimevelte.dtb
+dtb-$(CONFIG_ARCH_MMP) += pxa1908-samsung-grandprimevelte.dtb
