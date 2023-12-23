@@ -14,15 +14,20 @@
 
 	pxa,rev-id = <3929 1>;
 
+	aliases {
+		serial0 = &uart0;
+	};
 
 	chosen {
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
 
-		framebuffer@a080000 {
+		stdout-path = "serial0:115200n8";
+
+		framebuffer@171fa400 {
 			compatible = "simple-framebuffer";
-			reg = <0x0 0xa080000 0x0 (540 * 960 * 4)>;
+			reg = <0x0 0x171fa400 0x0 (540 * 960 * 4)>;
 			width = <540>;
 			height = <960>;
 			stride = <(540 * 4)>;
@@ -53,8 +58,8 @@
 			reg = <0 0xa000000 0 0x80000>;
 		};
 
-		framebuffer@a080000 {
-			reg = <0x0 0xa080000 0x0 (540 * 960 * 4)>;
+		framebuffer@171fa400 {
+			reg = <0x0 0x171fa400 0x0 (540 * 960 * 4)>;
 			no-map;
 		};
 	};
@@ -130,6 +135,11 @@
 
 &twsi3 {
 	status = "okay";
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
 };
 
 &usb {
@@ -234,6 +244,20 @@
 		pinctrl-single,input-schmitt-enable = <0x40 0 0x40 0x40>;
 		pinctrl-single,low-power-mode = <0x288 0x388>;
 	};
+
+	uart0_pins: pinmux-uart0 {
+		pinctrl-single,pins = <
+			0x198 6
+			0x19c 6
+		>;
+		pinctrl-single,drive-strength = <0x1000 0x1800>;
+		pinctrl-single,bias-pullup = <0 0xc000 0 0xc000>;
+		pinctrl-single,bias-pulldown = <0 0xa000 0 0xa000>;
+		pinctrl-single,input-schmitt = <0 0x30>;
+		pinctrl-single,input-schmitt-enable = <0x40 0 0x40 0x40>;
+		pinctrl-single,low-power-mode = <0 0x388>;
+	};
+
 };
 
 #include "88pm886.dtsi"
