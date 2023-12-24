@@ -7,7 +7,7 @@
 #include <dt-bindings/input/input.h>
 #include "omap443x.dtsi"
 
-#define USE_SIMPLEFB 1
+#define USE_SIMPLEFB 0
 
 / {
 	model = "Samsung Galaxy S II (GT-I9100G)";
@@ -40,7 +40,7 @@
 		#size-cells = <1>;
 		ranges;
 
-		bootargs = "PMOS_NOSPLASH console=tty0 clk_ignore_unused";
+		bootargs = "PMOS_NOSPLASH console=tty0";
 
 #if USE_SIMPLEFB
 		panel: framebuffer@bef00000 {
@@ -51,8 +51,8 @@
 			stride = <(480 * 4)>;
 			format = "a8r8g8b8";
 
-			vdd3-supply = <&v1v8>;
 			vci-supply = <&vaux3>;
+			vdd3-supply = <&v1v8>;
 
 			/*
 			 * That's a lot of clocks, but it's necessary due
@@ -104,6 +104,65 @@
 		gpios = <&gpio2 22 GPIO_ACTIVE_HIGH>;
 		regulator-always-on;
 		enable-active-high;
+	};
+
+	spi-4 {
+		compatible = "spi-gpio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mcspi4_pins>;
+
+		num-chipselects = <1>;
+		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
+		sck-gpios = <&gpio5 23 GPIO_ACTIVE_HIGH>;
+		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;
+
+		status = "okay";
+
+		panel: panel@0 {
+			compatible = "samsung,ld9040";
+			reg = <0>;
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&panel_pins>;
+
+			spi-max-frequency = <375000>;
+
+			vdd3-supply = <&vaux3>;
+			vci-supply = <&v1v8>;
+
+			reset-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
+			power-on-delay = <20>;
+			reset-delay = <20>;
+
+			panel-width-mm = <56>;
+			panel-height-mm = <93>;
+
+			display-timings {
+				timing {
+					clock-frequency = <25600000>;
+					hactive = <480>;
+					vactive = <800>;
+					hback-porch = <16>;
+					hfront-porch = <16>;
+					vback-porch = <4>;
+					vfront-porch = <10>;
+					hsync-len = <2>;
+					vsync-len = <2>;
+					hsync-active = <0>;
+					vsync-active = <0>;
+					de-active = <0>;
+					pixelclk-active = <0>;
+				};
+			};
+
+			port {
+				panel_in: endpoint {
+					remote-endpoint = <&dpi_out>;
+				};
+			};
+		};
 	};
 };
 
@@ -161,9 +220,9 @@
 
 	mcspi4_pins: mcspi4-pins {
 		pinctrl-single,pins = <
-			OMAP4_IOPAD(0x154, PIN_OFF_OUTPUT_LOW | PIN_OUTPUT | MUX_MODE0)	/*  mcspi4_clk.mcspi4_clk */
-			OMAP4_IOPAD(0x156, PIN_OFF_OUTPUT_LOW | PIN_OUTPUT | MUX_MODE0)	/*  mcspi4_simo.mcspi4_simo */
-			OMAP4_IOPAD(0x15a, PIN_OFF_OUTPUT_LOW | PIN_OUTPUT | MUX_MODE0)	/*  mcspi4_cs0.mcspi4_cs0 */
+			OMAP4_IOPAD(0x154, PIN_OUTPUT | MUX_MODE3)	/*  mcspi4_clk.mcspi4_clk */
+			OMAP4_IOPAD(0x156, PIN_OUTPUT | MUX_MODE3)	/*  mcspi4_simo.mcspi4_simo */
+			OMAP4_IOPAD(0x15a, PIN_OUTPUT | PIN_OFF_OUTPUT_LOW | MUX_MODE3)	/*  mcspi4_cs0.mcspi4_cs0 */
 		>;
 	};
 
@@ -211,13 +270,15 @@
 	status = "disabled";
 };
 #else
+#if 0
 &mcspi4 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&mcspi4_pins>;
+
 	status = "okay";
 
 	panel: panel@0 {
-		compatible = "samsung,ld9040", "panel-dpi";
+		compatible = "samsung,ld9040";
 		reg = <0>;
 
 		pinctrl-names = "default";
@@ -260,6 +321,7 @@
 		};
 	};
 };
+#endif
 
 &dss {
 	pinctrl-names = "default";
