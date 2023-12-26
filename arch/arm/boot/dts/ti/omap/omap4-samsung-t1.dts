@@ -106,7 +106,7 @@
 		enable-active-high;
 	};
 
-	spi-4 {
+	spi-lcd {
 		compatible = "spi-gpio";
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -222,7 +222,7 @@
 		pinctrl-single,pins = <
 			OMAP4_IOPAD(0x154, PIN_OUTPUT | MUX_MODE3)	/*  mcspi4_clk.mcspi4_clk */
 			OMAP4_IOPAD(0x156, PIN_OUTPUT | MUX_MODE3)	/*  mcspi4_simo.mcspi4_simo */
-			OMAP4_IOPAD(0x15a, PIN_OUTPUT | PIN_OFF_OUTPUT_LOW | MUX_MODE3)	/*  mcspi4_cs0.mcspi4_cs0 */
+			OMAP4_IOPAD(0x15a, PIN_OUTPUT | MUX_MODE3)	/*  mcspi4_cs0.mcspi4_cs0 */
 		>;
 	};
 
