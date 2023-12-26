@@ -375,6 +375,7 @@ static int ld9040_probe(struct spi_device *spi)
 
 	drm_panel_init(&ctx->panel, dev, &ld9040_drm_funcs,
 		       DRM_MODE_CONNECTOR_DPI);
+	ctx->panel.prepare_prev_first = true;
 
 	bldev = devm_backlight_device_register(dev, dev_name(dev), dev,
 					       ctx, &ld9040_bl_ops,
