@@ -7,8 +7,6 @@
 #include <dt-bindings/input/input.h>
 #include "omap443x.dtsi"
 
-#define USE_SIMPLEFB 0
-
 / {
 	model = "Samsung Galaxy S II (GT-I9100G)";
 	compatible = "samsung,t1", "ti,omap4430", "ti,omap4";
@@ -26,13 +24,6 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
-
-#if USE_SIMPLEFB
-		framebuffer@bef00000 {
-			no-map;
-			reg = <0xbef00000 (480 * 800 * 4)>;
-		};
-#endif
 	};
 
 	chosen {
@@ -41,31 +32,6 @@
 		ranges;
 
 		bootargs = "PMOS_NOSPLASH console=tty0";
-
-#if USE_SIMPLEFB
-		panel: framebuffer@bef00000 {
-			compatible = "simple-framebuffer";
-			reg = <0xbef00000 (480 * 800 * 4)>;
-			width = <480>;
-			height = <800>;
-			stride = <(480 * 4)>;
-			format = "a8r8g8b8";
-
-			vci-supply = <&vaux3>;
-			vdd3-supply = <&v1v8>;
-
-			/*
-			 * That's a lot of clocks, but it's necessary due
-			 * to unused clk cleanup & no panel driver yet..
-			 */
-			clocks = <&l3_dss_clkctrl OMAP4_DSS_CORE_CLKCTRL 0>,
-				 <&l3_dss_clkctrl OMAP4_DSS_CORE_CLKCTRL 8>,
-				 <&l3_dss_clkctrl OMAP4_DSS_CORE_CLKCTRL 9>,
-				 <&l3_dss_clkctrl OMAP4_DSS_CORE_CLKCTRL 10>,
-				 <&l3_dss_clkctrl OMAP4_DSS_CORE_CLKCTRL 11>,
-				 <&l3_div_ck>;
-		};
-#endif
 	};
 
 	gpio-keys {
@@ -265,64 +231,6 @@
 	};
 };
 
-#if USE_SIMPLEFB
-&dss_core {
-	status = "disabled";
-};
-#else
-#if 0
-&mcspi4 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&mcspi4_pins>;
-
-	status = "okay";
-
-	panel: panel@0 {
-		compatible = "samsung,ld9040";
-		reg = <0>;
-
-		pinctrl-names = "default";
-		pinctrl-0 = <&panel_pins>;
-
-		spi-max-frequency = <375000>;
-
-		vdd3-supply = <&vaux3>;
-		vci-supply = <&v1v8>;
-
-		reset-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
-		power-on-delay = <20>;
-		reset-delay = <20>;
-
-		panel-width-mm = <56>;
-		panel-height-mm = <93>;
-
-		display-timings {
-			timing {
-				clock-frequency = <25600000>;
-				hactive = <480>;
-				vactive = <800>;
-				hback-porch = <16>;
-				hfront-porch = <16>;
-				vback-porch = <4>;
-				vfront-porch = <10>;
-				hsync-len = <2>;
-				vsync-len = <2>;
-				hsync-active = <0>;
-				vsync-active = <0>;
-				de-active = <0>;
-				pixelclk-active = <0>;
-			};
-		};
-
-		port {
-			panel_in: endpoint {
-				remote-endpoint = <&dpi_out>;
-			};
-		};
-	};
-};
-#endif
-
 &dss {
 	pinctrl-names = "default";
 	pinctrl-0 = <&dss_dpi_pins>;
@@ -335,7 +243,6 @@
 		};
 	};
 };
-#endif
 
 &mmc1 {
 	pinctrl-names = "default";
