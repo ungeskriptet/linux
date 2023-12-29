@@ -11,10 +11,6 @@
 	model = "Samsung Galaxy S II (GT-I9100G)";
 	compatible = "samsung,t1", "ti,omap4430", "ti,omap4";
 
-	aliases {
-		display0 = &panel;
-	};
-
 	memory@80000000 {
 		device_type = "memory";
 		reg = <0x80000000 0x40000000>; /* 1 GB */
@@ -71,69 +67,16 @@
 		regulator-always-on;
 		enable-active-high;
 	};
+};
 
-	spi-lcd {
-		compatible = "spi-gpio";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&spi_gpio_pins>;
-
-		num-chipselects = <1>;
-		cs-gpios = <&gpio5 26 GPIO_ACTIVE_LOW>;
-		sck-gpios = <&gpio5 23 GPIO_ACTIVE_HIGH>;
-		mosi-gpios = <&gpio5 24 GPIO_ACTIVE_HIGH>;
-
-		status = "okay";
-
-		panel: panel@0 {
-			compatible = "samsung,ld9040";
-			reg = <0>;
-
-			pinctrl-names = "default";
-			pinctrl-0 = <&panel_pins>;
-
-			spi-max-frequency = <375000>;
-
-			vdd3-supply = <&vaux3>;
-			vci-supply = <&v1v8>;
-
-			reset-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
-			power-on-delay = <20>;
-			reset-delay = <20>;
-
-			panel-width-mm = <56>;
-			panel-height-mm = <93>;
-
-			display-timings {
-				timing {
-					clock-frequency = <25600000>;
-					hactive = <480>;
-					vactive = <800>;
-					hback-porch = <16>;
-					hfront-porch = <16>;
-					vback-porch = <4>;
-					vfront-porch = <10>;
-					hsync-len = <2>;
-					vsync-len = <2>;
-					hsync-active = <0>;
-					vsync-active = <0>;
-					de-active = <0>;
-					pixelclk-active = <0>;
-				};
-			};
-
-			port {
-				panel_in: endpoint {
-					remote-endpoint = <&dpi_out>;
-				};
-			};
-		};
-	};
+&gpio2_target {
+	status = "okay";
+	ti,no-reset-on-init;
 };
 
 &omap4_pmx_core {
 	pinctrl-names = "default";
+	pinctrl-0 = <&panel_pins>;
 
 	dss_dpi_pins: dss-dpi-pins {
 		pinctrl-single,pins = <
@@ -184,11 +127,11 @@
 		>;
 	};
 
-	spi_gpio_pins: spi-gpio-pinmux-pins {
+	mcspi4_pins: mcspi4-pins {
 		pinctrl-single,pins = <
-			OMAP4_IOPAD(0x154, PIN_OUTPUT | MUX_MODE3)	/*  mcspi4_clk.mcspi4_clk */
-			OMAP4_IOPAD(0x156, PIN_OUTPUT | MUX_MODE3)	/*  mcspi4_simo.mcspi4_simo */
-			OMAP4_IOPAD(0x15a, PIN_OUTPUT | MUX_MODE3)	/*  mcspi4_cs0.mcspi4_cs0 */
+			OMAP4_IOPAD(0x154, PIN_OUTPUT | MUX_MODE0)	/*  mcspi4_clk.mcspi4_clk */
+			OMAP4_IOPAD(0x156, PIN_OUTPUT | MUX_MODE0)	/*  mcspi4_simo.mcspi4_simo */
+			OMAP4_IOPAD(0x15a, PIN_OUTPUT | MUX_MODE0)	/*  mcspi4_cs0.mcspi4_cs0 */
 		>;
 	};
 
@@ -234,12 +177,61 @@
 &dss {
 	pinctrl-names = "default";
 	pinctrl-0 = <&dss_dpi_pins>;
+
 	status = "okay";
 
 	port {
 		dpi_out: endpoint {
 			remote-endpoint = <&panel_in>;
 			data-lines = <24>;
+		};
+	};
+};
+
+&mcspi4 {
+	status = "okay";
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&mcspi4_pins>;
+
+	panel: panel@0 {
+		compatible = "samsung,ld9040";
+		reg = <0>;
+
+		spi-max-frequency = <375000>;
+
+		vdd3-supply = <&vaux3>;
+		vci-supply = <&v1v8>;
+
+		reset-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
+		power-on-delay = <20>;
+		reset-delay = <20>;
+
+		panel-width-mm = <56>;
+		panel-height-mm = <93>;
+
+		display-timings {
+			timing {
+				clock-frequency = <25600000>;
+				hactive = <480>;
+				vactive = <800>;
+				hback-porch = <16>;
+				hfront-porch = <16>;
+				vback-porch = <4>;
+				vfront-porch = <10>;
+				hsync-len = <2>;
+				vsync-len = <2>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+				pixelclk-active = <1>;
+			};
+		};
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dpi_out>;
+			};
 		};
 	};
 };
@@ -304,8 +296,36 @@
 	};
 };
 
+/* RNG is used by secure mode and not accessible */
+&rng_target {
+	status = "disabled";
+};
+
+/* Device has no keypad */
+&keypad {
+	status = "disabled";
+};
+
 #include "twl6030.dtsi"
 #include "twl6030_omap4.dtsi"
+
+&vaux1 {
+	regulator-always-on;
+};
+
+&vaux2 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+};
+
+&vaux3 {
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+};
+
+&vana {
+	regulator-always-on;
+};
 
 &twl_usb_comparator {
 	usb-supply = <&vusb>;
