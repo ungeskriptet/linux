@@ -5,6 +5,7 @@
 
 /dts-v1/;
 
+#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
 #include <dt-bindings/regulator/qcom,rpmh-regulator.h>
 #include "sm8650.dtsi"
 #include "pm8550.dtsi"
@@ -30,7 +31,7 @@
 		#size-cells = <2>;
 		ranges;
 
-		bootargs = "console=tty0 PMOS_NO_OUTPUT_REDIRECT clk_ignore_unused pd_ignore_unused";
+		bootargs = "console=tty0 PMOS_NO_OUTPUT_REDIRECT clk_ignore_unused";
 
 		framebuffer: framebuffer@d5100000 {
 			compatible = "simple-framebuffer";
@@ -133,6 +134,7 @@
 			regulator-min-microvolt = <3008000>;
 			regulator-max-microvolt = <3960000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_bob2: bob2 {
@@ -140,9 +142,19 @@
 			regulator-min-microvolt = <2704000>;
 			regulator-max-microvolt = <3008000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
-		// l1b?
+		vreg_l1b: ldo1 {
+			regulator-name = "vreg_l1b";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
 
 		vreg_l2b_3p0: ldo2 {
 			regulator-name = "vreg_l2b_3p0";
@@ -152,10 +164,11 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_l4b_3p0: ldo4 {
-			regulator-name = "vreg_l2b_3p0";
+			regulator-name = "vreg_l4b";
 			regulator-min-microvolt = <1800000>;
 			regulator-max-microvolt = <1800000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
@@ -163,7 +176,6 @@
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
 			regulator-always-on;
-			regulator-boot-on;
 		};
 
 		vreg_l5b_3p1: ldo5 {
@@ -174,6 +186,7 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_l6b_1p8: ldo6 {
@@ -184,6 +197,7 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_l7b_1p8: ldo7 {
@@ -191,6 +205,7 @@
 			regulator-min-microvolt = <1800000>;
 			regulator-max-microvolt = <3008000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_l8b_1p8: ldo8 {
@@ -201,10 +216,30 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
-		//l9b?
-		//l10b?
+		vreg_l9b: ldo9 {
+			regulator-name = "vreg_l9b";
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3000000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l10b: ldo10 {
+			regulator-name = "vreg_l10b";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
 
 		vreg_l11b_1p2: ldo11 {
 			regulator-name = "vreg_l11b_1p2";
@@ -214,6 +249,7 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_l12b_1p8: ldo12 {
@@ -225,7 +261,6 @@
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
 			regulator-always-on;
-			regulator-boot-on;
 		};
 
 		vreg_l13b_3p0: ldo13 {
@@ -236,6 +271,7 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_l14b_3p2: ldo14 {
@@ -247,7 +283,6 @@
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
 			regulator-always-on;
-			regulator-boot-on;
 		};
 
 		vreg_l15b_1p8: ldo15 {
@@ -258,8 +293,9 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
-
+#if 0
 		vreg_l16b_2p8: ldo16 {
 			regulator-name = "vreg_l16b_2p8";
 			regulator-min-microvolt = <3300000>;
@@ -269,9 +305,8 @@
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
 			regulator-always-on;
-			regulator-boot-on;
 		};
-
+#endif
 		vreg_l17b_2p5: ldo17 {
 			regulator-name = "vreg_l17b_2p5";
 			regulator-min-microvolt = <2504000>;
@@ -280,6 +315,7 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 	};
 
@@ -292,6 +328,7 @@
 			regulator-min-microvolt = <1224000>;
 			regulator-max-microvolt = <1348000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_s2c_0p8: smps2 {
@@ -299,6 +336,7 @@
 			regulator-min-microvolt = <500000>;
 			regulator-max-microvolt = <1036000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_s3c_0p9: smps3 {
@@ -306,6 +344,7 @@
 			regulator-min-microvolt = <904000>;
 			regulator-max-microvolt = <1064000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_s4c_1p2: smps4 {
@@ -313,6 +352,7 @@
 			regulator-min-microvolt = <1200000>;
 			regulator-max-microvolt = <1280000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_s5c_0p7: smps5 {
@@ -320,6 +360,7 @@
 			regulator-min-microvolt = <300000>;
 			regulator-max-microvolt = <900000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_s6c_1p8: smps6 {
@@ -327,6 +368,7 @@
 			regulator-min-microvolt = <1856000>;
 			regulator-max-microvolt = <2000000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_l1c_1p2: ldo1 {
@@ -337,9 +379,19 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
-		//l2c?
+		vreg_l2c: ldo2 {
+			regulator-name = "vreg_l2c";
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1200000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
 
 		vreg_l3c_1p2: ldo3 {
 			regulator-name = "vreg_l3c_1p2";
@@ -349,6 +401,7 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 	};
 
@@ -364,10 +417,11 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
 		vreg_l3d: ldo3 {
-			regulator-name = "vreg_l1d_0p88";
+			regulator-name = "vreg_l3d";
 			regulator-min-microvolt = <880000>;
 			regulator-max-microvolt = <920000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
@@ -375,7 +429,6 @@
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
 			regulator-always-on;
-			regulator-boot-on;
 		};
 	};
 
@@ -383,8 +436,27 @@
 		compatible = "qcom,pm8550vs-rpmh-regulators";
 		qcom,pmic-id = "e";
 
-		//l1e?
-		//l2e?
+		vreg_l1e: ldo1 {
+			regulator-name = "vreg_l1e";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l2e: ldo2 {
+			regulator-name = "vreg_l2e";
+			regulator-min-microvolt = <864000>;
+			regulator-max-microvolt = <972000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
 
 		vreg_l3e_0p9: ldo3 {
 			regulator-name = "vreg_l3e_0p9";
@@ -394,6 +466,7 @@
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 	};
 
@@ -401,28 +474,48 @@
 		compatible = "qcom,pm8550vs-rpmh-regulators";
 		qcom,pmic-id = "g";
 
-		//s3g?
+		vreg_s3g: smps3 {
+			regulator-name = "vreg_s3g";
+			regulator-min-microvolt = <1000000>;
+			regulator-max-microvolt = <1100000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
 
-		vreg_l1g_0p91: ldo1 {
-			regulator-name = "vreg_l1g_0p91";
+		vreg_l1g: ldo1 {
+			regulator-name = "vreg_l1g";
 			regulator-min-microvolt = <912000>;
 			regulator-max-microvolt = <920000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
-		//l2g?
+		vreg_l2g: ldo2 {
+			regulator-name = "vreg_l2g";
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1200000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
 
-		vreg_l3g_0p91: ldo3 {
-			regulator-name = "vreg_l3g_0p91";
+		vreg_l3g: ldo3 {
+			regulator-name = "vreg_l3g";
 			regulator-min-microvolt = <880000>;
 			regulator-max-microvolt = <912000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 	};
 
@@ -430,50 +523,177 @@
 		compatible = "qcom,pm8550ve-rpmh-regulators";
 		qcom,pmic-id = "i";
 
-		vreg_s4i_0p85: smps4 {
-			regulator-name = "vreg_s4i_0p85";
+		vreg_s4i: smps4 {
+			regulator-name = "vreg_s4i";
 			regulator-min-microvolt = <300000>;
 			regulator-max-microvolt = <1004000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
-		//s5i?
+		vreg_s5i: smps5 {
+			regulator-name = "vreg_s5i";
+			regulator-min-microvolt = <300000>;
+			regulator-max-microvolt = <1004000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
 
-		vreg_l1i_0p88: ldo1 {
-			regulator-name = "vreg_l1i_0p88";
+		vreg_l1i: ldo1 {
+			regulator-name = "vreg_l1i";
 			regulator-min-microvolt = <880000>;
 			regulator-max-microvolt = <912000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
-		vreg_l2i_0p88: ldo2 {
-			regulator-name = "vreg_l2i_0p88";
+		vreg_l2i: ldo2 {
+			regulator-name = "vreg_l2i";
 			regulator-min-microvolt = <880000>;
 			regulator-max-microvolt = <912000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 
-		vreg_l3i_1p2: ldo3 {
-			regulator-name = "vreg_l3i_0p91";
+		vreg_l3i: ldo3 {
+			regulator-name = "vreg_l3i";
 			regulator-min-microvolt = <1200000>;
 			regulator-max-microvolt = <1200000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 			regulator-allow-set-load;
 			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
 						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
 		};
 	};
+
+#if 0
+	regulators-6 {
+		compatible = "qcom,pm8550ve-rpmh-regulators";
+		qcom,pmic-id = "k";
+
+		vreg_l1k: ldo1 {
+			regulator-name = "vreg_l1k";
+			regulator-min-microvolt = <400000>;
+			regulator-max-microvolt = <920000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l2k: ldo2 {
+			regulator-name = "vreg_l2k";
+			regulator-min-microvolt = <912000>;
+			regulator-max-microvolt = <912000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l3k: ldo3 {
+			regulator-name = "vreg_l3k";
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1200000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l4k: ldo4 {
+			regulator-name = "vreg_l4k";
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1200000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l5k: ldo5 {
+			regulator-name = "vreg_l5k";
+			regulator-min-microvolt = <952000>;
+			regulator-max-microvolt = <976000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l6k: ldo6 {
+			regulator-name = "vreg_l6k";
+			regulator-min-microvolt = <1776000>;
+			regulator-max-microvolt = <1860000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l7k: ldo7 {
+			regulator-name = "vreg_l7k";
+			regulator-min-microvolt = <800000>;
+			regulator-max-microvolt = <800000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-allow-set-load;
+			regulator-allowed-modes = <RPMH_REGULATOR_MODE_LPM
+						   RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+	};
+#endif
 };
 
 &dispcc {
 	/* Disable for now so simple-framebuffer continues working */
 	status = "disabled";
+};
+
+&i2c_master_hub_0 {
+	status = "okay";
+};
+
+&i2c_hub_5 {
+	status = "okay";
+
+	ti_eusb2_repeater: repeater@3e {
+		#phy-cells = <0>;
+		compatible = "ti,eusb2-repeater";
+		reg = <0x3e>;
+		vdd18-supply = <&vreg_l15b_1p8>;
+		vdd3-supply = <&vreg_l5b_3p1>;
+		reset-gpio = <&pm8550vs_c_gpios 4 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&eusb2_reset_ctrl>;
+		qcom,param-override-seq = <0x7d 0x70 0x3e 0x71 0x76 0x73 0x70 0x79>;
+		qcom,param-host-override-seq = <0x7d 0x70 0x3e 0x71 0x76 0x73 0x70 0x79>;
+	};
+};
+
+&pm8550vs_c_gpios {
+	eusb2_reset_ctrl: eusb2-reset-ctrl-default {
+		pins = "gpio4";
+		function = PMIC_GPIO_FUNC_NORMAL;
+		input-enable;
+		output-enable;
+		bias-disable;
+		power-source = <1>;
+		qcom,drive-strength = <PMIC_GPIO_STRENGTH_MED>;
+	};
 };
 
 &sleep_clk {
@@ -482,6 +702,40 @@
 
 &tlmm {
 	gpio-reserved-ranges = <8 4>, <58 2>;
+};
+
+/*
+ * eUSB2 DP/DM -> TI eUSB2 repeater -> WCD9395 -> USB-C
+ */
+
+&usb_1 {
+	/* USB 2.0 only */
+	qcom,select-utmi-as-pipe-clk;
+	status = "okay";
+};
+
+&usb_1_dwc3 {
+	dr_mode = "peripheral";
+	maximum-speed = "high-speed";
+	/* Remove USB3 phy */
+	phys = <&usb_1_hsphy>;
+	phy-names = "usb2-phy";
+};
+
+&usb_1_hsphy {
+	vdd-supply = <&vreg_l1i>;
+	vdda12-supply = <&vreg_l3i>;
+
+	phys = <&ti_eusb2_repeater>;
+
+	status = "okay";
+};
+
+&usb_dp_qmpphy {
+	vdda-phy-supply = <&vreg_l3i>;
+	vdda-pll-supply = <&vreg_l3g>;
+
+	status = "okay";
 };
 
 &xo_board {
