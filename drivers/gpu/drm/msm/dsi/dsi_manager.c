@@ -67,36 +67,36 @@ static int dsi_mgr_parse_of(struct device_node *np, int id)
 
 static int dsi_mgr_setup_components(int id)
 {
-	struct msm_dsi *msm_dsi = dsi_mgr_get_dsi(id);
-	struct msm_dsi *other_dsi = dsi_mgr_get_other_dsi(id);
-	struct msm_dsi *clk_master_dsi = dsi_mgr_get_dsi(DSI_CLOCK_MASTER);
-	struct msm_dsi *clk_slave_dsi = dsi_mgr_get_dsi(DSI_CLOCK_SLAVE);
 	int ret;
 
 	if (!IS_BONDED_DSI()) {
+		struct msm_dsi *msm_dsi = dsi_mgr_get_dsi(id);
+
 		msm_dsi_phy_set_usecase(msm_dsi->phy, MSM_DSI_PHY_STANDALONE);
 		msm_dsi_host_set_phy_mode(msm_dsi->host, msm_dsi->phy);
 
 		ret = msm_dsi_host_register(msm_dsi->host);
 		if (ret)
 			return ret;
-	} else if (other_dsi) {
-		struct msm_dsi *master_link_dsi = IS_MASTER_DSI_LINK(id) ?
-							msm_dsi : other_dsi;
-		struct msm_dsi *slave_link_dsi = IS_MASTER_DSI_LINK(id) ?
-							other_dsi : msm_dsi;
+	} else {
+		struct msm_dsi *master_link_dsi = dsi_mgr_get_dsi(msm_dsim_glb.master_dsi_link_id);
+		struct msm_dsi *slave_link_dsi = dsi_mgr_get_other_dsi(msm_dsim_glb.master_dsi_link_id);
+
+		/* Always use DSI0 as the clock master, regardless of which PHY is master */
+		struct msm_dsi *clk_master_dsi = dsi_mgr_get_dsi(DSI_CLOCK_MASTER);
+		struct msm_dsi *clk_slave_dsi = dsi_mgr_get_dsi(DSI_CLOCK_SLAVE);
 
 		/* PLL0 is to drive both 2 DSI link clocks in bonded DSI mode.
 		 *
 		 * Set the usecase before calling msm_dsi_host_register() to prevent it from
 		 * enabling and configuring the usecase (which is just a mux bit) first.
 		 */
-		msm_dsi_phy_set_usecase(clk_master_dsi->phy,
-					MSM_DSI_PHY_MASTER);
-		msm_dsi_phy_set_usecase(clk_slave_dsi->phy,
-					MSM_DSI_PHY_SLAVE);
-		msm_dsi_host_set_phy_mode(msm_dsi->host, msm_dsi->phy);
-		msm_dsi_host_set_phy_mode(other_dsi->host, other_dsi->phy);
+		msm_dsi_phy_set_usecase(clk_master_dsi->phy, MSM_DSI_PHY_MASTER);
+		msm_dsi_phy_set_usecase(clk_slave_dsi->phy, MSM_DSI_PHY_SLAVE);
+		msm_dsi_host_set_phy_mode(master_link_dsi->host,
+					  master_link_dsi->phy);
+		msm_dsi_host_set_phy_mode(slave_link_dsi->host,
+					  slave_link_dsi->phy);
 
 		/* Register slave host first, so that slave DSI device
 		 * has a chance to probe, and do not block the master
