@@ -1390,4 +1390,14 @@ config TOUCHSCREEN_HIMAX_HX83112B
 	  To compile this driver as a module, choose M here: the
 	  module will be called himax_hx83112b.
 
+config TOUCHSCREEN_GOODIX_CHIPSET
+        bool "goodix DSX Touchscreen Driver"
+        depends on I2C
+        help
+          Say Y here if you have a Synaptics Touchscreen.
+
+          If unsure, say N.
+
+source "drivers/input/touchscreen/goodix_gt738x/Kconfig"
+
 endif
