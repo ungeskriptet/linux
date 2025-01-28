@@ -50,7 +50,7 @@ struct goodix_module goodix_modules;
 #define CORE_MODULE_PROB_SUCCESS 1
 #define CORE_MODULE_PROB_FAILED -1
 #define CORE_MODULE_REMOVED     -2
-#define gipoenavdd 1
+//#define gipoenavdd 1
 int core_module_prob_sate = CORE_MODULE_UNPROBED;
 
 
@@ -1157,6 +1157,19 @@ static int goodix_ts_power_init(struct goodix_ts_core *core_data)
 	dev =  core_data->ts_dev->dev;
 	ts_bdata = board_data(core_data);
 
+	if (strlen(ts_bdata->vdd_name)) {
+		core_data->vdd = devm_regulator_get(dev,
+						     ts_bdata->vdd_name);
+		if (IS_ERR_OR_NULL(core_data->vdd)) {
+			r = PTR_ERR(core_data->vdd);
+			ts_err("Failed to get regulator vdd:%d", r);
+			core_data->vdd = NULL;
+			return r;
+		}
+	} else {
+		ts_info("vdd name is NULL[skip]");
+	}
+
 	if (strlen(ts_bdata->avdd_name)) {
 		core_data->avdd = devm_regulator_get(dev,
 				 ts_bdata->avdd_name);
@@ -1168,6 +1181,19 @@ static int goodix_ts_power_init(struct goodix_ts_core *core_data)
 		}
 	} else {
 		ts_info("Avdd name is NULL[skip]");
+	}
+
+	if (strlen(ts_bdata->vddio_name)) {
+		core_data->vddio = devm_regulator_get(dev,
+						     ts_bdata->vddio_name);
+		if (IS_ERR_OR_NULL(core_data->vddio)) {
+			r = PTR_ERR(core_data->vddio);
+			ts_err("Failed to get regulator vddio:%d", r);
+			core_data->vddio = NULL;
+			return r;
+		}
+	} else {
+		ts_info("vddio name is NULL[skip]");
 	}
 
 	return r;
@@ -1187,17 +1213,51 @@ int goodix_ts_power_on(struct goodix_ts_core *core_data)
 	if (core_data->power_on)
 		return 0;
 
+	if (!core_data->vdd) {
+		core_data->power_on = 1;
+		return 0;
+	}
+
 	if (!core_data->avdd) {
 		core_data->power_on = 1;
 		return 0;
 	}
 
+	if (!core_data->vddio) {
+		core_data->power_on = 1;
+		return 0;
+	}
+
+	r = regulator_enable(core_data->vdd);
+	if (!r) {
+		ts_info("regulator enable SUCCESS");
+		if (ts_bdata->power_on_delay_us)
+			usleep_range(ts_bdata->power_on_delay_us,
+				     ts_bdata->power_on_delay_us);
+	} else {
+		ts_err("Failed to enable vdd: %d", r);
+		return r;
+	}
+
 	r = regulator_enable(core_data->avdd);
 	if (!r) {
 		ts_info("regulator enable SUCCESS");
-		
+		if (ts_bdata->power_on_delay_us)
+			usleep_range(ts_bdata->power_on_delay_us,
+				     ts_bdata->power_on_delay_us);
 	} else {
-		ts_err("Failed to enable analog power:%d", r);
+		ts_err("Failed to enable analog power: %d", r);
+		return r;
+	}
+
+	r = regulator_enable(core_data->vddio);
+	if (!r) {
+		ts_info("regulator enable SUCCESS");
+		if (ts_bdata->power_on_delay_us)
+			usleep_range(ts_bdata->power_on_delay_us,
+				     ts_bdata->power_on_delay_us);
+	} else {
+		ts_err("Failed to enable vddio: %d", r);
 		return r;
 	}
 
@@ -1219,6 +1279,19 @@ int goodix_ts_power_off(struct goodix_ts_core *core_data)
 	if (!core_data->power_on)
 		return 0;
 	
+	if (core_data->vdd) {
+		r = regulator_disable(core_data->vdd);
+		if (!r) {
+			ts_info("regulator disable SUCCESS");
+			if (ts_bdata->power_off_delay_us)
+				usleep_range(ts_bdata->power_off_delay_us,
+					     ts_bdata->power_off_delay_us);
+		} else {
+			ts_err("Failed to disable vdd: %d", r);
+			return r;
+		}
+	}
+
 	if (core_data->avdd) {
 		r = regulator_disable(core_data->avdd);
 		if (!r) {
@@ -1228,6 +1301,19 @@ int goodix_ts_power_off(struct goodix_ts_core *core_data)
 					     ts_bdata->power_off_delay_us);
 		} else {
 			ts_err("Failed to disable analog power:%d", r);
+			return r;
+		}
+	}
+
+	if (core_data->vddio) {
+		r = regulator_disable(core_data->vddio);
+		if (!r) {
+			ts_info("regulator disable SUCCESS");
+			if (ts_bdata->power_off_delay_us)
+				usleep_range(ts_bdata->power_off_delay_us,
+					     ts_bdata->power_off_delay_us);
+		} else {
+			ts_err("Failed to disable vddio: %d", r);
 			return r;
 		}
 	}
@@ -1321,19 +1407,19 @@ static int goodix_ts_gpio_setup(struct goodix_ts_core *core_data)
 	}
 	/*r = devm_gpio_request_one(&core_data->pdev->dev, ts_bdata->avdden_gpio,
 				GPIOF_OUT_INIT_HIGH, "ts_avdden_gpio");*/
-//	 if (gpio_is_valid(ts_bdata->avdden_gpio)) {
-//		  r = gpio_request(ts_bdata->avdden_gpio, "tpavdden_gpio");
-//		 if (r) {
-//		      pr_err("request for tpavdden failed, r=%d,gpio=%d.\n", r,ts_bdata->avdden_gpio);
-//		   //   goto error;
-//		      return r;
-//		 	}
-//		 r = gpio_direction_output(ts_bdata->avdden_gpio,1);
-//	 if (r) {
-//	          pr_err("unable to set dirout avdden gpio r=%d,gpio=%d.\n", r,ts_bdata->avdden_gpio);
-//	          return r;
-//	        }
-//		    }
+	 // if (gpio_is_valid(ts_bdata->avdden_gpio)) {
+		//   r = gpio_request(ts_bdata->avdden_gpio, "tpavdden_gpio");
+		//  if (r) {
+		//       pr_err("request for tpavdden failed, r=%d,gpio=%d.\n", r,ts_bdata->avdden_gpio);
+		//    //   goto error;
+		//       return r;
+		//  	}
+		//  r = gpio_direction_output(ts_bdata->avdden_gpio,1);
+	 // if (r) {
+	 //          pr_err("unable to set dirout avdden gpio r=%d,gpio=%d.\n", r,ts_bdata->avdden_gpio);
+	 //          return r;
+	 //        }
+		//     }
 /*	if(r< 0){
 		ts_err("Failed to request avdden gpio, r:%d",r);
 		return r;
@@ -1501,7 +1587,7 @@ static void goodix_ts_esd_work(struct work_struct *work)
 			struct goodix_ts_esd, esd_work);
 	struct goodix_ts_core *core = container_of(ts_esd,
 			struct goodix_ts_core, ts_esd);
-	struct goodix_ts_board_data *ts_bdata = board_data(core);
+	//struct goodix_ts_board_data *ts_bdata = board_data(core);
 	const struct goodix_ts_hw_ops *hw_ops = ts_hw_ops(core);
 	int r = 0;
 
@@ -1511,22 +1597,22 @@ static void goodix_ts_esd_work(struct work_struct *work)
 	if (hw_ops->check_hw)
 		r = hw_ops->check_hw(core->ts_dev);
 	if (r < 0) {
-	#ifdef gipoenavdd
-	ts_info("goodix esd gpio off/on");
-	 r = gpio_direction_output(ts_bdata->avdden_gpio,0);
-	 if (r) {
-	          pr_err("unable to set dirout avdden gpio low r=%d,gpio=%d.\n", r,ts_bdata->avdden_gpio);
-	          return ;
-	        }
-	 r = gpio_direction_output(ts_bdata->avdden_gpio,1);
-	 if (r) {
-	          pr_err("unable to set dirout avdden gpio high r=%d,gpio=%d.\n", r,ts_bdata->avdden_gpio);
-	          return ;
-	        }
-	#else
+	//#ifdef gipoenavdd
+	//ts_info("goodix esd gpio off/on");
+	//  r = gpio_direction_output(ts_bdata->avdden_gpio,0);
+	//  if (r) {
+	//           pr_err("unable to set dirout avdden gpio low r=%d,gpio=%d.\n", r,ts_bdata->avdden_gpio);
+	//           return ;
+	//         }
+	//  r = gpio_direction_output(ts_bdata->avdden_gpio,1);
+	//  if (r) {
+	//           pr_err("unable to set dirout avdden gpio high r=%d,gpio=%d.\n", r,ts_bdata->avdden_gpio);
+	//           return ;
+	//         }
+	// #else
 		goodix_ts_power_off(core);
 		goodix_ts_power_on(core);
-	#endif
+	// #endif
 		if (hw_ops->reset) {
 			if (goodix_ts_irq_enable(core, false))
 				ts_err("disable irq before reset failed");
@@ -1849,7 +1935,7 @@ static int goodix_generic_noti_callback(struct notifier_block *self,
 		else{
 			ts_info("mela ic vid:%*ph\n",4,ts_dev->chip_version.vid);
 			for(i=0;i<4;i++){
-				sprintf(tempchar,"%02x",ts_dev->chip_version.vid[i]);
+				//sprintf(tempchar,"%02x",ts_dev->chip_version.vid[i]);
 				ts_info("tempchar %s",&tempchar);
 				strcat(hardinfo,tempchar);
 			}
@@ -2024,14 +2110,14 @@ static void goodix_ts_remove(struct platform_device *pdev)
 	//kfree(core_data);
 }
 
-#ifdef CONFIG_PM
-static const struct dev_pm_ops dev_pm_ops = {
-#if !defined(CONFIG_FB) && !defined(CONFIG_HAS_EARLYSUSPEND)
-	.suspend = goodix_ts_pm_suspend,
-	.resume = goodix_ts_pm_resume,
-#endif
-};
-#endif
+// #ifdef CONFIG_PM
+// static const struct dev_pm_ops dev_pm_ops = {
+// #if !defined(CONFIG_FB) && !defined(CONFIG_HAS_EARLYSUSPEND)
+// 	.suspend = goodix_ts_pm_suspend,
+// 	.resume = goodix_ts_pm_resume,
+// #endif
+// };
+// #endif
 
 static const struct platform_device_id ts_core_ids[] = {
 	{.name = GOODIX_CORE_DRIVER_NAME},
@@ -2043,6 +2129,9 @@ static struct platform_driver goodix_ts_driver = {
 	.driver = {
 		.name = GOODIX_CORE_DRIVER_NAME,
 		.owner = THIS_MODULE,
+// #ifdef CONFIG_PM
+// 		.pm = &dev_pm_ops,
+// #endif
 	},
 	.probe = goodix_ts_probe,
 	.remove = goodix_ts_remove,

@@ -37,12 +37,14 @@
 #include <linux/completion.h>
 #include <linux/debugfs.h>
 #include <linux/of_irq.h>
+#include <linux/of_gpio.h>
+#include <linux/regulator/consumer.h>
 
 /* macros definition */
 #define GOODIX_CORE_DRIVER_NAME		"goodix_ts"
 #define GOODIX_PEN_DRIVER_NAME		"goodix_ts,pen"
 #define GOODIX_DRIVER_VERSION		"v1.1.1.0"
-#define GOODIX_BUS_RETRY_TIMES		99999
+#define GOODIX_BUS_RETRY_TIMES		3
 #define GOODIX_MAX_TOUCH		10
 #define GOODIX_CFG_MAX_SIZE		1024
 #define GOODIX_ESD_TICK_WRITE_DATA	0xAA
@@ -105,10 +107,12 @@ struct goodix_module {
  * @fw_name: name of the firmware image
  */
 struct goodix_ts_board_data {
+	char vdd_name[24];
 	char avdd_name[24];
+	char vddio_name[24];
 	unsigned int reset_gpio;
 	unsigned int irq_gpio;
-	unsigned int avdden_gpio;
+	// unsigned int avdden_gpio;
 	int irq;
 	unsigned int  irq_flags;
 
@@ -428,7 +432,9 @@ struct goodix_ts_core {
 	struct input_dev *input_dev;
 	struct input_dev *pen_dev;
 
+	struct regulator *vdd;
 	struct regulator *avdd;
+	struct regulator *vddio;
 #ifdef CONFIG_PINCTRL
 	struct pinctrl *pinctrl;
 	struct pinctrl_state *pin_sta_active;
@@ -444,6 +450,11 @@ struct goodix_ts_core {
 
 	struct notifier_block ts_notifier;
 	struct goodix_ts_esd ts_esd;
+
+	struct notifier_block fb_notifier;
+#ifdef CONFIG_HAS_EARLYSUSPEND
+	struct early_suspend early_suspend;
+#endif
 };
 
 /* external module structures */

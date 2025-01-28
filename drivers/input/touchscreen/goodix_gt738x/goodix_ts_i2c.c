@@ -21,8 +21,6 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/i2c.h>
-#include <linux/of_gpio.h>
-#include <linux/gpio.h>
 #include <linux/platform_device.h>
 #include <linux/interrupt.h>
 #include <linux/workqueue.h>
@@ -91,9 +89,8 @@ static int goodix_parse_dt_resolution(struct device_node *node,
 	if (r)
 		err = -ENOENT;
 
-	board_data->swap_axis = of_property_read_bool(node,
-					"goodix,swap-axis");
-	board_data->x2x = of_property_read_bool(node, "goodix,x2x");
+	board_data->swap_axis = false;
+	board_data->x2x = false;
 	board_data->y2y = of_property_read_bool(node, "goodix,y2y");
 
 	return 0;
@@ -133,19 +130,32 @@ static int goodix_parse_dt(struct device_node *node,
 	ts_info("get irq-gpio[%d] from dt", r);
 	board_data->irq_gpio = r;
 	
-	//r = of_get_named_gpio(node, "goodix,avdd-en-gpio",0);
-	//if (r < 0){
-	//	ts_err("invalid avdden-gpio in dt: %d",r);
-	//	return -EINVAL;
-	//}
-	//ts_info("get avdden-gpio[%d] from dt",r);
-	//board_data->avdden_gpio = r;
+	// r = of_get_named_gpio(node, "goodix,avdd-en-gpio",0);
+	// if (r < 0){
+	// 	ts_err("invalid avdden-gpio in dt: %d",r);
+	// 	return -EINVAL;
+	// }
+	// ts_info("get avdden-gpio[%d] from dt",r);
+	// board_data->avdden_gpio = r;
 
 	r = of_property_read_u32(node, "goodix,irq-flags",
 			&board_data->irq_flags);
 	if (r) {
 		ts_err("invalid irq-flags");
 		return -EINVAL;
+	}
+
+	memset(board_data->vdd_name, 0, sizeof(board_data->vdd_name));
+	r = of_property_read_string(node, "goodix,vdd-name", &name_tmp);
+	if (!r) {
+		ts_info("vdd name form dt: %s", name_tmp);
+		if (strlen(name_tmp) < sizeof(board_data->vdd_name))
+			strncpy(board_data->vdd_name,
+				name_tmp, sizeof(board_data->vdd_name));
+			else
+				ts_info("invalid vdd name length: %ld > %ld",
+					strlen(name_tmp),
+					sizeof(board_data->vdd_name));
 	}
 
 	memset(board_data->avdd_name, 0, sizeof(board_data->avdd_name));
@@ -156,10 +166,24 @@ static int goodix_parse_dt(struct device_node *node,
 			strncpy(board_data->avdd_name,
 				name_tmp, sizeof(board_data->avdd_name));
 		else
-			ts_info("invalied avdd name length: %ld > %ld",
+			ts_info("invalid avdd name length: %ld > %ld",
 				strlen(name_tmp),
 				sizeof(board_data->avdd_name));
 	}
+
+	memset(board_data->vddio_name, 0, sizeof(board_data->vddio_name));
+	r = of_property_read_string(node, "goodix,vddio-name", &name_tmp);
+	if (!r) {
+		ts_info("vddio name form dt: %s", name_tmp);
+		if (strlen(name_tmp) < sizeof(board_data->vddio_name))
+			strncpy(board_data->vddio_name,
+				name_tmp, sizeof(board_data->vddio_name));
+			else
+				ts_info("invalid vddio name length: %ld > %ld",
+					strlen(name_tmp),
+					sizeof(board_data->vddio_name));
+	}
+
 	r = of_property_read_u32(node, "goodix,power-on-delay-us",
 				&board_data->power_on_delay_us);
 	if (!r) {
