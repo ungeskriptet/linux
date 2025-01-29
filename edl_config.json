@@ -1,1 +1,0 @@
-{"supported_functions": ["program", "read", "nop", "patch", "configure", "setbootablestoragedrive", "erase", "power", "firmwarewrite", "getstorageinfo", "benchmark", "emmc", "ufs", "fixgpt", "getsha256digest"], "programmer": "/home/david/.local/share/edl/edlclient/../Loaders/lenovo_motorola/000c30e100400000_8eac5d78102fad7d_fhprg.bin", "serial": 235891528}
