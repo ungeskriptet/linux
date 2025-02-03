@@ -23,6 +23,10 @@
 	qcom,msm-id = <QCOM_ID_SM8250 0x20001>;
 	qcom,board-id = <0x2010008 0>;
 
+	aliases {
+		serial0 = &uart6;
+	};
+
 	chosen {
 		bootargs = "PMOS_NO_OUTPUT_REDIRECT PMOS_NOSPLASH";
 	};
@@ -135,7 +139,7 @@
 
 &adsp {
         firmware-name = "qcom/sm8250/LENOVO/J716F/adsp.mbn";
-        status = "disabled"; //FIXME
+        status = "okay";
 };
 
 &apps_rsc {
@@ -503,10 +507,6 @@
 
 &cdsp {
 	firmware-name = "qcom/sm8250/LENOVO/J716F/cdsp.mbn";
-	status = "disabled"; //FIXME
-};
-
-&crypto {
 	status = "disabled";
 };
 
@@ -549,6 +549,28 @@
 	fuel-gauge@55 {
 		compatible = "ti,bq27541";
 		reg = <0x55>;
+	};
+};
+
+&i2c4 {
+	clock-frequency = <400000>;
+	status = "okay";
+
+	cs35l41_fixme: speaker-amp@40 {
+		compatible = "cirrus,cs35l41";
+		reg = <0x40>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <113 IRQ_TYPE_LEVEL_LOW>;
+		reset-gpios = <&tlmm 131 GPIO_ACTIVE_HIGH>;
+		VA-supply = <&vreg_l16a>;
+		cirrus,boost-peak-milliamp = <3500>;
+		cirrus,boost-ind-nanohenry = <1000>;
+		cirrus,boost-cap-microfarad = <15>;
+		cirrus,asp-sdout-hiz = <3>;
+		cirrus,gpio2-src-select = <4>;
+		cirrus,gpio2-output-enable;
+		sound-name-prefix = "BRH";
+		#sound-dai-cells = <1>;
 	};
 };
 
@@ -707,13 +729,33 @@
 	status = "okay";
 };
 
+&sdhc_2 {
+	cd-gpios = <&tlmm 77 GPIO_ACTIVE_HIGH>;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&sdc2_state_on &sdc2_gate_pin>;
+	pinctrl-1 = <&sdc2_state_off>;
+	vmmc-supply = <&vreg_l6c>;
+	vqmmc-supply = <&vreg_l9c>;
+	no-sdio;
+	no-mmc;
+	status = "okay";
+};
+
 &slpi {
 	firmware-name = "qcom/sm8250/LENOVO/J716F/slpi.mbn";
-	status = "okay";
+	status = "disabled";
 };
 
 &tlmm {
 	gpio-reserved-ranges = <40 4>;
+
+	sdc2_gate_pin: sdc2-gate-state {
+		pins = "gpio116";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-pull-up;
+		output-high;
+	};
 
 	sde_dsi_active: sde_dsi_active-state {
 		pins = "gpio75";
@@ -791,6 +833,21 @@
 	};
 };
 
+&uart6 {
+	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca6390-bt";
+
+		vddrfacmn-supply = <&vreg_pmu_rfa_cmn>;
+		vddaon-supply = <&vreg_pmu_aon_0p59>;
+		vddbtcmx-supply = <&vreg_pmu_btcmx_0p85>;
+		vddrfa0p8-supply = <&vreg_pmu_rfa_0p8>;
+		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
+		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
+	};
+};
+
 &ufs_mem_hc {
 	vcc-supply = <&vreg_l17a>;
 	vcc-max-microamp = <800000>;
@@ -832,17 +889,7 @@
 	status = "okay";
 };
 
-//FIXME
-&vamacro { status = "disabled"; };
-&rxmacro { status = "disabled"; };
-&swr1 { status = "disabled"; };
-&txmacro { status = "disabled"; };
-&swr2 { status = "disabled"; };
-&lpass_tlmm { status = "disabled"; };
-&swr0 { status = "disabled"; };
-
 &venus {
 	firmware-name = "qcom/sm8250/LENOVO/J716F/venus.mbn";
-	status = "disabled";
+	status = "okay";
 };
-//FIXME END
