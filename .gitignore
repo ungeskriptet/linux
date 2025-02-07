@@ -181,3 +181,4 @@ sphinx_*/
 # Rust analyzer configuration
 /rust-project.json
 /edl_config.json
+!/fw/**
